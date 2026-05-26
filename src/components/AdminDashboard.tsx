@@ -656,16 +656,23 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({
                   @media print {
                     @page {
                       size: A4 portrait;
-                      margin: 8mm 10mm;
+                      margin: 5mm 8mm;
                     }
                     tr {
                       page-break-inside: avoid;
                     }
                     td {
-                      padding: 3px 6px !important;
+                      padding: 1px 4px !important;
+                      line-height: 1.05 !important;
+                      font-size: 8px !important;
                     }
                     th {
-                      padding: 4px 6px !important;
+                      padding: 2px 4px !important;
+                      line-height: 1.05 !important;
+                      font-size: 8px !important;
+                    }
+                    .print-compact-h {
+                      height: 16px !important;
                     }
                   }
                 `}
@@ -690,32 +697,18 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({
 
                     return (
                       <tr key={res.id} className="divide-x divide-slate-900 hover:bg-slate-50/40 border border-slate-900">
-                        <td className="p-2 text-center font-mono">{idx + 1}</td>
-                        <td className="p-2 text-center font-mono">Lt {res.floor || getFloorFromUnit(res.unit)}</td>
-                        <td className="p-2 text-center">{res.block}</td>
-                        <td className="p-2 text-center font-mono font-black">{res.unit}</td>
-                        <td className="p-2 uppercase">{res.name}</td>
-                        <td className="p-2 text-right font-mono">{aprVal}</td>
-                        <td className="p-2 border border-slate-900 h-8"></td>
+                        <td className="p-1.5 text-center font-mono">{idx + 1}</td>
+                        <td className="p-1.5 text-center font-mono">Lt {res.floor || getFloorFromUnit(res.unit)}</td>
+                        <td className="p-1.5 text-center">{res.block}</td>
+                        <td className="p-1.5 text-center font-mono font-black">{res.unit}</td>
+                        <td className="p-1.5 uppercase">{res.name}</td>
+                        <td className="p-1.5 text-right font-mono">{aprVal}</td>
+                        <td className="p-1.5 border border-slate-900 h-6 print-compact-h"></td>
                       </tr>
                     );
                   })}
                 </tbody>
               </table>
-            </div>
-
-            {/* Print Sign Box */}
-            <div className="pt-8 print:pt-4 grid grid-cols-2 gap-10 font-mono text-xxs font-extrabold text-slate-850">
-              <div className="text-center space-y-10 print:space-y-8">
-                <p>Koordinator Penanggung Jawab,</p>
-                <div className="h-0.5 bg-slate-400 w-44 mx-auto" />
-                <p className="text-slate-500 font-bold">( Nama Terang &amp; Paraf )</p>
-              </div>
-              <div className="text-center space-y-10 print:space-y-8">
-                <p>Kepala Kantor Rusun Pengelola,</p>
-                <div className="h-0.5 bg-slate-400 w-44 mx-auto" />
-                <p className="text-slate-500 font-bold">( Stempel Resmi Kantor )</p>
-              </div>
             </div>
           </div>
         )}
