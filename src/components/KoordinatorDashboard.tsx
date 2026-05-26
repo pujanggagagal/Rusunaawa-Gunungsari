@@ -1167,7 +1167,7 @@ export const KoordinatorDashboard: React.FC<KoordinatorDashboardProps> = ({
                         <div className="absolute inset-0 bg-cyan-500/5 animate-pulse" />
                       </>
                     )}
-                    <div id="qr-reader" className="w-full h-full" />
+                    <div id="qr-reader" className="absolute inset-0 w-full h-full [&_video]:w-full [&_video]:h-full [&_video]:object-cover" />
                     
                     {scanningStatus === 'scanned' && (
                       <div className="absolute inset-0 bg-emerald-500/95 flex flex-col items-center justify-center text-white p-3 z-30">
