@@ -1903,7 +1903,16 @@ Siti Aminah	357802...	Blok B	B-202	085755..."
         {/* FULL SCREEN PURE PRINTABLE STAGE VIEW (Triggered dynamically) */}
         {/* ======================================================== */}
         {printMode !== 'none' && (
-          <div className="fixed print:static print:min-h-screen inset-0 bg-white text-black z-50 overflow-y-auto print:overflow-visible p-10 font-sans print:p-0">
+          <div className="fixed print:static print:min-h-screen inset-0 bg-white text-black z-50 overflow-y-auto print:overflow-visible p-10 font-sans print:p-0 print-stage">
+            <style>
+              {`
+                @media print {
+                  #admin_dashboard > :not(.print-stage) {
+                    display: none !important;
+                  }
+                }
+              `}
+            </style>
             
             {/* Control banner (always Hidden during actual system physical printout) */}
             <div className="flex justify-between items-center bg-slate-900 text-white p-4 rounded-2xl mb-8 shadow-xl print:hidden max-w-4xl mx-auto">
