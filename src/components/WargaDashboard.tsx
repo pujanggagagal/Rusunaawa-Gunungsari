@@ -98,7 +98,7 @@ export const WargaDashboard: React.FC<WargaDashboardProps> = ({
     setWhatsapp(digits);
   };
 
-  const [familyMembers, setFamilyMembers] = useState<Array<{ age: string; gender: 'Laki-laki' | 'Perempuan'; occupation: string }>>(() => {
+  const [familyMembers, setFamilyMembers] = useState<Array<{ name: string; age: string; gender: 'Laki-laki' | 'Perempuan'; occupation: string }>>(() => {
     if (typeof window !== 'undefined') {
       const latest = localStorage.getItem(latestKey);
       if (latest) {
@@ -150,10 +150,10 @@ export const WargaDashboard: React.FC<WargaDashboardProps> = ({
   });
 
   const handleAddFamilyMember = () => {
-    setFamilyMembers([...familyMembers, { age: '', gender: 'Laki-laki', occupation: '' }]);
+    setFamilyMembers(prev => [...prev, { name: '', age: '', gender: 'Laki-laki', occupation: '' }]);
   };
 
-  const handleUpdateFamilyMember = (index: number, field: 'age' | 'gender' | 'occupation', value: string) => {
+  const handleUpdateFamilyMember = (index: number, field: 'name' | 'age' | 'gender' | 'occupation', value: string) => {
     const updated = [...familyMembers];
     updated[index] = { ...updated[index], [field]: value };
     setFamilyMembers(updated);
@@ -954,7 +954,18 @@ export const WargaDashboard: React.FC<WargaDashboardProps> = ({
                         
                         <span className="text-[9px] font-mono font-bold text-indigo-500 block uppercase tracking-wider">Anggota Keluarga Jiwa #{idx + 1}</span>
                         
-                        <div className="grid grid-cols-1 sm:grid-cols-3 gap-2">
+                        <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 mt-2">
+                          <div className="sm:col-span-2">
+                            <label className="block text-[9px] font-black font-mono text-slate-500 mb-1 uppercase">Nama</label>
+                            <input
+                              type="text"
+                              required
+                              placeholder="Nama anggota keluarga"
+                              value={member.name}
+                              onChange={(e) => handleUpdateFamilyMember(idx, 'name', e.target.value)}
+                              className="w-full px-2.5 py-2 border border-slate-200 rounded-lg text-[11px] font-bold text-slate-800 bg-white focus:outline-none"
+                            />
+                          </div>
                           <div>
                             <label className="block text-[9px] font-black font-mono text-slate-500 mb-1 uppercase">Umur / Usia</label>
                             <input

@@ -1938,12 +1938,29 @@ Siti Aminah	357802...	Blok B	B-202	085755..."
             {/* 1. PRINT MODE: MASS STICKER ROLL OR SHEET PRINTING (3x5cm Stickers with Only Barcode and Floor-Block-Unit) */}
             {(printMode === 'cards' || printMode === 'single-card') && (
               <div className="space-y-6">
+                <style>
+                  {`
+                    @media print {
+                      @page {
+                        size: 50mm 30mm;
+                        margin: 0;
+                      }
+                      body {
+                        margin: 0;
+                        padding: 0;
+                      }
+                      .print-page-break {
+                        page-break-after: always;
+                      }
+                    }
+                  `}
+                </style>
                 <div className="print:hidden text-center max-w-2xl mx-auto space-y-1.5 mb-8 bg-slate-50 p-4 rounded-2xl border border-slate-200">
                   <h4 className="text-xs font-black text-slate-900 uppercase tracking-widest font-mono">
-                    TATA LETAK ROLL PRINT STICKER FISIK (UKURAN 3x5 CM)
+                    TATA LETAK ROLL PRINT STICKER FISIK (UKURAN 5x3 CM)
                   </h4>
                   <p className="text-[10px] text-slate-500 leading-normal">
-                    Format stiker didesain ramping **tinggi 3cm x lebar 5cm (30mm x 50mm)** untuk kertas sticker roll thermal. Hanya ada nama rusun, kode barcode, dan keterangan detail unit hunian. **Sesuai instruksi keamanan &amp; kepraktisan, Nama Penghuni dan KTP NIK sengaja dihilangkan agar stiker tetap awet dan sah kendati terjadi mutasi warga rusun.**
+                    Format stiker didesain untuk printer thermal roll (ukuran 50mm x 30mm). Pastikan printer Anda disetel pada ukuran kertas 50x30mm saat mencetak. Hanya ada nama rusun, kode barcode, dan keterangan detail unit hunian.
                   </p>
                 </div>
                 
@@ -1970,7 +1987,7 @@ Siti Aminah	357802...	Blok B	B-202	085755..."
                       return (
                         <div 
                           key={res.id} 
-                          className="bg-white flex flex-col justify-between p-[2.5mm] text-center select-none relative overflow-hidden border border-slate-100 md:border-dashed print:border-0 print:p-[2mm]"
+                          className="bg-white flex flex-col justify-between p-[1mm] text-center select-none relative overflow-hidden border border-slate-100 md:border-dashed print:border-0 print:p-[1mm] print-page-break"
                           style={{ 
                             width: '50mm', 
                             height: '30mm', 
@@ -1978,7 +1995,6 @@ Siti Aminah	357802...	Blok B	B-202	085755..."
                             maxWidth: '50mm',
                             minHeight: '30mm',
                             minWidth: '50mm',
-                            pageBreakInside: 'avoid',
                             boxSizing: 'border-box'
                           }}
                         >
@@ -2026,35 +2042,43 @@ Siti Aminah	357802...	Blok B	B-202	085755..."
                 </div>
 
                 <div className="overflow-x-auto">
-                  <table className="w-full border-collapse text-xxs border-2 border-slate-920 table-auto text-black">
+                  <style>
+                    {`
+                      @media print {
+                        @page {
+                          size: A4 portrait;
+                          margin: 10mm;
+                        }
+                      }
+                    `}
+                  </style>
+                  <table className="w-full border-collapse text-[10px] border border-slate-900 table-auto text-black mt-2">
                     <thead>
-                      <tr className="bg-slate-100 font-mono text-[9px] font-black uppercase border-b-2 border-slate-900 text-slate-900 divide-x divide-slate-900">
-                        <th className="p-2 text-center w-10 border border-slate-900">No</th>
-                        <th className="p-2 text-left w-32 border border-slate-900">Unit / Hunian</th>
-                        <th className="p-2 text-left w-20 border border-slate-900">Blok</th>
-                        <th className="p-2 text-left border border-slate-900">Nama Lengkap Kepala Keluarga</th>
-                        <th className="p-2 text-left w-36 border border-slate-900">Nomor KTP / NIK</th>
-                        <th className="p-2 text-right w-24 border border-slate-900">Meter Lalu (April)</th>
-                        <th className="p-2 text-right w-36 bg-emerald-50/20 border border-slate-900">METER BARU MEI [ m³ ]</th>
-                        <th className="p-2 w-44 border border-slate-900">TTD / PARAF WARGA</th>
+                      <tr className="bg-slate-100 font-mono font-black uppercase border-b-2 border-slate-900 text-slate-900 divide-x divide-slate-900">
+                        <th className="p-1.5 text-center w-8 border border-slate-900">No</th>
+                        <th className="p-1.5 text-center w-12 border border-slate-900">Lantai</th>
+                        <th className="p-1.5 text-center w-14 border border-slate-900">Blok</th>
+                        <th className="p-1.5 text-center w-16 border border-slate-900">No Hunian</th>
+                        <th className="p-1.5 text-left border border-slate-900">Nama Penghuni</th>
+                        <th className="p-1.5 text-right w-24 border border-slate-900">Meter Lalu</th>
+                        <th className="p-1.5 text-right w-32 border border-slate-900">Meter Baru</th>
                       </tr>
                     </thead>
-                    <tbody className="divide-y divide-slate-900 text-slate-980 font-bold">
+                    <tbody className="divide-y divide-slate-900 text-slate-900 font-bold">
                       {filteredResidentsForBarcodes.map((res, idx) => {
                         // Find previous (April) meter record
                         const pBills = billingRecords.filter(b => b.residentKtp === res.ktp && !(b.month === 'Mei' && b.year === 2026));
                         const aprVal = pBills.length > 0 ? pBills[0].currentMeter : 100;
 
                         return (
-                          <tr key={res.id} className="divide-x divide-slate-900 hover:bg-slate-50/40 divide-y divide-slate-900 border border-slate-900">
-                            <td className="p-3 text-center font-mono font-bold text-slate-700 border border-slate-900">{idx + 1}</td>
-                            <td className="p-3 font-mono font-black text-slate-950 border border-slate-900">Lt {res.floor || getFloorFromUnit(res.unit)} • Kamar {res.unit}</td>
-                            <td className="p-3 tracking-wide border border-slate-900">{res.block}</td>
-                            <td className="p-3 uppercase font-bold border border-slate-900">{res.name}</td>
-                            <td className="p-3 font-mono text-slate-600 font-bold border border-slate-900">{res.ktp}</td>
-                            <td className="p-3 text-right font-mono font-semibold text-slate-700 border border-slate-900">{aprVal} m³</td>
-                            <td className="p-3 bg-slate-50 border border-slate-900 h-10 w-36"></td> {/* Wide cell for handwriting */}
-                            <td className="p-3 border border-slate-900 h-10 w-44"></td> {/* Wide cell for signature */}
+                          <tr key={res.id} className="divide-x divide-slate-900 hover:bg-slate-50/40 border border-slate-900">
+                            <td className="p-2 text-center font-mono">{idx + 1}</td>
+                            <td className="p-2 text-center font-mono">Lt {res.floor || getFloorFromUnit(res.unit)}</td>
+                            <td className="p-2 text-center">{res.block}</td>
+                            <td className="p-2 text-center font-mono font-black">{res.unit}</td>
+                            <td className="p-2 uppercase">{res.name}</td>
+                            <td className="p-2 text-right font-mono">{aprVal}</td>
+                            <td className="p-2 border border-slate-900 h-8"></td>
                           </tr>
                         );
                       })}
