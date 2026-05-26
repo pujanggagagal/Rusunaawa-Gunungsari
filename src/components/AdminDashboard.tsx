@@ -3,6 +3,7 @@ import { Resident, Coordinator, FinancialLog, BillingRecord, getFloorFromUnit, g
 import { LogOut, LayoutGrid, Users, Coins, Plus, Trash2, Edit2, UserPlus, Sparkles, CheckCircle2, ChevronRight, Calculator, Landmark, ShieldAlert, ArrowDownUp, UploadCloud, AlertCircle, Check, RotateCcw, QrCode, Printer, Search, FileText, Download, Settings } from 'lucide-react';
 import { calculatePdamBill } from '../data';
 import { BarcodeRenderer } from './BarcodeRenderer';
+import { QRCodeRenderer } from './QRCodeRenderer';
 
 interface AdminDashboardProps {
   residents: Resident[];
@@ -612,7 +613,7 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({
                   return (
                     <div 
                       key={res.id} 
-                      className="bg-white flex flex-col justify-between p-[1mm] text-center select-none relative overflow-hidden border border-slate-100 md:border-dashed print:border-0 print:p-[1mm] print-page-break"
+                      className="bg-white flex flex-row items-center justify-between p-[1.5mm] select-none relative overflow-hidden border border-slate-100 md:border-dashed print:border-0 print:p-[1mm] print-page-break"
                       style={{ 
                         width: '50mm', 
                         height: '30mm', 
@@ -623,19 +624,26 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({
                         boxSizing: 'border-box'
                       }}
                     >
-                      {/* Title - Header text matching picture precisely */}
-                      <div className="text-[9.5px] font-extrabold tracking-tight text-center uppercase leading-none text-black font-sans shrink-0">
-                        PDAM RUSUN GUNUNGSARI
+                      {/* Kolom Kiri: QR Code (2.8 x 2.8 cm) */}
+                      <div className="flex items-center justify-center w-[25mm] h-[25mm] shrink-0 border border-slate-50 print:border-0">
+                        <QRCodeRenderer value={barcodeVal} size={90} className="w-full h-full object-contain" />
                       </div>
 
-                      {/* Dynamic Code39 Barcode renderer - taller bars for easy scanning */}
-                      <div className="flex flex-col items-center justify-center my-auto w-full py-1.5">
-                        <BarcodeRenderer value={barcodeVal} height={42} className="w-full shrink-0" />
-                      </div>
+                      {/* Kolom Kanan: Teks Identitas Premium */}
+                      <div className="flex flex-col justify-between items-start pl-2 h-full text-left font-sans text-black grow">
+                        <div className="space-y-0.5">
+                          <span className="text-[7.5px] font-extrabold uppercase text-slate-500 tracking-wider block font-mono">PDAM RUSUN</span>
+                          <span className="text-[10px] font-black uppercase text-black leading-none block tracking-tight">GUNUNGSARI</span>
+                        </div>
+                        
+                        <div className="space-y-0.5 py-1">
+                          <span className="text-[8px] font-bold text-slate-700 block">LANTAI {floorVal}</span>
+                          <span className="text-[8px] font-bold text-slate-700 block">BLOK {blockLetter}</span>
+                        </div>
 
-                      {/* Footer text matching user layout precisely */}
-                      <div className="text-[9px] font-extrabold uppercase text-center leading-none text-black font-sans shrink-0 tracking-wide">
-                        LANTAI {floorVal} - BLOK {blockLetter} - {res.unit}
+                        <div className="bg-slate-900 text-white px-1.5 py-0.5 rounded text-[8.5px] font-black uppercase tracking-wide block leading-none print:bg-black print:text-white shrink-0">
+                          UNIT {res.unit}
+                        </div>
                       </div>
                     </div>
                   );
@@ -2069,11 +2077,11 @@ Siti Aminah	357802...	Blok B	B-202	085755..."
                           <p className="text-[9px] text-slate-400 font-semibold text-slate-500 mt-1">Kontak: {res.phone}</p>
                         </div>
 
-                        {/* Visual Barcode pattern */}
+                        {/* Visual QR Code pattern */}
                         <div className="mt-5 border border-slate-150 p-3 bg-white rounded-xl flex flex-col items-center gap-2 shadow-inner">
-                          <BarcodeRenderer value={getBarcodeContent(res)} height={36} className="w-full" />
-                          <span className="text-[8px] font-mono tracking-widest text-slate-500 font-bold uppercase">
-                            *{getBarcodeContent(res)}*
+                          <QRCodeRenderer value={getBarcodeContent(res)} size={70} className="mx-auto" />
+                          <span className="text-[8px] font-mono tracking-widest text-slate-500 font-bold uppercase mt-1">
+                            {getBarcodeContent(res)}
                           </span>
                         </div>
 
