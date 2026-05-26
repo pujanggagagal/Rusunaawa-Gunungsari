@@ -1125,143 +1125,47 @@ export const KoordinatorDashboard: React.FC<KoordinatorDashboardProps> = ({
               </button>
             </div>
 
-            {/* Mode Toggle (Camera vs. Simulation) */}
-            <div className="p-4 bg-slate-50 border-b border-slate-100 flex gap-2">
-              <button
-                type="button"
-                onClick={() => setUseRealCamera(false)}
-                className={`flex-1 py-2 text-center text-xs font-bold rounded-xl transition-all ${
-                  !useRealCamera
-                    ? 'bg-cyan-600 text-white shadow-md shadow-cyan-600/10'
-                    : 'bg-white hover:bg-slate-100 text-slate-600 border border-slate-200'
-                }`}
-              >
-                ⚡ Asisten Simulasi Pindai
-              </button>
-              <button
-                type="button"
-                onClick={() => {
-                  setUseRealCamera(true);
-                  setScanningStatus('idle');
-                }}
-                className={`flex-1 py-2 text-center text-xs font-bold rounded-xl transition-all ${
-                  useRealCamera
-                    ? 'bg-cyan-600 text-white shadow-md shadow-cyan-600/10'
-                    : 'bg-white hover:bg-slate-100 text-slate-600 border border-slate-200'
-                }`}
-              >
-                📷 Kamera Aktif (Fisik)
-              </button>
-            </div>
-
             {/* Modal Content */}
             <div className="p-5 flex-1 flex flex-col justify-center space-y-4">
-              
-              {/* REAL CAMERA MODE */}
-              {useRealCamera ? (
-                <div className="space-y-4 text-center">
-                  <div className="relative w-full aspect-square max-w-[240px] mx-auto overflow-hidden bg-slate-950 rounded-2xl border-4 border-cyan-500/40 shadow-inner flex items-center justify-center">
-                    {scanningStatus === 'searching' && (
-                      <>
-                        {/* Interactive green scanning lazer lines */}
-                        <div className="absolute inset-x-0 h-0.5 bg-green-400 opacity-80 animate-bounce z-10" style={{ animationDuration: '2.5s' }} />
-                        <div className="absolute inset-0 bg-cyan-500/5 animate-pulse" />
-                      </>
-                    )}
-                    <div id="qr-reader" className="absolute inset-0 w-full h-full [&_video]:w-full [&_video]:h-full [&_video]:object-cover" />
-                    
-                    {scanningStatus === 'scanned' && (
-                      <div className="absolute inset-0 bg-emerald-500/95 flex flex-col items-center justify-center text-white p-3 z-30">
-                        <CheckCircle2 size={42} className="text-white animate-scale-up mb-2" />
-                        <p className="font-extrabold text-sm uppercase tracking-wide">Pindai Berhasil!</p>
-                      </div>
-                    )}
+              <div className="space-y-4 text-center">
+                <div className="relative w-full aspect-square max-w-[240px] mx-auto overflow-hidden bg-slate-950 rounded-2xl border-4 border-cyan-500/40 shadow-inner flex items-center justify-center">
+                  {scanningStatus === 'searching' && (
+                    <>
+                      {/* Interactive green scanning lazer lines */}
+                      <div className="absolute inset-x-0 h-0.5 bg-green-400 opacity-80 animate-bounce z-10" style={{ animationDuration: '2.5s' }} />
+                      <div className="absolute inset-0 bg-cyan-500/5 animate-pulse" />
+                    </>
+                  )}
+                  <div id="qr-reader" className="absolute inset-0 w-full h-full [&_video]:w-full [&_video]:h-full [&_video]:object-cover" />
+                  
+                  {scanningStatus === 'scanned' && (
+                    <div className="absolute inset-0 bg-emerald-500/95 flex flex-col items-center justify-center text-white p-3 z-30">
+                      <CheckCircle2 size={42} className="text-white animate-scale-up mb-2" />
+                      <p className="font-extrabold text-sm uppercase tracking-wide">Pindai Berhasil!</p>
+                    </div>
+                  )}
 
-                    {scanningStatus === 'error' && (
-                      <div className="absolute inset-0 bg-rose-50 flex flex-col items-center justify-center p-4 text-center text-rose-700 z-30">
-                        <HelpCircle size={36} className="text-rose-500 mb-2" />
-                        <p className="text-[10px] font-bold leading-normal">{scanErrorMsg || "Kamera bermasalah"}</p>
-                        <button
-                          type="button"
-                          onClick={() => {
-                            setScanningStatus('idle');
-                            setUseRealCamera(false);
-                          }}
-                          className="mt-3 px-3 py-1 bg-rose-600 hover:bg-rose-700 text-white font-extrabold text-[9px] rounded-lg uppercase"
-                        >
-                          Gunakan Simulasi
-                        </button>
-                      </div>
-                    )}
-                  </div>
-
-                  <div className="text-xxs text-slate-400 leading-normal max-w-xs mx-auto">
-                    👉 Arahkan kamera ponsel Anda ke QR Code / Kartu Warga. Jika kamera diblokir di iframe, harap aktifkan tab **Asisten Simulasi Pindai** di atas.
-                  </div>
-                </div>
-              ) : (
-                /* SIMULATION SECTOR MODE (Friendly and clean) */
-                <div className="space-y-4">
-                  <div className="bg-slate-50 border border-slate-150 p-4 rounded-2xl space-y-3 shadow-inner">
-                    <div>
-                      <label className="block text-[9px] font-extrabold text-cyan-600 uppercase font-mono mb-1">
-                        Pilih Target Warga (Lantai {targetFloor})
-                      </label>
-                      <select
-                        value={simulateTargetRes}
-                        onChange={(e) => setSimulateTargetRes(e.target.value)}
-                        className="block w-full px-3 py-2 bg-white border border-slate-200 rounded-xl text-slate-900 font-bold focus:outline-none focus:ring-2 focus:ring-cyan-500 text-xs shadow-xs"
+                  {scanningStatus === 'error' && (
+                    <div className="absolute inset-0 bg-rose-50 flex flex-col items-center justify-center p-4 text-center text-rose-700 z-30">
+                      <HelpCircle size={36} className="text-rose-500 mb-2" />
+                      <p className="text-[10px] font-bold leading-normal">{scanErrorMsg || "Kamera bermasalah"}</p>
+                      <button
+                        type="button"
+                        onClick={() => {
+                          setScanningStatus('idle');
+                        }}
+                        className="mt-3 px-3 py-1 bg-rose-600 hover:bg-rose-700 text-white font-extrabold text-[9px] rounded-lg uppercase cursor-pointer"
                       >
-                        <option value="">-- Pilih Kamar / Unit --</option>
-                        {floorResidents.map((r) => (
-                          <option key={r.id} value={getBarcodeContent(r)}>
-                            Kamar {r.unit} — {r.name} [{getBarcodeContent(r)}]
-                          </option>
-                        ))}
-                      </select>
+                        Coba Lagi ↻
+                      </button>
                     </div>
-
-                    <p className="text-[10px] text-slate-500 leading-relaxed font-semibold">
-                      Tombol di bawah mensimulasikan pembacaan barcode fisik kartu warga setara dengan kecepatan scanner laser di lapangan.
-                    </p>
-                  </div>
-
-                  {scanningStatus === 'searching' ? (
-                    <div className="py-8 bg-cyan-950/5 border border-cyan-150 rounded-2xl text-center space-y-4 relative overflow-hidden">
-                      <div className="absolute inset-x-0 h-0.5 bg-cyan-400 opacity-60 animate-bounce" style={{ animationDuration: '1.5s' }} />
-                      <div className="flex justify-center flex-col items-center gap-1">
-                        <RefreshCw className="text-cyan-600 animate-spin" size={24} />
-                        <span className="font-mono text-[9px] font-bold uppercase text-cyan-600 tracking-wider">Mencari Sinyal Laser...</span>
-                      </div>
-                      <p className="text-xs font-black text-slate-800">Menghubungkan ke tag warga...</p>
-                    </div>
-                  ) : scanningStatus === 'scanned' ? (
-                    <div className="py-8 bg-emerald-50 border border-emerald-150 rounded-2xl text-center space-y-1 animate-scale-up">
-                      <div className="flex justify-center text-emerald-600">
-                        <CheckCircle2 size={32} className="animate-bounce" />
-                      </div>
-                      <p className="text-xs font-black text-emerald-800 uppercase">Beep! Kartu Terdeteksi</p>
-                      <p className="text-[10px] text-slate-600 font-medium">Berhasil mencocokkan di database rusun.</p>
-                    </div>
-                  ) : (
-                    <button
-                      type="button"
-                      disabled={!simulateTargetRes}
-                      onClick={() => {
-                        setScanningStatus('searching');
-                        setTimeout(() => {
-                           handleSuccessfulScan(simulateTargetRes);
-                        }, 1250);
-                      }}
-                      className="w-full py-4 bg-gradient-to-r from-cyan-600 to-sky-600 hover:from-cyan-700 hover:to-sky-700 text-white rounded-2xl font-black text-xs uppercase tracking-wider flex justify-center items-center gap-2 cursor-pointer shadow-md shadow-cyan-600/10 transition-all transform active:scale-[0.99] disabled:opacity-40 disabled:cursor-not-allowed disabled:pointer-events-none"
-                    >
-                      <Camera size={14} />
-                      Simulasikan Pindai / Beep ✓
-                    </button>
                   )}
                 </div>
-              )}
 
+                <div className="text-xxs text-slate-400 leading-normal max-w-xs mx-auto">
+                  👉 Arahkan kamera ponsel Anda ke QR Code / Kartu Warga Rusunawa.
+                </div>
+              </div>
             </div>
 
             {/* Drawer footer */}
