@@ -635,9 +635,9 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({
 
         {/* 2. PRINT MODE: REGISTER MANUAL SHEETS TABLE (OFFLINE BACKUP) */}
         {printMode === 'worksheet' && (
-          <div className="max-w-5xl mx-auto space-y-6 bg-white text-black p-4">
-            <div className="border-b-4 border-slate-900 pb-3 text-center">
-              <span className="text-[9px] font-mono font-black uppercase tracking-widest text-slate-500">
+          <div className="max-w-5xl mx-auto space-y-3 bg-white text-black p-4 print:p-0 print:space-y-2">
+            <div className="border-b-2 border-slate-900 pb-1.5 text-center">
+              <span className="text-[9px] font-mono font-black uppercase tracking-widest text-slate-505">
                 REGISTER KERJA DAN VERIFIKASI FISIK MANUAL (SIAP CETAK)
               </span>
               <h2 className="text-lg font-black text-slate-900 uppercase tracking-tight mt-1">
@@ -650,17 +650,22 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({
               </div>
             </div>
 
-            <div className="p-3 bg-slate-50 border border-slate-300 rounded-xl font-bold text-xxs text-slate-700 leading-normal mb-4">
-              ⚠️ <strong>INSTRUKSI PETUGAS:</strong> Jika sistem scanner HP / peramban mengalami kendala teknis (offline / server maintain), koordinator wajib mencatat angka baris manual dalam tabel ini menggunakan bulpen tinta hitam. Setelah lengkap, tanda tangani lembar ini guna pembenahan administrasi kantor.
-            </div>
-
             <div className="overflow-x-auto print:overflow-visible">
               <style>
                 {`
                   @media print {
                     @page {
                       size: A4 portrait;
-                      margin: 10mm;
+                      margin: 8mm 10mm;
+                    }
+                    tr {
+                      page-break-inside: avoid;
+                    }
+                    td {
+                      padding: 3px 6px !important;
+                    }
+                    th {
+                      padding: 4px 6px !important;
                     }
                   }
                 `}
@@ -700,13 +705,13 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({
             </div>
 
             {/* Print Sign Box */}
-            <div className="pt-16 grid grid-cols-2 gap-10 font-mono text-xxs font-extrabold text-slate-850">
-              <div className="text-center space-y-12">
+            <div className="pt-8 print:pt-4 grid grid-cols-2 gap-10 font-mono text-xxs font-extrabold text-slate-850">
+              <div className="text-center space-y-10 print:space-y-8">
                 <p>Koordinator Penanggung Jawab,</p>
                 <div className="h-0.5 bg-slate-400 w-44 mx-auto" />
                 <p className="text-slate-500 font-bold">( Nama Terang &amp; Paraf )</p>
               </div>
-              <div className="text-center space-y-12">
+              <div className="text-center space-y-10 print:space-y-8">
                 <p>Kepala Kantor Rusun Pengelola,</p>
                 <div className="h-0.5 bg-slate-400 w-44 mx-auto" />
                 <p className="text-slate-500 font-bold">( Stempel Resmi Kantor )</p>
