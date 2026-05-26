@@ -524,14 +524,28 @@ export const KoordinatorDashboard: React.FC<KoordinatorDashboardProps> = ({
         
         {/* COLUMN LEFT: ENTRY FORM (5/12 widths) */}
         <div ref={scrollRef} className="lg:col-span-5 bg-white p-5 rounded-3xl border border-slate-100 shadow-xl shadow-slate-200/30 space-y-4">
-          <div className="border-b border-slate-100 pb-3 flex justify-between items-center">
+          <div className="border-b border-slate-100 pb-3 flex flex-col sm:flex-row justify-between items-start sm:items-center gap-3">
             <h2 className="text-sm font-extrabold text-slate-900 uppercase tracking-wider flex items-center gap-1.5">
               <Droplets className="text-cyan-500 animate-pulse" size={16} />
               Form Pencatatan Cepat
             </h2>
-            <span className="text-xxs font-mono font-bold text-slate-400 bg-slate-100 px-2 py-0.5 rounded">
-              Langkah mandiri
-            </span>
+            <button
+              type="button"
+              onClick={() => {
+                setIsScannerOpen(true);
+                setUseRealCamera(false); // start with simulation/selector mode first, safe in iframe
+                setScanningStatus('idle');
+                setScanErrorMsg('');
+                if (floorResidents.length > 0) {
+                  setSimulateTargetRes(floorResidents[0].ktp);
+                }
+              }}
+              className="px-4.5 py-1.5 bg-gradient-to-r from-cyan-600 to-sky-600 hover:from-cyan-700 hover:to-sky-700 text-white rounded-xl text-xs font-bold shadow-md flex items-center gap-2 transition-all cursor-pointer select-none border border-cyan-500/10 active:scale-[0.97]"
+              title="Pindai Kartu Warga Rusunawa"
+            >
+              <QrCode size={14} className="animate-pulse" />
+              <span>Scan Kode Warga</span>
+            </button>
           </div>
 
           {!activeResident ? (
@@ -745,25 +759,6 @@ export const KoordinatorDashboard: React.FC<KoordinatorDashboardProps> = ({
                     className="block w-full pl-9 pr-3 py-2 bg-white border border-slate-250 rounded-xl text-xs text-slate-900 placeholder-slate-450 font-semibold focus:outline-none focus:ring-1 focus:ring-cyan-500 transition-all h-[34px] shadow-xs"
                   />
                 </div>
-                
-                {/* BARCODE SCANNER BUTTON */}
-                <button
-                  type="button"
-                  onClick={() => {
-                    setIsScannerOpen(true);
-                    setUseRealCamera(false); // start with simulation/selector mode first, safe in iframe
-                    setScanningStatus('idle');
-                    setScanErrorMsg('');
-                    if (floorResidents.length > 0) {
-                      setSimulateTargetRes(floorResidents[0].ktp);
-                    }
-                  }}
-                  className="px-4.5 bg-gradient-to-r from-cyan-600 to-sky-600 hover:from-cyan-700 hover:to-sky-700 text-white rounded-xl text-xs font-bold leading-none h-[34px] shadow-md flex items-center gap-2 transition-all cursor-pointer select-none border border-cyan-500/10 active:scale-[0.97] shrink-0"
-                  title="Pindai Kartu Warga Rusunawa"
-                >
-                  <QrCode size={14} className="animate-pulse" />
-                  <span>Scan Kode Warga</span>
-                </button>
               </div>
 
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
