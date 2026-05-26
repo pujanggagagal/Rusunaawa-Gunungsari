@@ -193,6 +193,7 @@ export const KoordinatorDashboard: React.FC<KoordinatorDashboardProps> = ({
     
     // Robust character-equivalence fuzzy matcher for phone cameras & custom barcodes
     const matchResidentWithToken = (r: Resident, t: string): boolean => {
+      const tClean = cleanStr(t);
       const barcodeClean = cleanStr(getBarcodeContent(r));
       const ktpClean = cleanStr(r.ktp);
       const nameClean = r.name.toLowerCase();
