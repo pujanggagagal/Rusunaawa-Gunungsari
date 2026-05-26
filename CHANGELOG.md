@@ -6,6 +6,7 @@ Seluruh log perubahan, optimasi sistem, dan perbaikan bug yang diterapkan pada r
 
 ### [1.2.0] - 2026-05-27
 #### Added
+- **Progressive Web App (PWA) Support**: Menyulap website menjadi aplikasi PWA mandiri (standalone). Koordinator dapat langsung menginstal aplikasi resmi dengan ikon premium "Rusunawa Gunungsari" langsung di layar beranda (home screen) HP Android/iPhone mereka, berjalan layar penuh (full-screen) tanpa navigasi browser.
 - **QRCodeRenderer Component**: Membuat modul generator QR Code SVG offline berbasis standar browser (`Blob` dan `URL.createObjectURL`), menghasilkan kode 2D berkualitas tinggi, tajam, dan anti-pecah untuk printer thermal.
 - **Auto-Distribution Paginasi**: Sistem secara cerdas membagi cetakan 60 baris hunian secara seimbang pada **tepat 2 halaman A4** (tidak menumpuk di lembar ke-1 dan tidak menyisakan 1 baris kosong di lembar ke-2).
 
