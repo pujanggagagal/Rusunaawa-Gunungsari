@@ -1,0 +1,14 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" width="512" height="512">
+  <defs>
+    <linearGradient id="grad" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" style="stop-color:#8b5cf6;stop-opacity:1" />
+      <stop offset="100%" style="stop-color:#06b6d4;stop-opacity:1" />
+    </linearGradient>
+  </defs>
+  <!-- Background circle with beautiful rounded premium shape -->
+  <rect width="512" height="512" rx="128" fill="url(#grad)" />
+  <!-- A clean, modern minimalist home & water droplet icon (representing Rusun & PDAM) -->
+  <path d="M256 100 L140 216 A20 20 0 0 0 154 250 L180 250 L180 390 A20 20 0 0 0 200 410 L312 410 A20 20 0 0 0 332 390 L332 250 L358 250 A20 20 0 0 0 372 216 Z" fill="#ffffff" />
+  <path d="M256 190 C225 190 205 230 205 260 C205 290 228 312 256 312 C284 312 307 290 307 260 C307 230 287 190 256 190 Z" fill="#e0f2fe" opacity="0.95" />
+  <path d="M256 225 C242 225 232 243 232 260 C232 270 242 288 256 288 C270 288 280 270 280 260 C280 243 270 225 256 225 Z" fill="#38bdf8" />
+</svg>
