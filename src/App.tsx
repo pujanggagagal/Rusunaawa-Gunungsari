@@ -22,6 +22,7 @@ import {
   ensureSpreadsheetSchema
 } from './googleSheetsClient';
 import { User as FirebaseUser } from 'firebase/auth';
+import { supabase } from './supabaseClient';
 
 export default function App() {
   const [data, setData] = useState(() => getStoredData());
@@ -45,6 +46,57 @@ export default function App() {
   useEffect(() => {
     localStorage.setItem('rg_app_settings', JSON.stringify(appSettings));
   }, [appSettings]);
+
+  // Load Data from Supabase
+  useEffect(() => {
+    const loadSupabaseData = async () => {
+      try {
+        const { data: residentsData } = await supabase.from('residents').select('*');
+        const { data: coordinatorsData } = await supabase.from('coordinators').select('*');
+        const { data: billingData } = await supabase.from('billing').select('*');
+        const { data: financeData } = await supabase.from('finance_logs').select('*');
+
+        if (residentsData && coordinatorsData && billingData && financeData) {
+          const toCamelCase = (obj: any) => {
+            const newObj: any = {};
+            for (const key in obj) {
+              const camelKey = key.replace(/_([a-z])/g, (g) => g[1].toUpperCase());
+              // Handle specific lowercase columns that were originally camelCase
+              const mappedKey = 
+                key === 'electricitystatus' ? 'electricityStatus' :
+                key === 'laststatuschange' ? 'lastStatusChange' :
+                key === 'occupancystatus' ? 'occupancyStatus' :
+                key === 'initialmeter' ? 'initialMeter' :
+                key === 'isvacant' ? 'isVacant' :
+                key === 'assignedfloor' ? 'assignedFloor' :
+                key === 'assignedblock' ? 'assignedBlock' :
+                key === 'residentktp' ? 'residentKtp' :
+                key === 'prevmeter' ? 'prevMeter' :
+                key === 'currentmeter' ? 'currentMeter' :
+                key === 'pdambill' ? 'pdamBill' :
+                key === 'trashbill' ? 'trashBill' :
+                key === 'totalbill' ? 'totalBill' :
+                key === 'paymentdate' ? 'paymentDate' :
+                key === 'funduser' ? 'fundUser' : camelKey;
+              newObj[mappedKey] = obj[key];
+            }
+            return newObj;
+          };
+
+          setData(prev => ({
+            ...prev,
+            residents: residentsData.map(toCamelCase),
+            coordinators: coordinatorsData.map(toCamelCase),
+            billing: billingData.map(toCamelCase),
+            finance: financeData.map(toCamelCase)
+          }));
+        }
+      } catch (err) {
+        console.error('Error loading Supabase data:', err);
+      }
+    };
+    loadSupabaseData();
+  }, []);
 
 
   // Google Sheets Integration States
