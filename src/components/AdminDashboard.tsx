@@ -1908,7 +1908,7 @@ Siti Aminah	357802...	Blok B	B-202	085755..."
             {/* Control banner (always Hidden during actual system physical printout) */}
             <div className="flex justify-between items-center bg-slate-900 text-white p-4 rounded-2xl mb-8 shadow-xl print:hidden max-w-4xl mx-auto">
               <div className="flex items-center gap-2.5">
-                <Printer size={18} className="text-purple-400 animate-pulse" />
+                <Printer size={18} className={printMode === 'worksheet' ? "text-emerald-400 animate-pulse" : "text-purple-400 animate-pulse"} />
                 <div>
                   <span className="text-[9px] font-extrabold tracking-widest uppercase font-mono block text-slate-405">Pusat Cetak Dokumen PDF</span>
                   <span className="text-xs font-bold block">
@@ -1920,7 +1920,11 @@ Siti Aminah	357802...	Blok B	B-202	085755..."
                 <button
                   type="button"
                   onClick={() => window.print()}
-                  className="px-4 py-2 bg-gradient-to-r from-purple-600 to-indigo-600 hover:from-purple-700 hover:to-indigo-700 text-white text-[10px] font-black uppercase rounded-xl transition-all cursor-pointer flex items-center gap-1 shadow-md shadow-fuchsia-600/15"
+                  className={`px-4 py-2 text-white text-[10px] font-black uppercase rounded-xl transition-all cursor-pointer flex items-center gap-1 shadow-md ${
+                    printMode === 'worksheet' 
+                      ? 'bg-gradient-to-r from-emerald-600 to-teal-600 hover:from-emerald-700 hover:to-teal-700 shadow-emerald-600/15'
+                      : 'bg-gradient-to-r from-purple-600 to-indigo-600 hover:from-purple-700 hover:to-indigo-700 shadow-purple-600/15'
+                  }`}
                 >
                   <Printer size={12} />
                   Simpan PDF / Cetak Fisik
