@@ -141,7 +141,7 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({
     .filter((log) => log.type === 'Pemasukan' && log.category === 'Iuran Sampah')
     .reduce((sum, log) => sum + log.amount, 0);
 
-  // Helper list of filtered residents for barcodes & printable views
+  // Helper list of filtered residents for barcodes & printable views (Sorted by floor, block, and unit number)
   const filteredResidentsForBarcodes = residents.filter((res) => {
     const matchesSearch = 
       res.name.toLowerCase().includes(barcodeSearch.toLowerCase()) ||
@@ -153,6 +153,18 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({
     const matchesBlock = barcodeBlockFilter === 'all' ? true : res.block === barcodeBlockFilter;
     
     return matchesSearch && matchesFloor && matchesBlock;
+  }).sort((a, b) => {
+    const aFloor = a.floor || getFloorFromUnit(a.unit);
+    const bFloor = b.floor || getFloorFromUnit(b.unit);
+    if (aFloor !== bFloor) {
+      return aFloor - bFloor;
+    }
+    const aBlock = a.block || '';
+    const bBlock = b.block || '';
+    if (aBlock !== bBlock) {
+      return aBlock.localeCompare(bBlock);
+    }
+    return a.unit.localeCompare(b.unit, undefined, { numeric: true, sensitivity: 'base' });
   });
 
   // Filters & sorting for Admin Resident Directory (Sorted by floor then room unit number)
