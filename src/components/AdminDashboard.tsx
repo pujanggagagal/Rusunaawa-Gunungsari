@@ -668,23 +668,23 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({
                   @media print {
                     @page {
                       size: A4 portrait;
-                      margin: 5mm 8mm;
+                      margin: 8mm 10mm;
                     }
                     tr {
                       page-break-inside: avoid;
                     }
                     td {
-                      padding: 1px 4px !important;
-                      line-height: 1.05 !important;
-                      font-size: 8px !important;
+                      padding: 4.5px 6px !important;
+                      line-height: 1.15 !important;
+                      font-size: 9.5px !important;
                     }
                     th {
-                      padding: 2px 4px !important;
-                      line-height: 1.05 !important;
-                      font-size: 8px !important;
+                      padding: 5px 6px !important;
+                      line-height: 1.15 !important;
+                      font-size: 9.5px !important;
                     }
                     .print-compact-h {
-                      height: 16px !important;
+                      height: 25px !important;
                     }
                   }
                 `}
