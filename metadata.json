@@ -1,0 +1,6 @@
+{
+  "name": "Sistem Pembayaran Rusunawa Gunungsari",
+  "description": "Sistem informasi pembayaran PDAM, iuran sampah, dan pantauan penindakan listrik untuk warga, koordinator, dan pihak keamanan Rusunawa Gunungsari.",
+  "requestFramePermissions": ["camera"],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}
