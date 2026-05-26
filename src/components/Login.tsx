@@ -60,7 +60,7 @@ export const Login: React.FC<LoginProps> = ({ residents, coordinators, onLoginSu
         setError('Password Security salah.');
       }
     } else if (activeTab === 'admin') {
-      if (identifier.trim().toLowerCase() === 'admin' || identifier.trim() === '000000') {
+      if (identifier.trim().toLowerCase() === 'adminrusun') {
         onLoginSuccess('admin', { name: 'Admin Diana', id: 'admin-1' });
       } else {
         setError('Password Admin salah.');
@@ -182,114 +182,7 @@ export const Login: React.FC<LoginProps> = ({ residents, coordinators, onLoginSu
             </div>
           </form>
 
-          {/* Divider */}
-          <div className="mt-8 border-t border-slate-100 pt-6">
-            <h4 className="text-xs font-semibold text-slate-400 uppercase tracking-wider mb-4 text-center">
-              Akses Cepat Pengujian (Demo)
-            </h4>
-            
-            <div className="space-y-2 text-xs">
-              {/* Warga Demo */}
-              <div className="flex items-center justify-between p-2 bg-slate-50 hover:bg-emerald-50 border border-slate-100 hover:border-emerald-200 rounded-xl transition-all">
-                <div className="flex items-center gap-2">
-                  <div className="bg-amber-100 text-amber-700 p-1.5 rounded-lg">
-                    <Building2 size={14} />
-                  </div>
-                  <div>
-                    <span className="font-semibold text-slate-700 block text-left">Warga Menunggak (B-201)</span>
-                    <span className="text-slate-400">Citra L. • KTP: 333333</span>
-                  </div>
-                </div>
-                <button
-                  onClick={() => handleDemoLogin('warga', '333333')}
-                  className="px-2.5 py-1 bg-white hover:bg-emerald-600 text-emerald-700 hover:text-white border border-slate-200 hover:border-emerald-600 shadow-sm rounded-lg font-medium transition-all cursor-pointer"
-                >
-                  Masuk
-                </button>
-              </div>
 
-              {/* Warga Demo 2 */}
-              <div className="flex items-center justify-between p-2 bg-slate-50 hover:bg-emerald-50 border border-slate-100 hover:border-emerald-200 rounded-xl transition-all">
-                <div className="flex items-center gap-2">
-                  <div className="bg-emerald-100 text-emerald-700 p-1.5 rounded-lg">
-                    <Building2 size={14} />
-                  </div>
-                  <div>
-                    <span className="font-semibold text-slate-700 block text-left">Warga Lunas (A-101)</span>
-                    <span className="text-slate-400">Ahmad F. • KTP: 111111</span>
-                  </div>
-                </div>
-                <button
-                  onClick={() => handleDemoLogin('warga', '111111')}
-                  className="px-2.5 py-1 bg-white hover:bg-emerald-600 text-emerald-700 hover:text-white border border-slate-200 hover:border-emerald-600 shadow-sm rounded-lg font-medium transition-all cursor-pointer"
-                >
-                  Masuk
-                </button>
-              </div>
-
-              {!isWargaOnly && (
-                <>
-                  {/* Koordinator */}
-                  <div className="flex items-center justify-between p-2 bg-slate-50 hover:bg-emerald-50 border border-slate-100 hover:border-emerald-200 rounded-xl transition-all">
-                    <div className="flex items-center gap-2">
-                      <div className="bg-cyan-100 text-cyan-700 p-1.5 rounded-lg">
-                        <UserCheck size={14} />
-                      </div>
-                      <div>
-                        <span className="font-semibold text-slate-700 block text-left">Koordinator (Blok A)</span>
-                        <span className="text-slate-400">Eko S. • Pass: 888888</span>
-                      </div>
-                    </div>
-                    <button
-                      onClick={() => handleDemoLogin('koordinator', '888888')}
-                      className="px-2.5 py-1 bg-white hover:bg-emerald-600 text-emerald-700 hover:text-white border border-slate-200 hover:border-emerald-600 shadow-sm rounded-lg font-medium transition-all cursor-pointer"
-                    >
-                      Masuk
-                    </button>
-                  </div>
-
-                  {/* Security */}
-                  <div className="flex items-center justify-between p-2 bg-slate-50 hover:bg-emerald-50 border border-slate-100 hover:border-emerald-200 rounded-xl transition-all">
-                    <div className="flex items-center gap-2">
-                      <div className="bg-rose-100 text-rose-700 p-1.5 rounded-lg">
-                        <ShieldCheck size={14} />
-                      </div>
-                      <div>
-                        <span className="font-semibold text-slate-700 block text-left">Keamanan Rusun (Security)</span>
-                        <span className="text-slate-400">Bambang • Pass: security</span>
-                      </div>
-                    </div>
-                    <button
-                      onClick={() => handleDemoLogin('security', 'security')}
-                      className="px-2.5 py-1 bg-white hover:bg-emerald-600 text-emerald-700 hover:text-white border border-slate-200 hover:border-emerald-600 shadow-sm rounded-lg font-medium transition-all cursor-pointer"
-                    >
-                      Masuk
-                    </button>
-                  </div>
-
-                  {/* Admin */}
-                  <div className="flex items-center justify-between p-2 bg-slate-50 hover:bg-emerald-50 border border-slate-100 hover:border-emerald-200 rounded-xl transition-all">
-                    <div className="flex items-center gap-2">
-                      <div className="bg-purple-100 text-purple-700 p-1.5 rounded-lg">
-                        <Building2 size={14} />
-                      </div>
-                      <div>
-                        <span className="font-semibold text-slate-700 block text-left">Pengurus Paguyuban (Admin)</span>
-                        <span className="text-slate-400">Diana • Pass: admin</span>
-                      </div>
-                    </div>
-                    <button
-                      onClick={() => handleDemoLogin('admin', 'admin')}
-                      className="px-2.5 py-1 bg-white hover:bg-emerald-600 text-emerald-700 hover:text-white border border-slate-200 hover:border-emerald-600 shadow-sm rounded-lg font-medium transition-all cursor-pointer"
-                    >
-                      Masuk
-                    </button>
-                  </div>
-                </>
-              )}
-
-            </div>
-          </div>
 
         </div>
       </div>
