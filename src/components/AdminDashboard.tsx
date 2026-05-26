@@ -508,6 +508,216 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({
     return true;
   });
 
+  if (printMode !== 'none') {
+    return (
+      <div className="bg-white text-black w-full min-h-screen p-10 font-sans print:p-0 print-stage">
+        {/* Control banner (always Hidden during actual system physical printout) */}
+        <div className="flex justify-between items-center bg-slate-900 text-white p-4 rounded-2xl mb-8 shadow-xl print:hidden max-w-4xl mx-auto">
+          <div className="flex items-center gap-2.5">
+            <Printer size={18} className={printMode === 'worksheet' ? "text-emerald-400 animate-pulse" : "text-purple-400 animate-pulse"} />
+            <div>
+              <span className="text-[9px] font-extrabold tracking-widest uppercase font-mono block text-slate-450">Pusat Cetak Dokumen PDF</span>
+              <span className="text-xs font-bold block">
+                Dokumen: {printMode === 'cards' ? 'Kumpulan Kartu Barcode (Stiker 3x5)' : printMode === 'single-card' ? 'Cetak Satuan Barcode (Stiker 3x5)' : 'Form Manual Verifikasi Lapangan'}
+              </span>
+            </div>
+          </div>
+          <div className="flex items-center gap-2">
+            <button
+              type="button"
+              onClick={() => {
+                window.scrollTo(0, 0);
+                setTimeout(() => window.print(), 100);
+              }}
+              className={`px-4 py-2 text-white text-[10px] font-black uppercase rounded-xl transition-all cursor-pointer flex items-center gap-1 shadow-md ${
+                printMode === 'worksheet' 
+                  ? 'bg-gradient-to-r from-emerald-600 to-teal-600 hover:from-emerald-700 hover:to-teal-700 shadow-emerald-600/15'
+                  : 'bg-gradient-to-r from-purple-600 to-indigo-600 hover:from-purple-700 hover:to-indigo-700 shadow-purple-600/15'
+              }`}
+            >
+              <Printer size={12} />
+              Simpan PDF / Cetak Fisik
+            </button>
+            <button
+              type="button"
+              onClick={() => setPrintMode('none')}
+              className="px-4 py-2 bg-slate-800 hover:bg-slate-700 text-slate-300 text-[10px] font-extrabold uppercase rounded-xl transition-all cursor-pointer"
+            >
+              Tutup Simulator
+            </button>
+          </div>
+        </div>
+
+        {/* 1. PRINT MODE: MASS STICKER ROLL OR SHEET PRINTING (3x5cm Stickers with Only Barcode and Floor-Block-Unit) */}
+        {(printMode === 'cards' || printMode === 'single-card') && (
+          <div className="space-y-6">
+            <style>
+              {`
+                @media print {
+                  @page {
+                    size: 50mm 30mm;
+                    margin: 0;
+                  }
+                  body {
+                    margin: 0;
+                    padding: 0;
+                  }
+                  .print-page-break {
+                    page-break-after: always;
+                  }
+                }
+              `}
+            </style>
+            <div className="print:hidden text-center max-w-2xl mx-auto space-y-1.5 mb-8 bg-slate-50 p-4 rounded-2xl border border-slate-200">
+              <h4 className="text-xs font-black text-slate-900 uppercase tracking-widest font-mono">
+                TATA LETAK ROLL PRINT STICKER FISIK (UKURAN 5x3 CM)
+              </h4>
+              <p className="text-[10px] text-slate-500 leading-normal">
+                Format stiker didesain untuk printer thermal roll (ukuran 50mm x 30mm). Pastikan printer Anda disetel pada ukuran kertas 50x30mm saat mencetak. Hanya ada nama rusun, kode barcode, dan keterangan detail unit hunian.
+              </p>
+            </div>
+            
+            {/* Print Flex Wrapping Row */}
+            <div className="flex flex-wrap gap-4 justify-center bg-white text-black p-4 rounded-xl print:p-0 print:gap-2">
+              {(() => {
+                const listToPrint = printMode === 'single-card' 
+                  ? residents.filter(r => r.id === selectedSinglePrintId)
+                  : filteredResidentsForBarcodes;
+
+                if (listToPrint.length === 0) {
+                  return (
+                    <div className="p-8 text-center text-slate-400 font-mono text-xs">
+                      Tidak ada stiker yang dapat dicetak.
+                    </div>
+                  );
+                }
+
+                return listToPrint.map((res) => {
+                  const barcodeVal = getBarcodeContent(res);
+                  const floorVal = res.floor || getFloorFromUnit(res.unit);
+                  const blockLetter = res.block.replace('Blok ', '').trim();
+
+                  return (
+                    <div 
+                      key={res.id} 
+                      className="bg-white flex flex-col justify-between p-[1mm] text-center select-none relative overflow-hidden border border-slate-100 md:border-dashed print:border-0 print:p-[1mm] print-page-break"
+                      style={{ 
+                        width: '50mm', 
+                        height: '30mm', 
+                        maxHeight: '30mm',
+                        maxWidth: '50mm',
+                        minHeight: '30mm',
+                        minWidth: '50mm',
+                        boxSizing: 'border-box'
+                      }}
+                    >
+                      {/* Title - Header text matching picture precisely */}
+                      <div className="text-[9.5px] font-extrabold tracking-tight text-center uppercase leading-none text-black font-sans shrink-0">
+                        PDAM RUSUN GUNUNGSARI
+                      </div>
+
+                      {/* Dynamic Code39 Barcode renderer - taller bars for easy scanning */}
+                      <div className="flex flex-col items-center justify-center my-auto w-full py-1.5">
+                        <BarcodeRenderer value={barcodeVal} height={42} className="w-full shrink-0" />
+                      </div>
+
+                      {/* Footer text matching user layout precisely */}
+                      <div className="text-[9px] font-extrabold uppercase text-center leading-none text-black font-sans shrink-0 tracking-wide">
+                        LANTAI {floorVal} - BLOK {blockLetter} - {res.unit}
+                      </div>
+                    </div>
+                  );
+                });
+              })()}
+            </div>
+          </div>
+        )}
+
+        {/* 2. PRINT MODE: REGISTER MANUAL SHEETS TABLE (OFFLINE BACKUP) */}
+        {printMode === 'worksheet' && (
+          <div className="max-w-5xl mx-auto space-y-6 bg-white text-black p-4">
+            <div className="border-b-4 border-slate-900 pb-3 text-center">
+              <span className="text-[9px] font-mono font-black uppercase tracking-widest text-slate-500">
+                REGISTER KERJA DAN VERIFIKASI FISIK MANUAL (SIAP CETAK)
+              </span>
+              <h2 className="text-lg font-black text-slate-900 uppercase tracking-tight mt-1">
+                BUKU LOG LAPANGAN CATATAN METER AIR RUSUN
+              </h2>
+              <div className="flex justify-center gap-10 mt-1.5 text-xxs font-mono font-bold text-slate-600 uppercase">
+                <span>BULAN CATATAN: MEI 2026</span>
+                <span>WAKTU BACKUP: {new Date().toLocaleString('id-ID')}</span>
+                <span>UNIT LAPORAN: SEMUA UNIT AKTIF</span>
+              </div>
+            </div>
+
+            <div className="p-3 bg-slate-50 border border-slate-300 rounded-xl font-bold text-xxs text-slate-700 leading-normal mb-4">
+              ⚠️ <strong>INSTRUKSI PETUGAS:</strong> Jika sistem scanner HP / peramban mengalami kendala teknis (offline / server maintain), koordinator wajib mencatat angka baris manual dalam tabel ini menggunakan bulpen tinta hitam. Setelah lengkap, tanda tangani lembar ini guna pembenahan administrasi kantor.
+            </div>
+
+            <div className="overflow-x-auto print:overflow-visible">
+              <style>
+                {`
+                  @media print {
+                    @page {
+                      size: A4 portrait;
+                      margin: 10mm;
+                    }
+                  }
+                `}
+              </style>
+              <table className="w-full border-collapse text-[10px] border border-slate-900 table-auto text-black mt-2">
+                <thead>
+                  <tr className="bg-slate-100 font-mono font-black uppercase border-b-2 border-slate-900 text-slate-900 divide-x divide-slate-900">
+                    <th className="p-1.5 text-center w-8 border border-slate-900">No</th>
+                    <th className="p-1.5 text-center w-12 border border-slate-900">Lantai</th>
+                    <th className="p-1.5 text-center w-14 border border-slate-900">Blok</th>
+                    <th className="p-1.5 text-center w-16 border border-slate-900">No Hunian</th>
+                    <th className="p-1.5 text-left border border-slate-900">Nama Penghuni</th>
+                    <th className="p-1.5 text-right w-24 border border-slate-900">Meter Lalu</th>
+                    <th className="p-1.5 text-right w-32 border border-slate-900">Meter Baru</th>
+                  </tr>
+                </thead>
+                <tbody className="divide-y divide-slate-900 text-slate-900 font-bold">
+                  {filteredResidentsForBarcodes.map((res, idx) => {
+                    // Find previous (April) meter record
+                    const pBills = billingRecords.filter(b => b.residentKtp === res.ktp && !(b.month === 'Mei' && b.year === 2026));
+                    const aprVal = pBills.length > 0 ? pBills[0].currentMeter : 100;
+
+                    return (
+                      <tr key={res.id} className="divide-x divide-slate-900 hover:bg-slate-50/40 border border-slate-900">
+                        <td className="p-2 text-center font-mono">{idx + 1}</td>
+                        <td className="p-2 text-center font-mono">Lt {res.floor || getFloorFromUnit(res.unit)}</td>
+                        <td className="p-2 text-center">{res.block}</td>
+                        <td className="p-2 text-center font-mono font-black">{res.unit}</td>
+                        <td className="p-2 uppercase">{res.name}</td>
+                        <td className="p-2 text-right font-mono">{aprVal}</td>
+                        <td className="p-2 border border-slate-900 h-8"></td>
+                      </tr>
+                    );
+                  })}
+                </tbody>
+              </table>
+            </div>
+
+            {/* Print Sign Box */}
+            <div className="pt-16 grid grid-cols-2 gap-10 font-mono text-xxs font-extrabold text-slate-850">
+              <div className="text-center space-y-12">
+                <p>Koordinator Penanggung Jawab,</p>
+                <div className="h-0.5 bg-slate-400 w-44 mx-auto" />
+                <p className="text-slate-500 font-bold">( Nama Terang &amp; Paraf )</p>
+              </div>
+              <div className="text-center space-y-12">
+                <p>Kepala Kantor Rusun Pengelola,</p>
+                <div className="h-0.5 bg-slate-400 w-44 mx-auto" />
+                <p className="text-slate-500 font-bold">( Stempel Resmi Kantor )</p>
+              </div>
+            </div>
+          </div>
+        )}
+      </div>
+    );
+  }
+
   return (
     <div id="admin_dashboard" className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
       
@@ -1899,228 +2109,6 @@ Siti Aminah	357802...	Blok B	B-202	085755..."
           </div>
         )}
 
-        {/* ======================================================== */}
-        {/* FULL SCREEN PURE PRINTABLE STAGE VIEW (Triggered dynamically) */}
-        {/* ======================================================== */}
-        {printMode !== 'none' && (
-          <div className="absolute top-0 left-0 w-full min-h-screen bg-white text-black z-50 p-10 font-sans print:p-0 print-stage">
-            <style>
-              {`
-                @media print {
-                  #admin_dashboard > :not(.print-stage) {
-                    display: none !important;
-                  }
-                }
-              `}
-            </style>
-            
-            {/* Control banner (always Hidden during actual system physical printout) */}
-            <div className="flex justify-between items-center bg-slate-900 text-white p-4 rounded-2xl mb-8 shadow-xl print:hidden max-w-4xl mx-auto">
-              <div className="flex items-center gap-2.5">
-                <Printer size={18} className={printMode === 'worksheet' ? "text-emerald-400 animate-pulse" : "text-purple-400 animate-pulse"} />
-                <div>
-                  <span className="text-[9px] font-extrabold tracking-widest uppercase font-mono block text-slate-405">Pusat Cetak Dokumen PDF</span>
-                  <span className="text-xs font-bold block">
-                    Dokumen: {printMode === 'cards' ? 'Kumpulan Kartu Barcode (Stiker 3x5)' : printMode === 'single-card' ? 'Cetak Satuan Barcode (Stiker 3x5)' : 'Form Manual Verifikasi Lapangan'}
-                  </span>
-                </div>
-              </div>
-              <div className="flex items-center gap-2">
-                <button
-                  type="button"
-                  onClick={() => {
-                    const stage = document.querySelector('.print-stage');
-                    if (stage) stage.scrollTop = 0;
-                    window.scrollTo(0, 0);
-                    setTimeout(() => window.print(), 100);
-                  }}
-                  className={`px-4 py-2 text-white text-[10px] font-black uppercase rounded-xl transition-all cursor-pointer flex items-center gap-1 shadow-md ${
-                    printMode === 'worksheet' 
-                      ? 'bg-gradient-to-r from-emerald-600 to-teal-600 hover:from-emerald-700 hover:to-teal-700 shadow-emerald-600/15'
-                      : 'bg-gradient-to-r from-purple-600 to-indigo-600 hover:from-purple-700 hover:to-indigo-700 shadow-purple-600/15'
-                  }`}
-                >
-                  <Printer size={12} />
-                  Simpan PDF / Cetak Fisik
-                </button>
-                <button
-                  type="button"
-                  onClick={() => setPrintMode('none')}
-                  className="px-4 py-2 bg-slate-800 hover:bg-slate-700 text-slate-300 text-[10px] font-extrabold uppercase rounded-xl transition-all cursor-pointer"
-                >
-                  Tutup Simulator
-                </button>
-              </div>
-            </div>
-
-            {/* 1. PRINT MODE: MASS STICKER ROLL OR SHEET PRINTING (3x5cm Stickers with Only Barcode and Floor-Block-Unit) */}
-            {(printMode === 'cards' || printMode === 'single-card') && (
-              <div className="space-y-6">
-                <style>
-                  {`
-                    @media print {
-                      @page {
-                        size: 50mm 30mm;
-                        margin: 0;
-                      }
-                      body {
-                        margin: 0;
-                        padding: 0;
-                      }
-                      .print-page-break {
-                        page-break-after: always;
-                      }
-                    }
-                  `}
-                </style>
-                <div className="print:hidden text-center max-w-2xl mx-auto space-y-1.5 mb-8 bg-slate-50 p-4 rounded-2xl border border-slate-200">
-                  <h4 className="text-xs font-black text-slate-900 uppercase tracking-widest font-mono">
-                    TATA LETAK ROLL PRINT STICKER FISIK (UKURAN 5x3 CM)
-                  </h4>
-                  <p className="text-[10px] text-slate-500 leading-normal">
-                    Format stiker didesain untuk printer thermal roll (ukuran 50mm x 30mm). Pastikan printer Anda disetel pada ukuran kertas 50x30mm saat mencetak. Hanya ada nama rusun, kode barcode, dan keterangan detail unit hunian.
-                  </p>
-                </div>
-                
-                {/* Print Flex Wrapping Row */}
-                <div className="flex flex-wrap gap-4 justify-center bg-white text-black p-4 rounded-xl print:p-0 print:gap-2">
-                  {(() => {
-                    const listToPrint = printMode === 'single-card' 
-                      ? residents.filter(r => r.id === selectedSinglePrintId)
-                      : filteredResidentsForBarcodes;
-
-                    if (listToPrint.length === 0) {
-                      return (
-                        <div className="p-8 text-center text-slate-400 font-mono text-xs">
-                          Tidak ada stiker yang dapat dicetak.
-                        </div>
-                      );
-                    }
-
-                    return listToPrint.map((res) => {
-                      const barcodeVal = getBarcodeContent(res);
-                      const floorVal = res.floor || getFloorFromUnit(res.unit);
-                      const blockLetter = res.block.replace('Blok ', '').trim();
-
-                      return (
-                        <div 
-                          key={res.id} 
-                          className="bg-white flex flex-col justify-between p-[1mm] text-center select-none relative overflow-hidden border border-slate-100 md:border-dashed print:border-0 print:p-[1mm] print-page-break"
-                          style={{ 
-                            width: '50mm', 
-                            height: '30mm', 
-                            maxHeight: '30mm',
-                            maxWidth: '50mm',
-                            minHeight: '30mm',
-                            minWidth: '50mm',
-                            boxSizing: 'border-box'
-                          }}
-                        >
-                          {/* Title - Header text matching picture precisely */}
-                          <div className="text-[9.5px] font-extrabold tracking-tight text-center uppercase leading-none text-black font-sans shrink-0">
-                            PDAM RUSUN GUNUNGSARI
-                          </div>
-
-                          {/* Dynamic Code39 Barcode renderer - taller bars for easy scanning */}
-                          <div className="flex flex-col items-center justify-center my-auto w-full py-1.5">
-                            <BarcodeRenderer value={barcodeVal} height={42} className="w-full shrink-0" />
-                          </div>
-
-                          {/* Footer text matching user layout precisely */}
-                          <div className="text-[9px] font-extrabold uppercase text-center leading-none text-black font-sans shrink-0 tracking-wide">
-                            LANTAI {floorVal} - BLOK {blockLetter} - {res.unit}
-                          </div>
-                        </div>
-                      );
-                    });
-                  })()}
-                </div>
-              </div>
-            )}
-
-            {/* 2. PRINT MODE: REGISTER MANUAL SHEETS TABLE (OFFLINE BACKUP) */}
-            {printMode === 'worksheet' && (
-              <div className="max-w-5xl mx-auto space-y-6 bg-white text-black p-4">
-                <div className="border-b-4 border-slate-900 pb-3 text-center">
-                  <span className="text-[9px] font-mono font-black uppercase tracking-widest text-slate-500">
-                    REGISTER KERJA DAN VERIFIKASI FISIK MANUAL (SIAP CETAK)
-                  </span>
-                  <h2 className="text-lg font-black text-slate-900 uppercase tracking-tight mt-1 animate-pulse">
-                    BUKU LOG LAPANGAN CATATAN METER AIR RUSUN
-                  </h2>
-                  <div className="flex justify-center gap-10 mt-1.5 text-xxs font-mono font-bold text-slate-600 uppercase">
-                    <span>BULAN CATATAN: MEI 2026</span>
-                    <span>WAKTU BACKUP: {new Date().toLocaleString('id-ID')}</span>
-                    <span>UNIT LAPORAN: SEMUA UNIT AKTIF</span>
-                  </div>
-                </div>
-
-                <div className="p-3 bg-slate-50 border border-slate-300 rounded-xl font-bold text-xxs text-slate-700 leading-normal mb-4">
-                  ⚠️ <strong>INSTRUKSI PETUGAS:</strong> Jika sistem scanner HP / peramban mengalami kendala teknis (offline / server maintain), koordinator wajib mencatat angka baris manual dalam tabel ini menggunakan bulpen tinta hitam. Setelah lengkap, tanda tangani lembar ini guna pembenahan administrasi kantor.
-                </div>
-
-                <div className="overflow-x-auto print:overflow-visible">
-                  <style>
-                    {`
-                      @media print {
-                        @page {
-                          size: A4 portrait;
-                          margin: 10mm;
-                        }
-                      }
-                    `}
-                  </style>
-                  <table className="w-full border-collapse text-[10px] border border-slate-900 table-auto text-black mt-2">
-                    <thead>
-                      <tr className="bg-slate-100 font-mono font-black uppercase border-b-2 border-slate-900 text-slate-900 divide-x divide-slate-900">
-                        <th className="p-1.5 text-center w-8 border border-slate-900">No</th>
-                        <th className="p-1.5 text-center w-12 border border-slate-900">Lantai</th>
-                        <th className="p-1.5 text-center w-14 border border-slate-900">Blok</th>
-                        <th className="p-1.5 text-center w-16 border border-slate-900">No Hunian</th>
-                        <th className="p-1.5 text-left border border-slate-900">Nama Penghuni</th>
-                        <th className="p-1.5 text-right w-24 border border-slate-900">Meter Lalu</th>
-                        <th className="p-1.5 text-right w-32 border border-slate-900">Meter Baru</th>
-                      </tr>
-                    </thead>
-                    <tbody className="divide-y divide-slate-900 text-slate-900 font-bold">
-                      {filteredResidentsForBarcodes.map((res, idx) => {
-                        // Find previous (April) meter record
-                        const pBills = billingRecords.filter(b => b.residentKtp === res.ktp && !(b.month === 'Mei' && b.year === 2026));
-                        const aprVal = pBills.length > 0 ? pBills[0].currentMeter : 100;
-
-                        return (
-                          <tr key={res.id} className="divide-x divide-slate-900 hover:bg-slate-50/40 border border-slate-900">
-                            <td className="p-2 text-center font-mono">{idx + 1}</td>
-                            <td className="p-2 text-center font-mono">Lt {res.floor || getFloorFromUnit(res.unit)}</td>
-                            <td className="p-2 text-center">{res.block}</td>
-                            <td className="p-2 text-center font-mono font-black">{res.unit}</td>
-                            <td className="p-2 uppercase">{res.name}</td>
-                            <td className="p-2 text-right font-mono">{aprVal}</td>
-                            <td className="p-2 border border-slate-900 h-8"></td>
-                          </tr>
-                        );
-                      })}
-                    </tbody>
-                  </table>
-                </div>
-
-                {/* Print Sign Box */}
-                <div className="pt-16 grid grid-cols-2 gap-10 font-mono text-xxs font-extrabold text-slate-850">
-                  <div className="text-center space-y-12">
-                    <p>Koordinator Penanggung Jawab,</p>
-                    <div className="h-0.5 bg-slate-400 w-44 mx-auto" />
-                    <p className="text-slate-500 font-bold">( Nama Terang &amp; Paraf )</p>
-                  </div>
-                  <div className="text-center space-y-12">
-                    <p>Kepala Kantor Rusun Pengelola,</p>
-                    <div className="h-0.5 bg-slate-400 w-44 mx-auto" />
-                    <p className="text-slate-500 font-bold">( Stempel Resmi Kantor )</p>
-                  </div>
-                </div>
-              </div>
-            )}
-          </div>
-        )}
 
         {/* ======================================================== */}
         {/* APP CONFIGURATION & SETTINGS TAB VIEW */}
