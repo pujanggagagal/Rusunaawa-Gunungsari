@@ -2062,9 +2062,6 @@ Siti Aminah	357802...	Blok B	B-202	085755..."
                           size: A4 portrait;
                           margin: 10mm;
                         }
-                        thead {
-                          display: table-row-group;
-                        }
                       }
                     `}
                   </style>

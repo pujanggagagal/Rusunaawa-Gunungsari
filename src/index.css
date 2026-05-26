@@ -12,3 +12,15 @@ body {
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
 }
+
+@media print {
+  html, body, #root, .min-h-screen {
+    height: auto !important;
+    min-height: auto !important;
+    display: block !important;
+    overflow: visible !important;
+  }
+  main.flex-grow {
+    display: block !important;
+  }
+}
