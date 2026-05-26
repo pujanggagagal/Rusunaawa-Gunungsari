@@ -11,6 +11,7 @@ Seluruh log perubahan, optimasi sistem, dan perbaikan bug yang diterapkan pada r
 - **Auto-Distribution Paginasi**: Sistem secara cerdas membagi cetakan 60 baris hunian secara seimbang pada **tepat 2 halaman A4** (tidak menumpuk di lembar ke-1 dan tidak menyisakan 1 baris kosong di lembar ke-2).
 
 #### Changed
+- **Kamera Scanner Aktif Default (UX Instan)**: Mengubah setelan default pemindai agar **langsung membuka kamera HP aktif secara fisik** saat tombol pindai ditekan, menghilangkan langkah tambahan membuka tab manual untuk pengalaman mencatat yang super cepat dan instan.
 - **Early Return Pattern (Print View)**: Komponen `AdminDashboard.tsx` langsung merender area cetak murni di root level ketika mode cetak aktif, melewati rendering dashboard utama. Menghilangkan bug Chrome Print Engine yang memotong halaman akibat modal overlay absolut/scrollable.
 - **Desain Stiker Thermal 5x3 cm (QR Code Premium Sampingan)**:
   - Mengubah layout vertikal barcode Code 39 menjadi **desain premium dua kolom (samping-sampingan)**.
