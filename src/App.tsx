@@ -23,9 +23,11 @@ import {
 } from './googleSheetsClient';
 import { User as FirebaseUser } from 'firebase/auth';
 import { supabase } from './supabaseClient';
+import { supabaseService } from './supabaseService';
 
 export default function App() {
   const [data, setData] = useState(() => getStoredData());
+  const [isLoading, setIsLoading] = useState(true);
   const [currentRole, setCurrentRole] = useState<UserRole | null>(null);
   const [currentUser, setCurrentUser] = useState<any>(null);
 
@@ -194,14 +196,15 @@ export default function App() {
     }
   };
 
-  // Push updates to Google Sheets client
+// Push updates to Google Sheets client
   const syncTable = async (table: 'Residents' | 'Coordinators' | 'Billing' | 'Finance', updatedList: any[]) => {
-    if (!spreadsheetId || !accessToken) return;
     try {
-      console.log(`Autosync: pushing ${table} to Google Sheet...`);
-      await saveTableToSpreadsheet(spreadsheetId, accessToken, table, updatedList);
+      if (table === 'Residents') await supabaseService.bulkInsertResidents(updatedList);
+      if (table === 'Coordinators') await supabaseService.bulkInsertCoordinators(updatedList);
+      if (table === 'Billing') await supabaseService.bulkInsertBillingRecords(updatedList);
+      if (table === 'Finance') await supabaseService.bulkInsertFinancialLogs(updatedList);
     } catch (err: any) {
-      console.error(`Gagal melakukan autosync tabel "${table}" ke Google Sheets:`, err);
+      console.error(`Gagal melakukan autosync tabel "${table}" ke Supabase:`, err);
     }
   };
 
@@ -705,259 +708,6 @@ export default function App() {
   return (
     <div className="min-h-screen bg-slate-50 flex flex-col justify-between">
       
-      {/* Google Sheets Connection Status Hub Banner */}
-      {currentRole === 'admin' && (
-        <div className="bg-white border-b border-slate-200 py-4 px-4 shadow-sm">
-          <div className="max-w-7xl mx-auto flex flex-col gap-4 font-sans">
-            <div className="flex flex-col md:flex-row items-stretch md:items-center justify-between gap-4">
-              
-              {/* Status block */}
-              <div className="flex items-start gap-3 flex-grow animate-fade-in">
-                <div className={`p-2.5 rounded-xl self-start ${
-                  syncStatus === 'connected' && spreadsheetId ? 'bg-emerald-100 text-emerald-700' :
-                  syncStatus === 'connecting' ? 'bg-amber-100 text-amber-700 animate-pulse' :
-                  syncStatus === 'error' ? 'bg-rose-100 text-rose-700' : 'bg-purple-100 text-purple-700'
-                }`}>
-                  {syncStatus === 'connected' && spreadsheetId ? <DatabaseZap size={20} /> : <FileSpreadsheet size={20} />}
-                </div>
-
-                <div className="flex-grow">
-                  <div className="flex flex-wrap items-center gap-2">
-                    <h4 className="text-sm font-bold text-slate-800">
-                      Sistem Integrasi Google Sheets
-                    </h4>
-                    <span className={`text-[9.5px] uppercase tracking-wider px-2 py-0.5 rounded font-extrabold font-mono ${
-                      syncStatus === 'connected' && spreadsheetId ? 'bg-emerald-200 text-emerald-800' :
-                      syncStatus === 'connected' ? 'bg-amber-100 text-amber-800' :
-                      syncStatus === 'connecting' ? 'bg-blue-100 text-blue-800' :
-                      syncStatus === 'error' ? 'bg-rose-200 text-rose-800' : 'bg-slate-100 text-slate-600'
-                    }`}>
-                      {syncStatus === 'connected' && spreadsheetId ? 'SINKRONISASI AKTIF 🟢' :
-                       syncStatus === 'connected' ? 'MASUK GOOGLE 🟡 (Menunggu spreadsheet)' :
-                       syncStatus === 'connecting' ? 'MENGHUBUNGKAN / MEMPROSES 🔄' :
-                       syncStatus === 'error' ? 'PENCEGAHAN EROR / GAGAL 🔴' : 'MODE DI LUAR JARINGAN 🔘'}
-                    </span>
-
-                    <button
-                      onClick={() => setShowSheetsInfo(!showSheetsInfo)}
-                      className="text-[11px] underline font-bold text-purple-600 hover:text-purple-800 cursor-pointer flex items-center gap-1 ml-auto md:ml-0"
-                    >
-                      <HelpCircle size={13} />
-                      {showSheetsInfo ? 'Sembunyikan Panduan' : 'Lihat Panduan & Struktur'}
-                    </button>
-                  </div>
-
-                  <div className="text-xs text-slate-500 mt-1 max-w-3xl leading-relaxed">
-                    {syncStatus === 'not_connected' && (
-                      <span>
-                        Aplikasi saat ini beroperasi menggunakan <strong>penyimpanan lokal browser</strong>. Masuk ke Akun Google Anda untuk menikmati sinkronisasi data tagihan air otomatis ke Google Sheets.
-                      </span>
-                    )}
-                    {syncStatus === 'connecting' && (
-                      <span className="flex items-center gap-1.5">
-                        <Loader size={12} className="animate-spin text-amber-500" />
-                        Sedang memproses dan menyusun database template Google Sheet Anda...
-                      </span>
-                    )}
-                    {syncStatus === 'error' && (
-                      <div className="bg-rose-50 border border-rose-100 rounded-lg p-2.5 mt-1 text-rose-700">
-                        <p className="font-bold flex items-center gap-1 text-[13px] text-rose-800">
-                          <Info size={14} /> Solusi Eror Koneksi / Akses:
-                        </p>
-                        <p className="mt-1 text-xs">{sheetsErrorMsg}</p>
-                        <p className="mt-1.5 text-[11px] text-slate-600 font-medium">
-                          👉 <strong>Cara Memperbaiki:</strong> Klik 
-                          <strong className="text-rose-700"> tombol keluar merah [Log Out] </strong> 
-                          di pojok kanan banner ini. Kemudian, klik kembali 
-                          <strong> "Hubungkan Google Sheets"</strong>. Saat muncul layar login popup akun Google, 
-                          <span className="text-purple-700 font-extrabold underline"> ANDA WAJIB MENCENTANG semua pilihan kotak izin akses Google Drive / Google Sheets Anda</span> sebelum menekan tombol lanjutkan agar token memiliki izin membaca spreadsheet!
-                        </p>
-                      </div>
-                    )}
-                    {syncStatus === 'connected' && !spreadsheetId && (
-                      <span>
-                        Berhasil masuk sebagai <strong className="text-slate-700">{sheetsUser?.email}</strong>. Silakan buat Spreadsheet baru atau hubungkan Spreadsheet yang sudah ada untuk mengaktifkan autosync.
-                      </span>
-                    )}
-                    {syncStatus === 'connected' && spreadsheetId && (
-                      <div className="flex flex-col sm:flex-row sm:items-center gap-2">
-                        <span>
-                          Tersambung ke Google Spreadsheet: 
-                          <a 
-                            href={`https://docs.google.com/spreadsheets/d/${spreadsheetId}/edit`} 
-                            target="_blank" 
-                            rel="noreferrer"
-                            className="text-emerald-600 hover:text-emerald-700 font-bold underline ml-1 inline-flex items-center gap-0.5"
-                          >
-                            [Buka di Tab Baru]
-                          </a>
-                        </span>
-                        <span className="text-[10px] text-slate-400 font-mono hidden sm:inline">•</span>
-                        <span className="text-slate-400 text-[11px]">
-                          Email: {sheetsUser?.email}
-                        </span>
-                      </div>
-                    )}
-                  </div>
-                </div>
-              </div>
-
-              {/* Action block */}
-              <div className="flex flex-wrap items-center gap-2.5 shrink-0 self-stretch md:self-auto justify-start md:justify-end">
-                
-                {/* Show manual connection inputs when logged-in but no sheet ID is paired */}
-                {syncStatus === 'connected' && !spreadsheetId && (
-                  <div className="flex flex-wrap items-center gap-2 w-full sm:w-auto">
-                    <button
-                      onClick={handleCreateAutoSpreadsheet}
-                      className="px-3.5 py-1.5 rounded-lg text-xs font-bold bg-emerald-600 hover:bg-emerald-700 text-white flex items-center gap-1.5 shadow-sm transition cursor-pointer"
-                    >
-                      <Sparkles size={14} />
-                      Buat Lembar Baru
-                    </button>
-                    <div className="text-slate-300 block sm:inline font-mono hidden sm:block">|</div>
-                    
-                    <form onSubmit={handleConnectExistingSpreadsheet} className="flex items-center gap-1.5 w-full sm:w-auto">
-                      <input
-                        type="text"
-                        value={inputSpreadsheetId}
-                        onChange={(e) => setInputSpreadsheetId(e.target.value)}
-                        placeholder="Tempel ID / Link Spreadsheet"
-                        className="p-1.5 text-xs border border-slate-300 rounded-lg outline-none focus:border-purple-500 bg-white min-w-[180px] flex-grow sm:flex-none"
-                      />
-                      <button
-                        type="submit"
-                        className="px-3 py-1.5 bg-purple-600 hover:bg-purple-700 text-white text-xs font-bold rounded-lg cursor-pointer flex items-center gap-1 shrink-0"
-                      >
-                        Hubungkan
-                      </button>
-                    </form>
-                  </div>
-                )}
-
-                {/* Signed-in and connected spreadsheet state action */}
-                {syncStatus === 'connected' && spreadsheetId && (
-                  <div className="flex items-center gap-2">
-                    <button
-                      onClick={handleExportAllToSheets}
-                      disabled={saveAllStatus === 'saving'}
-                      className={`px-3 py-1.5 rounded-lg text-xs font-bold flex items-center gap-1.5 shadow-sm transition whitespace-nowrap cursor-pointer ${
-                        saveAllStatus === 'saving' ? 'bg-amber-100 text-amber-700 cursor-not-allowed animate-pulse' :
-                        saveAllStatus === 'success' ? 'bg-emerald-600 hover:bg-emerald-700 text-white' :
-                        saveAllStatus === 'error' ? 'bg-rose-600 hover:bg-rose-700 text-white' :
-                        'bg-purple-600 hover:bg-purple-700 text-white'
-                      }`}
-                      title="Ekspor seluruh data warga, koordinator, tagihan air (billing), dan kas keuangan ke lembar kerja Google Sheets saat ini."
-                    >
-                      <UploadCloud size={14} className={saveAllStatus === 'saving' ? 'animate-bounce' : ''} />
-                      {saveAllStatus === 'saving' ? 'Mengunggah...' :
-                       saveAllStatus === 'success' ? 'Berhasil Diunggah! ✓' :
-                       saveAllStatus === 'error' ? 'Gagal Unggah! ✗' :
-                       'Ekspor Data Lokal ke Sheet'}
-                    </button>
-
-                    <button
-                      onClick={handleForceReload}
-                      className="p-1.5 text-slate-600 hover:text-slate-900 bg-slate-100 hover:bg-slate-200 rounded-lg cursor-pointer transition flex items-center gap-1 text-xs font-semibold"
-                      title="Force Reload Data from Sheet"
-                    >
-                      <RefreshCw size={13} />
-                      Reload
-                    </button>
-                    <button
-                      onClick={handleDisconnectSpreadsheet}
-                      className="px-3 py-1.5 rounded-lg text-xs font-bold border border-slate-300 hover:bg-rose-50 hover:text-rose-600 text-slate-600 transition cursor-pointer"
-                    >
-                      Putus Tautan
-                    </button>
-                  </div>
-                )}
-
-                {/* Handle sign-in/sign-out buttons */}
-                {syncStatus === 'not_connected' && (
-                  <button
-                    onClick={handleGoogleSignIn}
-                    className="px-4 py-2 bg-purple-600 hover:bg-purple-700 text-white rounded-xl text-xs font-bold flex items-center gap-1.5 transition shadow-sm cursor-pointer"
-                  >
-                    <Sparkles size={14} />
-                    Hubungkan Google Sheets
-                  </button>
-                )}
-
-                {syncStatus !== 'not_connected' && (
-                  <button
-                    onClick={handleGoogleSignOut}
-                    className="p-2 text-rose-500 hover:text-rose-700 hover:bg-rose-50 rounded-lg cursor-pointer transition-colors"
-                    title="Google Sign Out"
-                  >
-                    <LogOut size={16} />
-                  </button>
-                )}
-              </div>
-
-            </div>
-
-            {/* Collapsible Help & Table Schema Guideline area */}
-            {showSheetsInfo && (
-              <div className="mt-2 bg-slate-50 border border-slate-200 rounded-xl p-4 text-xs text-slate-600 leading-relaxed grid grid-cols-1 md:grid-cols-2 gap-4 animate-fade-in">
-                <div>
-                  <h5 className="font-bold text-slate-800 text-[13px] flex items-center gap-1.5 text-purple-700 mb-1.5">
-                    <Sparkles size={14} />
-                    Panduan Step-by-Step Integrasi Google Sheets
-                  </h5>
-                  <ol className="list-decimal pl-4 space-y-1.5 text-slate-600">
-                    <li>
-                      Klik <strong>"Hubungkan Google Sheets"</strong> di banner ini untuk masuk menggunakan akun Google Anda.
-                    </li>
-                    <li>
-                      <strong className="text-purple-700">PENTING (Solusi Mencegah Eror Akses):</strong> Di popup login Google, 
-                      pastikan Anda mencentang kotak izin persetujuan bertuliskan <em>"Lihat, edit, buat, dan hapus semua spreadsheet Google Anda"</em>. 
-                      Jika kotak ini tidak diaktifkan, maka Google akan menolak izin akses dari aplikasi.
-                    </li>
-                    <li>
-                      Klik tombol <strong>"Buat Lembar Baru"</strong> jika Anda ingin sistem kami secara otomatis membuat dan menyusun Google Spreadsheet baru di Google Drive Anda.
-                    </li>
-                    <li>
-                      <strong>Sikronisasi Mandiri:</strong> Jika Anda membuat Google Sheet manual, cukup hubungkan link atau ID file-nya di kolom input. 
-                      Sistem kami akan <span className="font-bold text-slate-800">mendeteksi secara otomatis</span> dan menyusun tab database yang kosong secara instan!
-                    </li>
-                  </ol>
-                </div>
-
-                <div>
-                  <h5 className="font-bold text-slate-800 text-[13px] flex items-center gap-1.5 text-emerald-700 mb-1.5">
-                    <Database size={14} />
-                    Struktur Header & Tab Lembar Kerja Otomatis
-                  </h5>
-                  <p className="mb-2 text-[11px] text-slate-500 leading-normal">
-                    Sistem kami mendaftarkan dan mensinkronisasikan 4 (empat) buah tab data ini di Google Sheet Anda:
-                  </p>
-                  <div className="space-y-2 max-h-[160px] overflow-y-auto pr-1">
-                    <div className="bg-white p-1.5 rounded border border-slate-200">
-                      <p className="font-bold text-slate-800 font-mono text-[11px]">📁 Residents (Data Warga)</p>
-                      <p className="text-[10px] text-slate-400 select-all font-mono mt-0.5">ID | Nama Warga | KTP | Unit | Blok | Telepon | Status Listrik | Tanggal Ubah Listrik</p>
-                    </div>
-                    <div className="bg-white p-1.5 rounded border border-slate-200">
-                      <p className="font-bold text-slate-800 font-mono text-[11px]">📁 Coordinators (Data Koordinator)</p>
-                      <p className="text-[10px] text-slate-400 select-all font-mono mt-0.5">ID | Nama Koordinator | KTP | Blok Tugas</p>
-                    </div>
-                    <div className="bg-white p-1.5 rounded border border-slate-200">
-                      <p className="font-bold text-slate-800 font-mono text-[11px]">📁 Billing (Tagihan PDAM)</p>
-                      <p className="text-[10px] text-slate-400 select-all font-mono mt-0.5">ID | KTP Warga | Bulan | Tahun | Meter Lalu | Meter Ini | Pemakaian | Tagihan PDAM | Tagihan Sampah | Total Tagihan | Status Pembayaran | Tanggal Bayar</p>
-                    </div>
-                    <div className="bg-white p-1.5 rounded border border-slate-200">
-                      <p className="font-bold text-slate-800 font-mono text-[11px]">📁 Finance (Kas Masuk/Keluar)</p>
-                      <p className="text-[10px] text-slate-400 select-all font-mono mt-0.5">ID | Jenis Transaksi | Jumlah | Keterangan | Tanggal | Kategori</p>
-                    </div>
-                  </div>
-                </div>
-              </div>
-            )}
-
-          </div>
-        </div>
-      )}
-
       {/* Main Container Workspace Area */}
       <main className="flex-grow">
         {!currentRole ? (
