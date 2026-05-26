@@ -1903,7 +1903,7 @@ Siti Aminah	357802...	Blok B	B-202	085755..."
         {/* FULL SCREEN PURE PRINTABLE STAGE VIEW (Triggered dynamically) */}
         {/* ======================================================== */}
         {printMode !== 'none' && (
-          <div className="fixed print:static print:min-h-screen inset-0 bg-white text-black z-50 overflow-y-auto print:overflow-visible p-10 font-sans print:p-0 print-stage">
+          <div className="fixed print:relative print:inset-auto print:transform-none print:translate-x-0 print:translate-y-0 inset-0 bg-white text-black z-50 overflow-y-auto print:overflow-visible p-10 font-sans print:p-0 print-stage">
             <style>
               {`
                 @media print {
@@ -1928,7 +1928,12 @@ Siti Aminah	357802...	Blok B	B-202	085755..."
               <div className="flex items-center gap-2">
                 <button
                   type="button"
-                  onClick={() => window.print()}
+                  onClick={() => {
+                    const stage = document.querySelector('.print-stage');
+                    if (stage) stage.scrollTop = 0;
+                    window.scrollTo(0, 0);
+                    setTimeout(() => window.print(), 100);
+                  }}
                   className={`px-4 py-2 text-white text-[10px] font-black uppercase rounded-xl transition-all cursor-pointer flex items-center gap-1 shadow-md ${
                     printMode === 'worksheet' 
                       ? 'bg-gradient-to-r from-emerald-600 to-teal-600 hover:from-emerald-700 hover:to-teal-700 shadow-emerald-600/15'
@@ -2035,7 +2040,7 @@ Siti Aminah	357802...	Blok B	B-202	085755..."
 
             {/* 2. PRINT MODE: REGISTER MANUAL SHEETS TABLE (OFFLINE BACKUP) */}
             {printMode === 'worksheet' && (
-              <div className="print-stage max-w-5xl mx-auto space-y-6 bg-white text-black p-4">
+              <div className="max-w-5xl mx-auto space-y-6 bg-white text-black p-4">
                 <div className="border-b-4 border-slate-900 pb-3 text-center">
                   <span className="text-[9px] font-mono font-black uppercase tracking-widest text-slate-500">
                     REGISTER KERJA DAN VERIFIKASI FISIK MANUAL (SIAP CETAK)

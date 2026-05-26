@@ -777,7 +777,7 @@ export default function App() {
       </main>
 
       {/* Universal footer */}
-      <footer className="bg-white border-t border-slate-200 py-6 text-center text-xs text-slate-400 font-medium">
+      <footer className="bg-white border-t border-slate-200 py-6 text-center text-xs text-slate-400 font-medium print:hidden">
         <p>© 2026 Paguyuban Rusunawa Gunungsari Mandiri. Sistem Informasi Iuran Warga &amp; PDAM.</p>
         <p className="mt-1 font-mono text-slate-400 text-[10px] uppercase select-none">
           Merahtia • Surabaya, Jawa Timur
