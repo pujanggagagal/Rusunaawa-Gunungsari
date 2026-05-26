@@ -641,7 +641,7 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({
                           <span className="text-[8px] font-bold text-slate-700 block">BLOK {blockLetter}</span>
                         </div>
 
-                        <div className="bg-slate-900 text-white px-1.5 py-0.5 rounded text-[8.5px] font-black uppercase tracking-wide block leading-none print:bg-black print:text-white shrink-0">
+                        <div className="text-[12.5px] font-black uppercase text-black leading-none shrink-0 font-sans border-2 border-black px-1.5 py-1 rounded mt-1.5 w-full text-center">
                           UNIT {res.unit}
                         </div>
                       </div>
