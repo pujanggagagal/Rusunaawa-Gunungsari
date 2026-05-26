@@ -71,7 +71,7 @@ export const KoordinatorDashboard: React.FC<KoordinatorDashboardProps> = ({
 
   // Barcode / QR Scanner States
   const [isScannerOpen, setIsScannerOpen] = useState(false);
-  const [useRealCamera, setUseRealCamera] = useState(false);
+  const [useRealCamera, setUseRealCamera] = useState(true);
   const [scanningStatus, setScanningStatus] = useState<'idle' | 'searching' | 'scanned' | 'error'>('idle');
   const [scanErrorMsg, setScanErrorMsg] = useState('');
   const [simulateTargetRes, setSimulateTargetRes] = useState<string>('');
@@ -660,7 +660,7 @@ export const KoordinatorDashboard: React.FC<KoordinatorDashboardProps> = ({
               type="button"
               onClick={() => {
                 setIsScannerOpen(true);
-                setUseRealCamera(false); // start with simulation/selector mode first, safe in iframe
+                setUseRealCamera(true); // start with physical camera by default for instant scans
                 setScanningStatus('idle');
                 setScanErrorMsg('');
                 if (floorResidents.length > 0) {
