@@ -2035,7 +2035,7 @@ Siti Aminah	357802...	Blok B	B-202	085755..."
 
             {/* 2. PRINT MODE: REGISTER MANUAL SHEETS TABLE (OFFLINE BACKUP) */}
             {printMode === 'worksheet' && (
-              <div className="max-w-5xl mx-auto space-y-6 bg-white text-black p-4">
+              <div className="print-stage max-w-5xl mx-auto space-y-6 bg-white text-black p-4">
                 <div className="border-b-4 border-slate-900 pb-3 text-center">
                   <span className="text-[9px] font-mono font-black uppercase tracking-widest text-slate-500">
                     REGISTER KERJA DAN VERIFIKASI FISIK MANUAL (SIAP CETAK)
