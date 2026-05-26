@@ -651,29 +651,43 @@ export const KoordinatorDashboard: React.FC<KoordinatorDashboardProps> = ({
         
         {/* COLUMN LEFT: ENTRY FORM (5/12 widths) */}
         <div ref={scrollRef} className="lg:col-span-5 bg-white p-5 rounded-3xl border border-slate-100 shadow-xl shadow-slate-200/30 space-y-4">
-          <div className="border-b border-slate-100 pb-3 flex flex-col sm:flex-row justify-between items-start sm:items-center gap-3">
+          <div className="border-b border-slate-100 pb-3">
             <h2 className="text-sm font-extrabold text-slate-900 uppercase tracking-wider flex items-center gap-1.5">
               <Droplets className="text-cyan-500 animate-pulse" size={16} />
               Form Pencatatan Cepat
             </h2>
-            <button
-              type="button"
-              onClick={() => {
-                setIsScannerOpen(true);
-                setUseRealCamera(true); // start with physical camera by default for instant scans
-                setScanningStatus('idle');
-                setScanErrorMsg('');
-                if (floorResidents.length > 0) {
-                  setSimulateTargetRes(floorResidents[0].ktp);
-                }
-              }}
-              className="px-4.5 py-1.5 bg-gradient-to-r from-cyan-600 to-sky-600 hover:from-cyan-700 hover:to-sky-700 text-white rounded-xl text-xs font-bold shadow-md flex items-center gap-2 transition-all cursor-pointer select-none border border-cyan-500/10 active:scale-[0.97]"
-              title="Pindai Kartu Warga Rusunawa"
-            >
-              <QrCode size={14} className="animate-pulse" />
-              <span>Scan Kode Warga</span>
-            </button>
           </div>
+
+          {/* GIANT SCAN BUTTON FOR COORDINATORS (Extremely comfortable for field walk with one-hand/thumb reach) */}
+          <button
+            type="button"
+            onClick={() => {
+              setIsScannerOpen(true);
+              setUseRealCamera(true); // start with physical camera by default for instant scans
+              setScanningStatus('idle');
+              setScanErrorMsg('');
+              if (floorResidents.length > 0) {
+                setSimulateTargetRes(floorResidents[0].ktp);
+              }
+            }}
+            className="w-full py-4.5 px-5 bg-gradient-to-br from-cyan-500 via-blue-600 to-indigo-600 hover:from-cyan-600 hover:via-blue-700 hover:to-indigo-700 text-white rounded-2xl shadow-xl shadow-blue-500/20 active:scale-[0.98] transition-all flex items-center justify-between gap-4 border border-white/10 group cursor-pointer"
+            title="Scan Kartu Warga"
+          >
+            <div className="flex items-center gap-3.5">
+              <div className="h-12 w-12 rounded-xl bg-white/10 flex items-center justify-center border border-white/20 group-hover:scale-105 transition-transform duration-300">
+                <QrCode size={24} className="text-white animate-pulse" />
+              </div>
+              <div className="text-left">
+                <span className="block text-[10px] tracking-wider uppercase font-extrabold text-cyan-200">Tombol Utama</span>
+                <span className="block text-base font-black tracking-tight -mt-0.5">Scan Kode Warga</span>
+              </div>
+            </div>
+            <div className="h-8 w-8 rounded-full bg-white/10 flex items-center justify-center group-hover:translate-x-1 transition-transform">
+              <svg className="w-5 h-5 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2.5" d="M9 5l7 7-7 7"></path>
+              </svg>
+            </div>
+          </button>
 
           {!activeResident ? (
             <div className="py-12 text-center space-y-2">
@@ -1407,6 +1421,29 @@ export const KoordinatorDashboard: React.FC<KoordinatorDashboardProps> = ({
           </div>
         );
       })()}
+
+      {/* FLOATING ACTION BUTTON (FAB) FOR INSTANT SCANNING - Always within comfortable thumb-reach on mobile layout */}
+      <div className="fixed bottom-6 right-6 z-45 md:bottom-8 md:right-8">
+        <button
+          type="button"
+          onClick={() => {
+            setIsScannerOpen(true);
+            setUseRealCamera(true); // start with physical camera by default for instant scans
+            setScanningStatus('idle');
+            setScanErrorMsg('');
+            if (floorResidents.length > 0) {
+              setSimulateTargetRes(floorResidents[0].ktp);
+            }
+          }}
+          className="flex h-16 w-16 items-center justify-center rounded-full bg-gradient-to-tr from-cyan-500 via-blue-600 to-indigo-650 text-white shadow-2xl shadow-cyan-600/40 hover:shadow-cyan-600/60 hover:scale-105 active:scale-95 transition-all duration-300 border border-cyan-400/30 group cursor-pointer"
+          title="Scan Kode Warga"
+        >
+          <QrCode size={26} className="group-hover:rotate-12 transition-transform duration-300" />
+          <span className="absolute right-full mr-3 px-3 py-1.5 bg-slate-900/90 text-white text-xs font-bold rounded-lg whitespace-nowrap shadow-md opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none border border-slate-700/50">
+            Scan Kode Warga
+          </span>
+        </button>
+      </div>
 
     </div>
   );

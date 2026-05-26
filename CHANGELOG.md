@@ -9,6 +9,9 @@ Seluruh log perubahan, optimasi sistem, dan perbaikan bug yang diterapkan pada r
 - **Progressive Web App (PWA) Support**: Menyulap website menjadi aplikasi PWA mandiri (standalone). Koordinator dapat langsung menginstal aplikasi resmi dengan ikon premium "Rusunawa Gunungsari" langsung di layar beranda (home screen) HP Android/iPhone mereka, berjalan layar penuh (full-screen) tanpa navigasi browser.
 - **QRCodeRenderer Component**: Membuat modul generator QR Code SVG offline berbasis standar browser (`Blob` dan `URL.createObjectURL`), menghasilkan kode 2D berkualitas tinggi, tajam, dan anti-pecah untuk printer thermal.
 - **Auto-Distribution Paginasi**: Sistem secara cerdas membagi cetakan 60 baris hunian secara seimbang pada **tepat 2 halaman A4** (tidak menumpuk di lembar ke-1 dan tidak menyisakan 1 baris kosong di lembar ke-2).
+- **Giant Touch-Friendly Scan Button & Floating Action Button (FAB)**:
+  - Mengubah tombol scan kartu warga di Form Pencatatan Cepat menjadi widget utama selebar kartu (`w-full`) dengan tinggi tap `py-4.5`, ikon QR besar, warna gradasi premium, dan desain yang sangat taktil untuk memudahkan koordinator saat mencatat sambil berjalan di lapangan.
+  - Menambahkan **Floating Action Button (FAB)** QR Code yang melayang di sudut kanan-bawah layar ponsel (`fixed bottom-6 right-6 z-45`) dengan animasi hover memutar dan panel deskripsi instan, sehingga tombol scan selalu berada dalam jangkauan jempol koordinator di bagian mana pun mereka menggulir daftar hunian.
 
 #### Changed
 - **Penghapusan Total Asisten Simulasi (Pure Camera UX)**: Menghapus tab simulasi dan dropdown warga dari popup pemindai kartu untuk menghadirkan antarmuka pemindai yang **murni, bersih, dan langsung mengaktifkan kamera fisik** tanpa ada elemen pembantu/dekorasi yang mengganggu fokus koordinator.
