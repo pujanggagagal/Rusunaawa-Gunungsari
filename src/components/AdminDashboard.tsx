@@ -1815,7 +1815,14 @@ Siti Aminah	357802...	Blok B	B-202	085755..."
                       // Filter billing on this floor
                       const floorMeiPaidBills = billingRecords.filter(
                         b => b.month === 'Mei' && b.year === 2026 && b.status === 'Lunas' && floorRes.some(r => r.ktp === b.residentKtp)
-                      );
+                      ).map(b => {
+                        const res = floorRes.find(r => r.ktp === b.residentKtp);
+                        const isVacant = res?.isVacant || res?.occupancyStatus === 'Kosong' || res?.occupancyStatus === 'kosong' || res?.name === 'Kamar Kosong' || res?.name?.toLowerCase()?.includes('kamar kosong');
+                        if (isVacant) {
+                          return { ...b, pdamBill: 0, trashBill: 0, totalBill: 0 };
+                        }
+                        return b;
+                      });
                       const floorPaidCount = floorMeiPaidBills.length;
                       
                       const totalCollectedOnFloor = floorMeiPaidBills.reduce((s, r) => s + r.totalBill, 0);
@@ -2232,9 +2239,10 @@ Siti Aminah	357802...	Blok B	B-202	085755..."
           };
 
           // May usage & live pricing calculations
-          const usage = inputMayMeter !== '' ? Math.max(0, Number(inputMayMeter) - prevMeterVal) : 0;
-          const pdamBill = calculatePdamBill(usage);
-          const trashBill = appSettings.trashBillCost;
+          const isActiveResVacant = activeRes?.isVacant || activeRes?.occupancyStatus === 'Kosong' || activeRes?.occupancyStatus === 'kosong' || activeRes?.name === 'Kamar Kosong' || activeRes?.name?.toLowerCase()?.includes('kamar kosong');
+          const usage = isActiveResVacant ? 0 : (inputMayMeter !== '' ? Math.max(0, Number(inputMayMeter) - prevMeterVal) : 0);
+          const pdamBill = isActiveResVacant ? 0 : calculatePdamBill(usage);
+          const trashBill = isActiveResVacant ? 0 : appSettings.trashBillCost;
           const totalBill = pdamBill + trashBill;
 
           return (
@@ -2453,8 +2461,11 @@ Siti Aminah	357802...	Blok B	B-202	085755..."
                       </thead>
                       <tbody className="divide-y divide-slate-100 font-bold text-slate-750">
                         {sortedResList.map((res) => {
-                          const meiRec = billingRecords.find(b => b.residentKtp === res.ktp && b.month === 'Mei' && b.year === 2026);
-                          const aprRec = billingRecords.find(b => b.residentKtp === res.ktp && b.month === 'April' && b.year === 2026);
+                          const isVacant = res.isVacant || res.occupancyStatus === 'Kosong' || res.occupancyStatus === 'kosong' || res.name === 'Kamar Kosong' || res.name.toLowerCase().includes('kamar kosong');
+                          const rawMeiRec = billingRecords.find(b => b.residentKtp === res.ktp && b.month === 'Mei' && b.year === 2026);
+                          const meiRec = rawMeiRec ? (isVacant ? { ...rawMeiRec, pdamBill: 0, trashBill: 0, totalBill: 0 } : rawMeiRec) : null;
+                          const rawAprRec = billingRecords.find(b => b.residentKtp === res.ktp && b.month === 'April' && b.year === 2026);
+                          const aprRec = rawAprRec ? (isVacant ? { ...rawAprRec, pdamBill: 0, trashBill: 0, totalBill: 0 } : rawAprRec) : null;
                           
                           const lastMeterVal = meiRec 
                             ? meiRec.prevMeter 

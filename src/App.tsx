@@ -395,9 +395,12 @@ export default function App() {
 
   // koordinator records meter cubic usages
   const handleSaveMeter = (residentKtp: string, prevMeter: number, currentMeter: number) => {
-    const usage = currentMeter - prevMeter;
-    const pdamBill = calculatePdamBill(usage, appSettings);
-    const trashBill = appSettings.trashBillCost;
+    const resident = data.residents.find((r) => r.ktp === residentKtp);
+    const isVacant = resident?.isVacant || resident?.occupancyStatus === 'Kosong' || resident?.occupancyStatus === 'kosong' || resident?.name === 'Kamar Kosong' || resident?.name?.toLowerCase()?.includes('kamar kosong');
+
+    const usage = isVacant ? 0 : currentMeter - prevMeter;
+    const pdamBill = isVacant ? 0 : calculatePdamBill(usage, appSettings);
+    const trashBill = isVacant ? 0 : appSettings.trashBillCost;
     const totalBill = pdamBill + trashBill;
 
     setData((prev) => {
@@ -413,7 +416,7 @@ export default function App() {
         updatedBilling[existingMeiIdx] = {
           ...updatedBilling[existingMeiIdx],
           prevMeter,
-          currentMeter,
+          currentMeter: isVacant ? prevMeter : currentMeter,
           usage,
           pdamBill,
           trashBill,
@@ -427,7 +430,7 @@ export default function App() {
           month: 'Mei',
           year: 2026,
           prevMeter,
-          currentMeter,
+          currentMeter: isVacant ? prevMeter : currentMeter,
           usage,
           pdamBill,
           trashBill,
@@ -449,6 +452,9 @@ export default function App() {
 
   // Admin correction for previous month (April) meter readings
   const handleUpdateAprilMeter = (residentKtp: string, newAprilMeter: number) => {
+    const resident = data.residents.find(r => r.ktp === residentKtp);
+    const isVacant = resident?.isVacant || resident?.occupancyStatus === 'Kosong' || resident?.occupancyStatus === 'kosong' || resident?.name === 'Kamar Kosong' || resident?.name?.toLowerCase()?.includes('kamar kosong');
+
     setData((prev) => {
       // 1. Check if April billing record exists for this resident
       const aprilBillIdx = prev.billing.findIndex(
@@ -460,26 +466,27 @@ export default function App() {
         // April record exists -> update currentMeter
         const aprBill = updatedBilling[aprilBillIdx];
         const prevMeter = aprBill.prevMeter;
-        const usage = Math.max(0, newAprilMeter - prevMeter);
-        const pdamBill = calculatePdamBill(usage);
-        const totalBill = pdamBill + aprBill.trashBill;
+        const usage = isVacant ? 0 : Math.max(0, newAprilMeter - prevMeter);
+        const pdamBill = isVacant ? 0 : calculatePdamBill(usage);
+        const trashBill = isVacant ? 0 : aprBill.trashBill;
+        const totalBill = pdamBill + trashBill;
         
         updatedBilling[aprilBillIdx] = {
           ...aprBill,
-          currentMeter: newAprilMeter,
+          currentMeter: isVacant ? prevMeter : newAprilMeter,
           usage,
           pdamBill,
+          trashBill,
           totalBill,
         };
       } else {
         // April record does not exist -> Create one
-        const resident = prev.residents.find(r => r.ktp === residentKtp);
         const prevMeter = resident?.initialMeter !== undefined && resident?.initialMeter !== null
           ? Number(resident.initialMeter)
           : 100;
-        const usage = Math.max(0, newAprilMeter - prevMeter);
-        const pdamBill = calculatePdamBill(usage);
-        const trashBill = appSettings.trashBillCost;
+        const usage = isVacant ? 0 : Math.max(0, newAprilMeter - prevMeter);
+        const pdamBill = isVacant ? 0 : calculatePdamBill(usage);
+        const trashBill = isVacant ? 0 : appSettings.trashBillCost;
         const totalBill = pdamBill + trashBill;
 
         const newAprilBill: BillingRecord = {
@@ -488,7 +495,7 @@ export default function App() {
           month: 'April',
           year: 2026,
           prevMeter,
-          currentMeter: newAprilMeter,
+          currentMeter: isVacant ? prevMeter : newAprilMeter,
           usage,
           pdamBill,
           trashBill,
@@ -504,16 +511,18 @@ export default function App() {
       );
       if (meiBillIdx > -1) {
         const meiBill = updatedBilling[meiBillIdx];
-        const prevMeter = newAprilMeter;
-        const usage = Math.max(0, meiBill.currentMeter - prevMeter);
-        const pdamBill = calculatePdamBill(usage);
-        const totalBill = pdamBill + meiBill.trashBill;
+        const prevMeter = isVacant ? meiBill.prevMeter : newAprilMeter;
+        const usage = isVacant ? 0 : Math.max(0, meiBill.currentMeter - prevMeter);
+        const pdamBill = isVacant ? 0 : calculatePdamBill(usage);
+        const trashBill = isVacant ? 0 : meiBill.trashBill;
+        const totalBill = pdamBill + trashBill;
 
         updatedBilling[meiBillIdx] = {
           ...meiBill,
           prevMeter,
           usage,
           pdamBill,
+          trashBill,
           totalBill,
         };
       }

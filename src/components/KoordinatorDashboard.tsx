@@ -557,9 +557,10 @@ export const KoordinatorDashboard: React.FC<KoordinatorDashboardProps> = ({
   };
 
   // Calculations for dynamic preview
-  const usageFloat = currentMeterInput !== '' ? Number(currentMeterInput) - prevMeterValue : 0;
-  const pdamBillCalc = usageFloat > 0 ? calculatePdamBill(usageFloat) : 0;
-  const iuranSampah = 10000;
+  const isActiveResVacant = activeResident?.isVacant || activeResident?.occupancyStatus === 'Kosong' || activeResident?.occupancyStatus === 'kosong' || activeResident?.name === 'Kamar Kosong' || activeResident?.name?.toLowerCase()?.includes('kamar kosong');
+  const usageFloat = isActiveResVacant ? 0 : (currentMeterInput !== '' ? Number(currentMeterInput) - prevMeterValue : 0);
+  const pdamBillCalc = isActiveResVacant ? 0 : (usageFloat > 0 ? calculatePdamBill(usageFloat) : 0);
+  const iuranSampah = isActiveResVacant ? 0 : 10000;
   const totalInvoiceCalc = pdamBillCalc > 0 ? pdamBillCalc + iuranSampah : 0;
 
   // May progress percentages
@@ -1003,12 +1004,15 @@ export const KoordinatorDashboard: React.FC<KoordinatorDashboardProps> = ({
                 {/* 1. Mobile & Touch Screen: Grid of Cards (Highly optimized for smartphones) */}
                 <div className="block md:hidden space-y-3 mt-4" id="coord_resident_list_mobile">
                   {filteredResidents.map((res) => {
-                    const meiRecord = billingRecords.find(
+                    const isVacant = res.isVacant || res.occupancyStatus === 'Kosong' || res.occupancyStatus === 'kosong' || res.name === 'Kamar Kosong' || res.name.toLowerCase().includes('kamar kosong');
+                    const rawMeiRecord = billingRecords.find(
                       (b) => b.residentKtp === res.ktp && b.month === 'Mei' && b.year === 2026
                     );
-                    const aprRecord = billingRecords.find(
+                    const meiRecord = rawMeiRecord ? (isVacant ? { ...rawMeiRecord, pdamBill: 0, trashBill: 0, totalBill: 0 } : rawMeiRecord) : null;
+                    const rawAprRecord = billingRecords.find(
                       (b) => b.residentKtp === res.ktp && b.month === 'April' && b.year === 2026
                     );
+                    const aprRecord = rawAprRecord ? (isVacant ? { ...rawAprRecord, pdamBill: 0, trashBill: 0, totalBill: 0 } : rawAprRecord) : null;
                     const isSelected = selectedResidentKtp === res.ktp;
                     const prevMeter = meiRecord ? meiRecord.prevMeter : (aprRecord ? aprRecord.currentMeter : 100);
 
@@ -1114,12 +1118,15 @@ export const KoordinatorDashboard: React.FC<KoordinatorDashboardProps> = ({
                     </thead>
                     <tbody className="divide-y divide-slate-100">
                       {filteredResidents.map((res) => {
-                        const meiRecord = billingRecords.find(
+                        const isVacant = res.isVacant || res.occupancyStatus === 'Kosong' || res.occupancyStatus === 'kosong' || res.name === 'Kamar Kosong' || res.name.toLowerCase().includes('kamar kosong');
+                        const rawMeiRecord = billingRecords.find(
                           (b) => b.residentKtp === res.ktp && b.month === 'Mei' && b.year === 2026
                         );
-                        const aprRecord = billingRecords.find(
+                        const meiRecord = rawMeiRecord ? (isVacant ? { ...rawMeiRecord, pdamBill: 0, trashBill: 0, totalBill: 0 } : rawMeiRecord) : null;
+                        const rawAprRecord = billingRecords.find(
                           (b) => b.residentKtp === res.ktp && b.month === 'April' && b.year === 2026
                         );
+                        const aprRecord = rawAprRecord ? (isVacant ? { ...rawAprRecord, pdamBill: 0, trashBill: 0, totalBill: 0 } : rawAprRecord) : null;
                         const isSelected = selectedResidentKtp === res.ktp;
 
                         return (
@@ -1221,7 +1228,14 @@ export const KoordinatorDashboard: React.FC<KoordinatorDashboardProps> = ({
           b.month === 'Mei' && 
           b.year === 2026 && 
           floorResidents.some(r => r.ktp === b.residentKtp)
-        );
+        ).map(b => {
+          const res = floorResidents.find(r => r.ktp === b.residentKtp);
+          const isVacant = res?.isVacant || res?.occupancyStatus === 'Kosong' || res?.occupancyStatus === 'kosong' || res?.name === 'Kamar Kosong' || res?.name?.toLowerCase()?.includes('kamar kosong');
+          if (isVacant) {
+            return { ...b, pdamBill: 0, trashBill: 0, totalBill: 0 };
+          }
+          return b;
+        });
         const totalCollected = meiBills
           .filter(b => b.status === 'Lunas')
           .reduce((sum, b) => sum + b.totalBill, 0);
@@ -1337,8 +1351,11 @@ export const KoordinatorDashboard: React.FC<KoordinatorDashboardProps> = ({
                   {/* Mobile Cards (Visible on Mobile) */}
                   <div className="grid grid-cols-1 gap-3.5 md:hidden w-full">
                     {filteredResForPayment.map(res => {
-                      const meiRec = billingRecords.find(b => b.residentKtp === res.ktp && b.month === 'Mei' && b.year === 2026);
-                      const aprRec = billingRecords.find(b => b.residentKtp === res.ktp && b.month === 'April' && b.year === 2026);
+                      const isVacant = res.isVacant || res.occupancyStatus === 'Kosong' || res.occupancyStatus === 'kosong' || res.name === 'Kamar Kosong' || res.name.toLowerCase().includes('kamar kosong');
+                      const rawMeiRec = billingRecords.find(b => b.residentKtp === res.ktp && b.month === 'Mei' && b.year === 2026);
+                      const meiRec = rawMeiRec ? (isVacant ? { ...rawMeiRec, pdamBill: 0, trashBill: 0, totalBill: 0 } : rawMeiRec) : null;
+                      const rawAprRec = billingRecords.find(b => b.residentKtp === res.ktp && b.month === 'April' && b.year === 2026);
+                      const aprRec = rawAprRec ? (isVacant ? { ...rawAprRec, pdamBill: 0, trashBill: 0, totalBill: 0 } : rawAprRec) : null;
                       
                       const lastMeter = meiRec 
                         ? meiRec.prevMeter 
@@ -1422,8 +1439,11 @@ export const KoordinatorDashboard: React.FC<KoordinatorDashboardProps> = ({
                       </thead>
                       <tbody className="divide-y divide-slate-100 font-bold text-slate-700">
                         {filteredResForPayment.map(res => {
-                          const meiRec = billingRecords.find(b => b.residentKtp === res.ktp && b.month === 'Mei' && b.year === 2026);
-                          const aprRec = billingRecords.find(b => b.residentKtp === res.ktp && b.month === 'April' && b.year === 2026);
+                          const isVacant = res.isVacant || res.occupancyStatus === 'Kosong' || res.occupancyStatus === 'kosong' || res.name === 'Kamar Kosong' || res.name.toLowerCase().includes('kamar kosong');
+                          const rawMeiRec = billingRecords.find(b => b.residentKtp === res.ktp && b.month === 'Mei' && b.year === 2026);
+                          const meiRec = rawMeiRec ? (isVacant ? { ...rawMeiRec, pdamBill: 0, trashBill: 0, totalBill: 0 } : rawMeiRec) : null;
+                          const rawAprRec = billingRecords.find(b => b.residentKtp === res.ktp && b.month === 'April' && b.year === 2026);
+                          const aprRec = rawAprRec ? (isVacant ? { ...rawAprRec, pdamBill: 0, trashBill: 0, totalBill: 0 } : rawAprRec) : null;
                           
                           const lastMeter = meiRec 
                             ? meiRec.prevMeter 
