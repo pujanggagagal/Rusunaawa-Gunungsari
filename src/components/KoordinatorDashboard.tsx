@@ -33,6 +33,7 @@ interface KoordinatorDashboardProps {
   onLogout: () => void;
   onSaveMeter: (ktp: string, prevMeter: number, currentMeter: number) => void;
   appSettings: AppSettings;
+  onPayBill?: (billId: string, amount: number) => void;
 }
 
 export const KoordinatorDashboard: React.FC<KoordinatorDashboardProps> = ({
@@ -41,7 +42,8 @@ export const KoordinatorDashboard: React.FC<KoordinatorDashboardProps> = ({
   billingRecords,
   onLogout,
   onSaveMeter,
-  appSettings
+  appSettings,
+  onPayBill
 }) => {
   // Extract assignedFloor. If not defined to avoid type issues, fetch from ID or default to 1.
   const targetFloor = coordinator.assignedFloor || (coordinator.id === 'coord-1' ? 1 : coordinator.id === 'coord-2' ? 2 : coordinator.id === 'coord-3' ? 3 : coordinator.id === 'coord-4' ? 4 : coordinator.id === 'coord-5' ? 5 : 1);
@@ -999,11 +1001,37 @@ export const KoordinatorDashboard: React.FC<KoordinatorDashboardProps> = ({
                             </span>
                           </div>
                           
-                          <div className="text-right">
+                          <div className="text-right flex flex-col items-end gap-1.5" onClick={(e) => e.stopPropagation()}>
                             {meiRecord ? (
-                              <span className="px-2.5 py-1 bg-emerald-150 text-emerald-800 border border-emerald-250 rounded-full font-extrabold text-[9px] uppercase">
-                                Sudah Catat ✓
-                              </span>
+                              <>
+                                <span className="px-2.5 py-1 bg-emerald-150 text-emerald-800 border border-emerald-250 rounded-full font-extrabold text-[9px] uppercase">
+                                  Sudah Catat ✓
+                                </span>
+                                {meiRecord.status === 'Lunas' ? (
+                                  <span className="px-2 py-0.5 bg-emerald-50 text-emerald-600 border border-emerald-100 rounded text-[8px] font-black uppercase">
+                                    Lunas
+                                  </span>
+                                ) : (
+                                  <div className="flex items-center gap-1.5 mt-0.5">
+                                    <span className="px-2 py-0.5 bg-amber-50 text-amber-600 border border-amber-100 rounded text-[8px] font-black uppercase">
+                                      Belum Bayar
+                                    </span>
+                                    {onPayBill && (
+                                      <button
+                                        type="button"
+                                        onClick={() => {
+                                          if (window.confirm(`Konfirmasi pembayaran air & sampah Unit ${res.unit} sebesar Rp ${meiRecord.totalBill.toLocaleString('id-ID')} secara TUNAI?`)) {
+                                            onPayBill(meiRecord.id, meiRecord.totalBill);
+                                          }
+                                        }}
+                                        className="px-2 py-0.5 bg-emerald-600 hover:bg-emerald-700 text-white rounded text-[8px] font-black uppercase tracking-wider transition cursor-pointer select-none active:scale-[0.97]"
+                                      >
+                                        Bayar ✓
+                                      </button>
+                                    )}
+                                  </div>
+                                )}
+                              </>
                             ) : (
                               <span className="px-2.5 py-1 bg-rose-100 text-rose-700 border border-rose-200 rounded-full font-extrabold text-[9px] uppercase animate-pulse">
                                 Belum Catat 📝
@@ -1095,11 +1123,37 @@ export const KoordinatorDashboard: React.FC<KoordinatorDashboardProps> = ({
                             <td className="py-3 font-mono font-bold text-slate-800">
                               {meiRecord ? `Rp ${meiRecord.pdamBill.toLocaleString('id-ID')}` : '-'}
                             </td>
-                            <td className="py-3 text-right pr-1">
+                            <td className="py-3 text-right pr-1" onClick={(e) => e.stopPropagation()}>
                               {meiRecord ? (
-                                <span className="px-2.5 py-1 bg-emerald-50 text-emerald-700 border border-emerald-150 rounded-full font-bold">
-                                  Sudah Catat ✓
-                                </span>
+                                <div className="flex flex-col items-end gap-1">
+                                  <span className="px-2 py-0.5 bg-emerald-50 text-emerald-750 border border-emerald-100 rounded font-bold text-[9px]">
+                                    Sudah Catat ✓
+                                  </span>
+                                  {meiRecord.status === 'Lunas' ? (
+                                    <span className="px-2 py-0.5 bg-emerald-100 text-emerald-800 border border-emerald-200 rounded font-extrabold text-[9px]">
+                                      Lunas ✓
+                                    </span>
+                                  ) : (
+                                    <div className="flex items-center gap-1.5 mt-0.5">
+                                      <span className="px-2 py-0.5 bg-amber-55 text-amber-700 border border-amber-100 rounded font-bold text-[9px]">
+                                        Belum Bayar
+                                      </span>
+                                      {onPayBill && (
+                                        <button
+                                          type="button"
+                                          onClick={() => {
+                                            if (window.confirm(`Konfirmasi pembayaran air & sampah Unit ${res.unit} sebesar Rp ${meiRecord.totalBill.toLocaleString('id-ID')} secara TUNAI?`)) {
+                                              onPayBill(meiRecord.id, meiRecord.totalBill);
+                                            }
+                                          }}
+                                          className="px-2 py-0.5 bg-emerald-650 hover:bg-emerald-700 text-white rounded text-[9px] font-black uppercase tracking-wider transition cursor-pointer select-none active:scale-[0.97]"
+                                        >
+                                          Lunas ✓
+                                        </button>
+                                      )}
+                                    </div>
+                                  )}
+                                </div>
                               ) : (
                                 <span className="px-2.5 py-1 bg-rose-50 text-rose-600 border border-rose-100 rounded-full font-bold animate-pulse">
                                   Belum Catat 📝

@@ -829,6 +829,7 @@ export default function App() {
                 onLogout={handleLogout}
                 onSaveMeter={handleSaveMeter}
                 appSettings={appSettings}
+                onPayBill={handlePayBill}
               />
             )}
 

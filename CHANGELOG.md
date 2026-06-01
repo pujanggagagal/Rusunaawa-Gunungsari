@@ -16,6 +16,9 @@ Seluruh log perubahan, optimasi sistem, dan perbaikan bug yang diterapkan pada r
 - **Fitur Status Hunian pada Modal Edit Warga**:
   - Menambahkan opsi pilihan **"Status Hunian" (Dihuni / Kosong)** di dalam modal *Edit Detail Warga* di Dashboard Admin.
   - Memastikan perubahan status hunian secara otomatis memperbarui nilai kolom database `occupancyStatus` dan `isVacant` secara sinkron, memungkinkan admin merubah hunian menjadi kosong secara terpusat jika ada unit yang dikosongkan.
+- **Fitur Pelunasan Tagihan Terintegrasi pada Dashboard Koordinator**:
+  - Menambahkan aksi **"Bayar / Lunas ✓"** secara langsung pada daftar kamar warga (baik tampilan Mobile Card maupun Desktop Table) di Dashboard Koordinator.
+  - Memungkinkan koordinator mengonfirmasi penerimaan pembayaran iuran air & sampah warga secara tunai langsung di tempat saat mereka berkeliling. Aksi ini secara otomatis menyinkronkan data pembayaran, memulihkan aliran listrik warga, dan mencatat kas masuk ledger secara terintegrasi.
 
 #### Fixed
 - **Sinkronisasi Angka Meteran Lalu (Koordinator Dashboard)**:
