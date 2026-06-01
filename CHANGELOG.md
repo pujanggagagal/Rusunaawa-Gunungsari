@@ -21,6 +21,12 @@ Seluruh log perubahan, optimasi sistem, dan perbaikan bug yang diterapkan pada r
 - **Sinkronisasi Angka Meteran Lalu (Koordinator Dashboard)**:
   - Memperbaiki kutu logika pada fungsi `getPrevMeterAndCurrentMei()` yang sebelumnya mengabaikan `prevMeter` dari catatan Mei yang sudah terekam di database.
   - Memperbaiki bug yang memunculkan data desimal lawas (`23.234` m³ dari data awal) dengan menyortir data historis dan memprioritaskan catatan revisi baru hasil impor CSV (prefix `bill-`).
+- **Sinkronisasi Otomatis Supabase (Autosync Residents & Billing)**:
+  - Memperbaiki kegagalan autosync database Supabase saat menyimpan pengeditan warga. Operasi `.insert()` pada `supabaseService.ts` yang menabrak batasan kunci primer (*primary key conflict*) diganti menjadi `.upsert()` agar pembaruan data berjalan mulus.
+  - Menyelaraskan nama tabel database Supabase yang tidak cocok (`billing_records` dialihkan ke `billing`, dan `financial_logs` dialihkan ke `finance_logs`).
+  - Menghilangkan kegagalan pengiriman data warga ke database dengan memetakan properti camelCase di frontend secara presisi ke kolom fisik PostgreSQL yang berhuruf kecil (*lowercase mapping*).
+- **Peringatan PWA Deprecated (index.html)**:
+  - Mengubah `<meta name="apple-mobile-web-app-capable">` menjadi `<meta name="mobile-web-app-capable">` untuk melenyapkan peringatan usang (*deprecation warning*) di konsol browser.
 
 ---
 
