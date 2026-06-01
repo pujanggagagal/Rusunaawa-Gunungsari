@@ -34,6 +34,19 @@ export const getBarcodeContent = (res: { floor?: number; unit: string; block: st
   return `${floorVal}-${blockClean}-${unitClean}`;
 };
 
+export const getCleanPhone = (phoneStr: string): string => {
+  if (!phoneStr) return '';
+  if (phoneStr.startsWith('VERIFIED_V1:')) {
+    try {
+      const data = JSON.parse(phoneStr.substring('VERIFIED_V1:'.length));
+      return data.whatsapp || '';
+    } catch (e) {
+      return '';
+    }
+  }
+  return phoneStr;
+};
+
 export interface BillingRecord {
   id: string;
   residentKtp: string;

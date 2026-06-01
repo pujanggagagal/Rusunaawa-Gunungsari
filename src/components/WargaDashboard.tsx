@@ -30,6 +30,7 @@ interface WargaDashboardProps {
   onLogout: () => void;
   onPayBill: (billId: string, amount: number) => void;
   appSettings: AppSettings;
+  onEditResident?: (id: string, updatedFields: Partial<Resident>) => void;
 }
 
 export const WargaDashboard: React.FC<WargaDashboardProps> = ({
@@ -39,10 +40,23 @@ export const WargaDashboard: React.FC<WargaDashboardProps> = ({
   simulatedDate,
   onLogout,
   onPayBill,
-  appSettings
+  appSettings,
+  onEditResident
 }) => {
   const [showPaymentModal, setShowPaymentModal] = useState(false);
   const [selectedBill, setSelectedBill] = useState<BillingRecord | null>(null);
+
+  // Parse verification state stored on the database inside user.phone
+  const dbVerification = React.useMemo(() => {
+    if (user.phone && user.phone.startsWith('VERIFIED_V1:')) {
+      try {
+        return JSON.parse(user.phone.substring('VERIFIED_V1:'.length));
+      } catch (e) {
+        return null;
+      }
+    }
+    return null;
+  }, [user.phone]);
 
   // States for citizen Data Verifikasi
   const yearMonth = simulatedDate ? simulatedDate.substring(0, 7) : '2026-05';
@@ -50,6 +64,7 @@ export const WargaDashboard: React.FC<WargaDashboardProps> = ({
   const latestKey = `rg_verification_latest_${user.ktp}`;
 
   const [showVerificationModal, setShowVerificationModal] = useState(() => {
+    if (dbVerification) return false;
     if (typeof window !== 'undefined') {
       return localStorage.getItem(verifiedKey) !== 'true';
     }
@@ -60,6 +75,7 @@ export const WargaDashboard: React.FC<WargaDashboardProps> = ({
 
   // Verification data states
   const [whatsapp, setWhatsapp] = useState(() => {
+    if (dbVerification?.whatsapp) return dbVerification.whatsapp;
     let raw = '';
     if (typeof window !== 'undefined') {
       const latest = localStorage.getItem(latestKey);
@@ -99,6 +115,7 @@ export const WargaDashboard: React.FC<WargaDashboardProps> = ({
   };
 
   const [familyMembers, setFamilyMembers] = useState<Array<{ name: string; age: string; gender: 'Laki-laki' | 'Perempuan'; occupation: string }>>(() => {
+    if (dbVerification?.familyMembers) return dbVerification.familyMembers;
     if (typeof window !== 'undefined') {
       const latest = localStorage.getItem(latestKey);
       if (latest) {
@@ -114,6 +131,7 @@ export const WargaDashboard: React.FC<WargaDashboardProps> = ({
   });
 
   const [vehicles, setVehicles] = useState<Array<{ type: string; plate: string }>>(() => {
+    if (dbVerification?.vehicles) return dbVerification.vehicles;
     if (typeof window !== 'undefined') {
       const latest = localStorage.getItem(latestKey);
       if (latest) {
@@ -132,6 +150,7 @@ export const WargaDashboard: React.FC<WargaDashboardProps> = ({
   });
 
   const [hasNoVehicle, setHasNoVehicle] = useState<boolean>(() => {
+    if (dbVerification) return !!dbVerification.hasNoVehicle;
     if (typeof window !== 'undefined') {
       const latest = localStorage.getItem(latestKey);
       if (latest) {
@@ -206,6 +225,14 @@ export const WargaDashboard: React.FC<WargaDashboardProps> = ({
       localStorage.setItem(verifiedKey, 'true');
       localStorage.setItem(latestKey, JSON.stringify(payload));
     }
+    
+    // Save to Supabase using onEditResident if provided
+    if (onEditResident) {
+      onEditResident(user.id, {
+        phone: `VERIFIED_V1:${JSON.stringify(payload)}`
+      });
+    }
+
     setShowVerificationModal(false);
     setIsForceEditVerification(false);
   };

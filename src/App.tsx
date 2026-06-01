@@ -827,6 +827,7 @@ export default function App() {
                 onLogout={handleLogout}
                 onPayBill={handlePayBill}
                 appSettings={appSettings}
+                onEditResident={handleEditResident}
               />
             )}
 

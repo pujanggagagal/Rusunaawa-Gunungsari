@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { Resident, Coordinator, FinancialLog, BillingRecord, getFloorFromUnit, getBarcodeContent, AppSettings } from '../types';
+import { Resident, Coordinator, FinancialLog, BillingRecord, getFloorFromUnit, getBarcodeContent, AppSettings, getCleanPhone } from '../types';
 import { LogOut, LayoutGrid, Users, Coins, Plus, Trash2, Edit2, UserPlus, Sparkles, CheckCircle2, ChevronRight, Calculator, Landmark, ShieldAlert, ArrowDownUp, UploadCloud, AlertCircle, Check, RotateCcw, QrCode, Printer, Search, FileText, Download, Settings } from 'lucide-react';
 import { calculatePdamBill } from '../data';
 import { BarcodeRenderer } from './BarcodeRenderer';
@@ -418,7 +418,7 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({
     setEditResKtp(res.ktp);
     setEditResUnit(res.unit);
     setEditResBlock(res.block);
-    setEditResPhone(res.phone);
+    setEditResPhone(getCleanPhone(res.phone));
     setEditResFloor(res.floor || getFloorFromUnit(res.unit));
     setEditResOccupancy(res.occupancyStatus || 'Dihuni');
     setEditResIsVacant(res.isVacant || false);
@@ -1322,7 +1322,7 @@ Siti Aminah	357802...	Blok B	B-202	085755..."
                           <div key={idx} className="bg-slate-900 border border-slate-800/60 p-1.5 rounded flex justify-between gap-2">
                             <div>
                               <span className="text-purple-400 font-bold">[{pr.unit}]</span> <span className="text-white">{pr.name}</span>
-                              <p className="text-slate-500 text-[8px]">KTP: {pr.ktp} • HP: {pr.phone}</p>
+                              <p className="text-slate-500 text-[8px]">KTP: {pr.ktp} • HP: {getCleanPhone(pr.phone)}</p>
                             </div>
                             <span className="text-slate-400 text-[8px] uppercase self-center bg-slate-800 px-1 py-0.5 rounded font-bold">{pr.block}</span>
                           </div>
@@ -1471,7 +1471,7 @@ Siti Aminah	357802...	Blok B	B-202	085755..."
 
                       <div className="text-xs space-y-1">
                         <p className="font-semibold text-slate-800 text-sm">{res.name}</p>
-                        <p className="text-slate-500 font-mono">No HP: {res.phone}</p>
+                        <p className="text-slate-500 font-mono">No HP: {getCleanPhone(res.phone)}</p>
                         
                         <div className="bg-purple-50/40 p-2 rounded-xl mt-1 space-y-1 border border-purple-150/40 flex justify-between items-center text-slate-700">
                           <span className="text-[9px] text-purple-600 font-mono font-bold uppercase">Status Hunian:</span>
@@ -1584,7 +1584,7 @@ Siti Aminah	357802...	Blok B	B-202	085755..."
                             </div>
                           )}
                         </td>
-                        <td className="py-3 font-mono text-slate-500">{res.phone}</td>
+                        <td className="py-3 font-mono text-slate-500">{getCleanPhone(res.phone)}</td>
                         <td className="py-3">
                           <select
                             value={res.occupancyStatus || 'Dihuni'}
@@ -2130,7 +2130,7 @@ Siti Aminah	357802...	Blok B	B-202	085755..."
                           <p className="text-[9px] text-indigo-600 font-mono font-bold uppercase bg-slate-50 px-1.5 py-0.5 rounded border border-slate-100 inline-block mt-1">
                             Barcode: {getBarcodeContent(res)}
                           </p>
-                          <p className="text-[9px] text-slate-400 font-semibold text-slate-500 mt-1">Kontak: {res.phone}</p>
+                          <p className="text-[9px] text-slate-400 font-semibold text-slate-500 mt-1">Kontak: {getCleanPhone(res.phone)}</p>
                         </div>
 
                         {/* Visual QR Code pattern */}
