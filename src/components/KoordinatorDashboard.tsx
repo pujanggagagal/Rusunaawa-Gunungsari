@@ -22,7 +22,9 @@ import {
   QrCode,
   Camera,
   Volume2,
-  RefreshCw
+  RefreshCw,
+  Coins,
+  ShieldAlert
 } from 'lucide-react';
 import { calculatePdamBill } from '../data';
 
@@ -61,6 +63,8 @@ export const KoordinatorDashboard: React.FC<KoordinatorDashboardProps> = ({
 
   // 2. State management
   const [selectedFloor, setSelectedFloor] = useState<number | 'all'>(targetFloor);
+  const [coordTab, setCoordTab] = useState<'recording' | 'payment'>('recording');
+  const [paymentFilter, setPaymentFilter] = useState<'all' | 'unpaid' | 'paid'>('all');
   const [recordFilter, setRecordFilter] = useState<'all' | 'pending' | 'completed'>('all');
   const [filterBlock, setFilterBlock] = useState<string>('all');
   const [searchQuery, setSearchQuery] = useState('');
@@ -611,8 +615,37 @@ export const KoordinatorDashboard: React.FC<KoordinatorDashboardProps> = ({
         </div>
       )}
 
-      {/* 2. Visual Progress Bar for Record Completion Status */}
-      <div className="bg-white p-5 rounded-3xl border border-slate-100 shadow-md">
+      {/* SEGMENTED TAB BAR NAVIGATION FOR COORDINATOR */}
+      <div className="flex border-b border-slate-200 mb-4 gap-2 overflow-x-auto w-full select-none">
+        <button
+          onClick={() => setCoordTab('recording')}
+          className={`flex-shrink-0 pb-3 text-xs font-black font-mono uppercase tracking-wider border-b-2 px-6 transition-all cursor-pointer flex items-center gap-2 ${
+            coordTab === 'recording'
+              ? 'border-cyan-600 text-cyan-700'
+              : 'border-transparent text-slate-400 hover:text-slate-600'
+          }`}
+        >
+          <QrCode size={14} />
+          Pencatatan Meter Air (📝)
+        </button>
+        <button
+          onClick={() => setCoordTab('payment')}
+          className={`flex-shrink-0 pb-3 text-xs font-black font-mono uppercase tracking-wider border-b-2 px-6 transition-all cursor-pointer flex items-center gap-2 ${
+            coordTab === 'payment'
+              ? 'border-cyan-600 text-cyan-700'
+              : 'border-transparent text-slate-400 hover:text-slate-600'
+          }`}
+        >
+          <Coins size={14} />
+          Pembayaran Iuran Warga (💰)
+        </button>
+      </div>
+
+      {/* COORD TAB 1: PENCATATAN AIR (FORM SCAN & RECORD LIST) */}
+      {coordTab === 'recording' && (
+        <>
+          {/* 2. Visual Progress Bar for Record Completion Status */}
+          <div className="bg-white p-5 rounded-3xl border border-slate-100 shadow-md">
         <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-2 mb-3">
           <div>
             <h2 className="text-sm font-black text-slate-800 flex items-center gap-1.5 uppercase tracking-wide">
@@ -1169,7 +1202,7 @@ export const KoordinatorDashboard: React.FC<KoordinatorDashboardProps> = ({
               </>
             )}
           </div>
-
+          
           <div className="bg-cyan-55/40 border border-cyan-100 p-3 rounded-2xl flex items-center gap-2.5 mt-4">
             <Sparkles className="text-cyan-600 flex-shrink-0" size={16} />
             <p className="text-[10px] text-cyan-800 leading-relaxed font-semibold">
@@ -1177,8 +1210,282 @@ export const KoordinatorDashboard: React.FC<KoordinatorDashboardProps> = ({
             </p>
           </div>
         </div>
-
       </div>
+    </>
+  )}
+
+      {/* COORD TAB 2: PENAGIHAN & PEMBAYARAN IURAN */}
+      {coordTab === 'payment' && (() => {
+        // Calculate total Mei collected and total outstanding
+        const meiBills = billingRecords.filter(b => 
+          b.month === 'Mei' && 
+          b.year === 2026 && 
+          floorResidents.some(r => r.ktp === b.residentKtp)
+        );
+        const totalCollected = meiBills
+          .filter(b => b.status === 'Lunas')
+          .reduce((sum, b) => sum + b.totalBill, 0);
+
+        const unpaidBills = meiBills.filter(b => b.status !== 'Lunas');
+        const totalOutstanding = unpaidBills.reduce((sum, b) => sum + b.totalBill, 0);
+        const unpaidCount = unpaidBills.length;
+        const totalWargaCount = floorResidents.length;
+        
+        // Filter residents for payment list based on searchQuery and paymentFilter
+        const filteredResForPayment = floorResidents.filter(res => {
+          const query = searchQuery.toLowerCase();
+          const matchesSearch = res.name.toLowerCase().includes(query) || 
+                                res.unit.toLowerCase().includes(query) ||
+                                res.block.toLowerCase().includes(query);
+          
+          const meiRecord = billingRecords.find(
+            (b) => b.residentKtp === res.ktp && b.month === 'Mei' && b.year === 2026
+          );
+
+          if (paymentFilter === 'unpaid') {
+            return matchesSearch && (!meiRecord || meiRecord.status !== 'Lunas');
+          }
+          if (paymentFilter === 'paid') {
+            return matchesSearch && (meiRecord && meiRecord.status === 'Lunas');
+          }
+          return matchesSearch;
+        });
+
+        return (
+          <div className="space-y-6 animate-fade-in text-slate-900 w-full">
+            {/* 1. Summary Cards row */}
+            <div className="grid grid-cols-1 sm:grid-cols-3 gap-5">
+              <div className="bg-white p-5 rounded-3xl border border-slate-100 shadow-md flex items-center justify-between">
+                <div>
+                  <span className="text-[10px] uppercase font-mono font-extrabold text-slate-400 block tracking-wider">Total Kas Terkumpul</span>
+                  <h3 className="text-xl font-black text-slate-900 mt-1">Rp {totalCollected.toLocaleString('id-ID')}</h3>
+                  <p className="text-[9px] text-emerald-650 font-bold mt-0.5">Dari warga yang sudah Lunas</p>
+                </div>
+                <div className="h-10 w-10 bg-emerald-50 text-emerald-600 rounded-xl flex items-center justify-center shrink-0">
+                  <Coins size={20} />
+                </div>
+              </div>
+
+              <div className="bg-white p-5 rounded-3xl border border-slate-100 shadow-md flex items-center justify-between">
+                <div>
+                  <span className="text-[10px] uppercase font-mono font-extrabold text-slate-400 block tracking-wider">Sisa Belum Tertagih</span>
+                  <h3 className="text-xl font-black text-rose-600 mt-1">Rp {totalOutstanding.toLocaleString('id-ID')}</h3>
+                  <p className="text-[9px] text-rose-500 font-bold mt-0.5">{unpaidCount} warga belum membayar</p>
+                </div>
+                <div className="h-10 w-10 bg-rose-50 text-rose-600 rounded-xl flex items-center justify-center shrink-0">
+                  <ShieldAlert size={20} />
+                </div>
+              </div>
+
+              <div className="bg-white p-5 rounded-3xl border border-slate-100 shadow-md flex items-center justify-between">
+                <div>
+                  <span className="text-[10px] uppercase font-mono font-extrabold text-slate-400 block tracking-wider">Metode Penagihan</span>
+                  <h3 className="text-sm font-black text-slate-900 mt-1.5 uppercase">Kolektif Lapangan</h3>
+                  <p className="text-[9px] text-cyan-600 font-bold mt-0.5">Setorkan langsung ke Admin</p>
+                </div>
+                <div className="h-10 w-10 bg-cyan-50 text-cyan-600 rounded-xl flex items-center justify-center shrink-0">
+                  <UserCheck size={20} />
+                </div>
+              </div>
+            </div>
+
+            {/* 2. Interactive Directory Card */}
+            <div className="bg-white p-5 rounded-3xl border border-slate-100 shadow-xl shadow-slate-100/50 space-y-4 w-full">
+              <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 border-b border-slate-100 pb-3.5">
+                <div>
+                  <h2 className="text-sm font-black text-slate-900 uppercase tracking-wide flex items-center gap-1.5">
+                    <Coins size={16} className="text-cyan-600 animate-pulse" />
+                    Daftar Penagihan Lantai {targetFloor}
+                  </h2>
+                  <p className="text-[10px] text-slate-400 font-mono font-bold mt-0.5">KELOLA PENERIMAAN IURAN PDAM &amp; SAMPAH</p>
+                </div>
+
+                <div className="flex flex-col sm:flex-row gap-2.5 w-full sm:w-auto items-stretch sm:items-center">
+                  {/* Search bar */}
+                  <div className="relative flex-1 sm:w-48">
+                    <input
+                      type="text"
+                      placeholder="Cari Unit / Nama..."
+                      value={searchQuery}
+                      onChange={(e) => setSearchQuery(e.target.value)}
+                      className="w-full pl-8 pr-3 py-1.5 bg-slate-50 border border-slate-200 rounded-xl text-xs font-semibold focus:outline-none focus:bg-white focus:border-cyan-500"
+                    />
+                    <Search size={12} className="absolute left-2.5 top-2.5 text-slate-400" />
+                  </div>
+
+                  {/* Payment Filter */}
+                  <select
+                    value={paymentFilter}
+                    onChange={(e) => setPaymentFilter(e.target.value as any)}
+                    className="px-3 py-1.5 bg-slate-50 border border-slate-200 rounded-xl text-xs font-bold text-slate-700 focus:outline-none focus:border-cyan-500"
+                  >
+                    <option value="all">Semua Warga ({totalWargaCount})</option>
+                    <option value="unpaid">Belum Lunas ({unpaidCount})</option>
+                    <option value="paid">Sudah Lunas ({totalWargaCount - unpaidCount})</option>
+                  </select>
+                </div>
+              </div>
+
+              {filteredResForPayment.length === 0 ? (
+                <div className="py-16 text-center text-slate-400 space-y-2 w-full">
+                  <Search size={36} className="mx-auto opacity-30 text-slate-500" />
+                  <p className="text-xs font-black">Warga tidak ditemukan.</p>
+                  <p className="text-[10px]">Silakan ubah filter pencarian atau kata kunci pencarian Anda.</p>
+                </div>
+              ) : (
+                <div className="w-full">
+                  {/* Mobile Cards (Visible on Mobile) */}
+                  <div className="grid grid-cols-1 gap-3.5 md:hidden w-full">
+                    {filteredResForPayment.map(res => {
+                      const meiRec = billingRecords.find(b => b.residentKtp === res.ktp && b.month === 'Mei' && b.year === 2026);
+                      const aprRec = billingRecords.find(b => b.residentKtp === res.ktp && b.month === 'April' && b.year === 2026);
+                      
+                      const lastMeter = meiRec 
+                        ? meiRec.prevMeter 
+                        : (aprRec 
+                            ? aprRec.currentMeter 
+                            : (res.initialMeter !== undefined && res.initialMeter !== null ? Number(res.initialMeter) : 100)
+                          );
+
+                      return (
+                        <div key={res.id} className="bg-slate-50/50 p-4 border border-slate-150 rounded-2xl flex flex-col gap-3 w-full">
+                          <div className="flex justify-between items-start">
+                            <div>
+                              <span className="text-[9px] uppercase font-mono font-black text-slate-400">Unit Warga</span>
+                              <h4 className="text-sm font-black text-slate-900 -mt-0.5">{res.unit}</h4>
+                              <p className="text-xs font-extrabold text-slate-700 mt-0.5">{res.name}</p>
+                            </div>
+                            <div>
+                              {!meiRec ? (
+                                <span className="px-2 py-0.5 bg-slate-100 text-slate-500 border border-slate-200 rounded text-[8px] font-black uppercase">
+                                  Belum Catat Air
+                                </span>
+                              ) : meiRec.status === 'Lunas' ? (
+                                <span className="px-2 py-0.5 bg-emerald-50 text-emerald-700 border border-emerald-150 rounded text-[8px] font-black uppercase">
+                                  Sudah Lunas ✓
+                                </span>
+                              ) : (
+                                <span className="px-2 py-0.5 bg-amber-50 text-amber-700 border border-amber-150 rounded text-[8px] font-black uppercase">
+                                  Belum Lunas
+                                </span>
+                              )}
+                            </div>
+                          </div>
+
+                          <div className="grid grid-cols-3 gap-2 bg-white/60 p-2 border border-slate-100 rounded-xl text-[10px] font-mono text-slate-650 font-bold text-center">
+                            <div>
+                              <span className="block text-[8px] text-slate-400 uppercase">Meter Lalu</span>
+                              <span>{lastMeter} m³</span>
+                            </div>
+                            <div>
+                              <span className="block text-[8px] text-slate-400 uppercase">Meter Baru</span>
+                              <span>{meiRec ? `${meiRec.currentMeter} m³` : '-'}</span>
+                            </div>
+                            <div>
+                              <span className="block text-[8px] text-slate-400 uppercase">Est. Tagihan</span>
+                              <span className="text-slate-900 font-black">{meiRec ? `Rp ${meiRec.totalBill.toLocaleString('id-ID')}` : '-'}</span>
+                            </div>
+                          </div>
+
+                          {meiRec && meiRec.status !== 'Lunas' && onPayBill && (
+                            <button
+                              type="button"
+                              onClick={() => {
+                                if (window.confirm(`Konfirmasi pembayaran air & sampah Unit ${res.unit} sebesar Rp ${meiRec.totalBill.toLocaleString('id-ID')} secara TUNAI?`)) {
+                                  onPayBill(meiRec.id, meiRec.totalBill);
+                                }
+                              }}
+                              className="w-full py-2.5 bg-emerald-600 hover:bg-emerald-700 text-white rounded-xl text-xs font-black uppercase tracking-wider transition cursor-pointer select-none active:scale-[0.98] shadow-md shadow-emerald-500/10 border-0"
+                            >
+                              Terima Pembayaran Tunai ✓
+                            </button>
+                          )}
+                        </div>
+                      );
+                    })}
+                  </div>
+
+                  {/* Desktop Table (Visible on large screens) */}
+                  <div className="hidden md:block overflow-x-auto w-full">
+                    <table className="w-full text-xs text-left divide-y divide-slate-150">
+                      <thead>
+                        <tr className="text-[10px] uppercase font-mono font-extrabold text-slate-450 tracking-wider">
+                          <th className="pb-3 px-2">Unit</th>
+                          <th className="pb-3 px-2">Nama Warga</th>
+                          <th className="pb-3 px-2 text-right">Lalu (Apr)</th>
+                          <th className="pb-3 px-2 text-right">Baru (Mei)</th>
+                          <th className="pb-3 px-2 text-right">Vol (m³)</th>
+                          <th className="pb-3 px-2 text-right">Tagihan PDAM + Sampah</th>
+                          <th className="pb-3 px-2 text-center">Status</th>
+                          <th className="pb-3 px-2 text-center">Tindakan Pembayaran</th>
+                        </tr>
+                      </thead>
+                      <tbody className="divide-y divide-slate-100 font-bold text-slate-700">
+                        {filteredResForPayment.map(res => {
+                          const meiRec = billingRecords.find(b => b.residentKtp === res.ktp && b.month === 'Mei' && b.year === 2026);
+                          const aprRec = billingRecords.find(b => b.residentKtp === res.ktp && b.month === 'April' && b.year === 2026);
+                          
+                          const lastMeter = meiRec 
+                            ? meiRec.prevMeter 
+                            : (aprRec 
+                                ? aprRec.currentMeter 
+                                : (res.initialMeter !== undefined && res.initialMeter !== null ? Number(res.initialMeter) : 100)
+                              );
+
+                          return (
+                            <tr key={res.id} className="hover:bg-slate-50/50 transition-colors">
+                              <td className="py-3 px-2 font-mono font-black text-slate-900">{res.unit}</td>
+                              <td className="py-3 px-2 text-slate-800 text-[11px] font-semibold">{res.name}</td>
+                              <td className="py-3 px-2 text-right font-mono text-slate-500">{lastMeter} m³</td>
+                              <td className="py-3 px-2 text-right font-mono text-slate-900">{meiRec ? `${meiRec.currentMeter} m³` : '-'}</td>
+                              <td className="py-3 px-2 text-right font-mono text-sky-700">{meiRec ? `+${meiRec.usage} m³` : '-'}</td>
+                              <td className="py-3 px-2 text-right font-mono text-slate-950 font-black">
+                                {meiRec ? `Rp ${meiRec.totalBill.toLocaleString('id-ID')}` : '-'}
+                              </td>
+                              <td className="py-3 px-2 text-center">
+                                {!meiRec ? (
+                                  <span className="px-2.5 py-1 bg-slate-100 text-slate-500 rounded-full font-bold text-[9px] uppercase border border-slate-200">
+                                    Belum Catat
+                                  </span>
+                                ) : meiRec.status === 'Lunas' ? (
+                                  <span className="px-2.5 py-1 bg-emerald-50 text-emerald-700 rounded-full font-bold text-[9px] uppercase border border-emerald-150">
+                                    Lunas ✓
+                                  </span>
+                                ) : (
+                                  <span className="px-2.5 py-1 bg-amber-50 text-amber-700 rounded-full font-bold text-[9px] uppercase border border-amber-150">
+                                    Belum Lunas
+                                  </span>
+                                )}
+                              </td>
+                              <td className="py-3 px-2 text-center">
+                                {meiRec && meiRec.status !== 'Lunas' && onPayBill ? (
+                                  <button
+                                    type="button"
+                                    onClick={() => {
+                                      if (window.confirm(`Konfirmasi pembayaran air & sampah Unit ${res.unit} sebesar Rp ${meiRec.totalBill.toLocaleString('id-ID')} secara TUNAI?`)) {
+                                        onPayBill(meiRec.id, meiRec.totalBill);
+                                      }
+                                    }}
+                                    className="px-3.5 py-1 bg-emerald-600 hover:bg-emerald-700 text-white rounded-xl text-[9px] font-black uppercase tracking-wider transition cursor-pointer select-none active:scale-[0.97] shadow-sm shadow-emerald-500/10 border-0"
+                                  >
+                                    Tandai Lunas ✓
+                                  </button>
+                                ) : (
+                                  <span className="text-[10px] text-slate-350">-</span>
+                                )}
+                              </td>
+                            </tr>
+                          );
+                        })}
+                      </tbody>
+                    </table>
+                  </div>
+                </div>
+              )}
+            </div>
+          </div>
+        );
+      })()}
 
       {/* ========================================================== */}
       {/* 5. GORGEOUS PREMIUM BARCODE & QR CODE SCANNER MODAL */}
