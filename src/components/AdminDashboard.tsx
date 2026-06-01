@@ -1587,13 +1587,13 @@ Siti Aminah	357802...	Blok B	B-202	085755..."
                 <table className="min-w-full text-xs">
                   <thead>
                     <tr className="border-b border-slate-150 text-slate-400 font-mono text-left uppercase text-[10px]">
-                      <th className="pb-3 w-32 pr-2">Nomor Unit</th>
-                      <th className="pb-3 w-28">Lantai</th>
-                      <th className="pb-3">Nama Lengkap</th>
-                      <th className="pb-3">Nomor KTP (Login)</th>
-                      <th className="pb-3">No HP / Telp</th>
-                      <th className="pb-3">Status Hunian</th>
-                      <th className="pb-3 text-right">Tindakan</th>
+                      <th className="pb-3 px-4 w-32">Nomor Unit</th>
+                      <th className="pb-3 px-4 w-28">Lantai</th>
+                      <th className="pb-3 px-4">Nama Lengkap</th>
+                      <th className="pb-3 px-4">Nomor KTP (Login)</th>
+                      <th className="pb-3 px-4">No HP / Telp</th>
+                      <th className="pb-3 px-4">Status Hunian</th>
+                      <th className="pb-3 px-4 text-right">Tindakan</th>
                     </tr>
                   </thead>
                   <tbody className="divide-y divide-slate-100">
@@ -1606,9 +1606,9 @@ Siti Aminah	357802...	Blok B	B-202	085755..."
                     ) : (
                       sortedAndFilteredResidents.map((res) => (
                         <tr key={res.id} className="hover:bg-slate-50/50">
-                          <td className="py-3 font-bold font-mono text-purple-700 text-sm whitespace-nowrap pr-2">Kamar {res.unit}</td>
-                          <td className="py-3 font-mono text-slate-600 font-semibold">Lantai {res.floor || getFloorFromUnit(res.unit)}</td>
-                        <td className="py-3">
+                          <td className="py-3 px-4 font-bold font-mono text-purple-700 text-sm whitespace-nowrap">Kamar {res.unit}</td>
+                          <td className="py-3 px-4 font-mono text-slate-600 font-semibold">Lantai {res.floor || getFloorFromUnit(res.unit)}</td>
+                        <td className="py-3 px-4">
                           <span className="font-semibold block text-slate-800">{res.name}</span>
                           <span className="text-[10px] text-slate-400 font-mono block">{res.block}</span>
                           {/* Data Verifikasi Warga Desktop */}
@@ -1616,7 +1616,13 @@ Siti Aminah	357802...	Blok B	B-202	085755..."
                             const vData = res.phone && res.phone.startsWith('VERIFIED_V1:')
                               ? (() => { try { return JSON.parse(res.phone.substring('VERIFIED_V1:'.length)); } catch (e) { return null; } })()
                               : null;
-                            if (!vData) return null;
+                            if (!vData) {
+                              return (
+                                <span className="text-[8px] bg-slate-100 text-slate-400 font-bold px-1.5 py-0.5 rounded font-mono uppercase mt-1 inline-block border border-slate-200/50">
+                                  Belum Verifikasi
+                                </span>
+                              );
+                            }
                             return (
                               <div className="mt-1 space-y-1 max-w-sm">
                                 <div className="flex gap-1 items-center flex-wrap">
@@ -1643,7 +1649,7 @@ Siti Aminah	357802...	Blok B	B-202	085755..."
                             );
                           })()}
                         </td>
-                        <td className="py-3">
+                        <td className="py-3 px-4">
                           {editingResId === res.id ? (
                             <div className="flex gap-1 items-center">
                               <input
@@ -1674,8 +1680,8 @@ Siti Aminah	357802...	Blok B	B-202	085755..."
                             </div>
                           )}
                         </td>
-                        <td className="py-3 font-mono text-slate-500">{getCleanPhone(res.phone)}</td>
-                        <td className="py-3">
+                        <td className="py-3 px-4 font-mono text-slate-500">{getCleanPhone(res.phone)}</td>
+                        <td className="py-3 px-4">
                           <select
                             value={res.occupancyStatus || 'Dihuni'}
                             onChange={(e) => onUpdateResidentStatus && onUpdateResidentStatus(res.id, e.target.value)}
@@ -1686,7 +1692,7 @@ Siti Aminah	357802...	Blok B	B-202	085755..."
                             <option value="Dalam Perbaikan">Dalam Perbaikan</option>
                           </select>
                         </td>
-                        <td className="py-3 text-right flex items-center justify-end gap-2">
+                        <td className="py-3 px-4 text-right flex items-center justify-end gap-2">
                           <button
                             onClick={() => handleOpenEditModal(res)}
                             className="text-indigo-600 hover:text-indigo-800 hover:bg-indigo-50 p-1.5 rounded-lg transition-all cursor-pointer"
