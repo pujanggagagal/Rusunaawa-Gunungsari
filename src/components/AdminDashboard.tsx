@@ -89,6 +89,8 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({
   const [editResBlock, setEditResBlock] = useState('');
   const [editResPhone, setEditResPhone] = useState('');
   const [editResFloor, setEditResFloor] = useState<number>(1);
+  const [editResOccupancy, setEditResOccupancy] = useState('Dihuni');
+  const [editResIsVacant, setEditResIsVacant] = useState(false);
 
   // States for editing Coordinator
   const [editingCoordinator, setEditingCoordinator] = useState<Coordinator | null>(null);
@@ -417,6 +419,8 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({
     setEditResBlock(res.block);
     setEditResPhone(res.phone);
     setEditResFloor(res.floor || getFloorFromUnit(res.unit));
+    setEditResOccupancy(res.occupancyStatus || 'Dihuni');
+    setEditResIsVacant(res.isVacant || false);
   };
 
   const handleSaveEditResident = (e: React.FormEvent) => {
@@ -434,6 +438,8 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({
         block: editResBlock,
         phone: editResPhone.trim(),
         floor: editResFloor,
+        occupancyStatus: editResOccupancy,
+        isVacant: editResOccupancy === 'Kosong',
       });
     }
     setEditingResident(null);
@@ -2891,6 +2897,18 @@ Siti Aminah	357802...	Blok B	B-202	085755..."
                     className="block w-full px-3 py-2 bg-slate-50 border border-slate-200 rounded-xl text-xs text-slate-900 focus:outline-none focus:ring-1 focus:ring-purple-500 h-[34px]"
                   />
                 </div>
+              </div>
+
+              <div>
+                <label className="block text-xs font-bold uppercase text-slate-400 font-mono mb-1.5">Status Hunian</label>
+                <select
+                  value={editResOccupancy}
+                  onChange={(e) => setEditResOccupancy(e.target.value)}
+                  className="block w-full px-3 py-2 bg-slate-50 border border-slate-200 rounded-xl text-xs font-bold text-slate-900 focus:outline-none focus:ring-1 focus:ring-purple-500"
+                >
+                  <option value="Dihuni">Dihuni (Aktif)</option>
+                  <option value="Kosong">Kosong (Tidak Dihuni)</option>
+                </select>
               </div>
 
               <div className="flex gap-3 pt-3">

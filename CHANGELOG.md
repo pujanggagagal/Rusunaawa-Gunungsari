@@ -13,6 +13,9 @@ Seluruh log perubahan, optimasi sistem, dan perbaikan bug yang diterapkan pada r
 - **Koreksi Data Meteran Bulan Lalu (April)**:
   - Menghadirkan form khusus untuk memperbarui/mengoreksi angka meteran April yang salah.
   - Sistem secara cerdas menghitung ulang pemakaian April dan **mengalirkan (propagate)** nilai koreksi April tersebut sebagai angka dasar (prevMeter) pada catatan bulan Mei yang sudah ada, merevisi nominal tagihan Mei secara otomatis agar data historis tetap konsisten dan akurat.
+- **Fitur Status Hunian pada Modal Edit Warga**:
+  - Menambahkan opsi pilihan **"Status Hunian" (Dihuni / Kosong)** di dalam modal *Edit Detail Warga* di Dashboard Admin.
+  - Memastikan perubahan status hunian secara otomatis memperbarui nilai kolom database `occupancyStatus` dan `isVacant` secara sinkron, memungkinkan admin merubah hunian menjadi kosong secara terpusat jika ada unit yang dikosongkan.
 
 #### Fixed
 - **Sinkronisasi Angka Meteran Lalu (Koordinator Dashboard)**:
