@@ -623,6 +623,11 @@ export default function App() {
 
   // admin edits a resident's details fully
   const handleEditResident = (id: string, updatedFields: Partial<Resident>) => {
+    // If the edited resident is the currently logged in user, update their session state too
+    if (currentUser && currentUser.id === id) {
+      setCurrentUser((prev: any) => ({ ...prev, ...updatedFields }));
+    }
+
     setData((prev) => {
       const oldRes = prev.residents.find((r) => r.id === id);
       if (!oldRes) return prev;
