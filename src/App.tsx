@@ -675,7 +675,7 @@ export default function App() {
           return {
             ...c,
             ...updatedFields,
-            assignedBlock: `Lantai ${assignedFloor}`
+            assignedBlock: assignedFloor === 0 ? 'Pos Keamanan' : `Lantai ${assignedFloor}`
           };
         }
         return c;
@@ -688,6 +688,27 @@ export default function App() {
         ...prev,
         coordinators: updatedCoordinators,
       };
+    });
+  };
+
+  const handleAddCoordinator = (newCoord: Omit<Coordinator, 'id'>) => {
+    const childId = `coord-${Date.now()}`;
+    setData((prev) => {
+      const updatedCoordinators = [...prev.coordinators, { 
+        ...newCoord, 
+        id: childId,
+        assignedBlock: newCoord.assignedFloor === 0 ? 'Pos Keamanan' : `Lantai ${newCoord.assignedFloor}`
+      }];
+      syncTable('Coordinators', updatedCoordinators);
+      return { ...prev, coordinators: updatedCoordinators };
+    });
+  };
+
+  const handleDeleteCoordinator = (id: string) => {
+    setData((prev) => {
+      const updatedCoordinators = prev.coordinators.filter(c => c.id !== id);
+      syncTable('Coordinators', updatedCoordinators);
+      return { ...prev, coordinators: updatedCoordinators };
     });
   };
 
@@ -875,6 +896,8 @@ export default function App() {
                 onUpdateResidentStatus={handleUpdateResidentStatus}
                 onEditResident={handleEditResident}
                 onEditCoordinator={handleEditCoordinator}
+                onAddCoordinator={handleAddCoordinator}
+                onDeleteCoordinator={handleDeleteCoordinator}
                 appSettings={appSettings}
                 onUpdateAppSettings={setAppSettings}
                 onSaveMeter={handleSaveMeter}

@@ -19,6 +19,8 @@ interface AdminDashboardProps {
   onUpdateResidentStatus?: (id: string, status: string) => void;
   onEditResident?: (id: string, updatedFields: Partial<Resident>) => void;
   onEditCoordinator?: (id: string, updatedFields: Partial<Coordinator>) => void;
+  onAddCoordinator?: (coord: Omit<Coordinator, 'id'>) => void;
+  onDeleteCoordinator?: (id: string) => void;
   appSettings: AppSettings;
   onUpdateAppSettings: (settings: AppSettings) => void;
   onSaveMeter: (ktp: string, prevMeter: number, currentMeter: number) => void;
@@ -40,6 +42,8 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({
   onUpdateResidentStatus,
   onEditResident,
   onEditCoordinator,
+  onAddCoordinator,
+  onDeleteCoordinator,
   appSettings,
   onUpdateAppSettings,
   onSaveMeter,
@@ -100,6 +104,11 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({
   const [editCoordName, setEditCoordName] = useState('');
   const [editCoordKtp, setEditCoordKtp] = useState('');
   const [editCoordFloor, setEditCoordFloor] = useState<number>(1);
+
+  // States for adding Coordinator/Security Petugas Baru
+  const [newCoordName, setNewCoordName] = useState('');
+  const [newCoordKtp, setNewCoordKtp] = useState('');
+  const [newCoordFloor, setNewCoordFloor] = useState<number>(1);
 
   // States for Reconciliation
   const [reconcileFloor, setReconcileFloor] = useState<number | null>(null);
@@ -1743,106 +1752,210 @@ Siti Aminah	357802...	Blok B	B-202	085755..."
           </>
         )}
 
-        {/* COORDINATORS TAB VIEW */}
         {activeTab === 'coordinators' && (
-          <div className="lg:col-span-3 bg-white p-6 rounded-3xl border border-slate-100 shadow-xl shadow-slate-100/50">
-            <h2 className="text-lg font-bold text-slate-900 mb-4 flex items-center gap-1.5">
+          <div className="lg:col-span-3 bg-white p-6 rounded-3xl border border-slate-100 shadow-xl shadow-slate-100/50 space-y-6 text-slate-900">
+            <h2 className="text-lg font-bold text-slate-900 flex items-center gap-1.5">
               <Users className="text-purple-600" size={18} />
-              Staf Koordinator Berwenang per Lantai
+              Pengelolaan Staf Petugas Rusunawa Gunungsari
             </h2>
 
-            {/* Mobile View: Coordinator cards directory */}
-            <div className="block md:hidden space-y-3 mb-4" id="admin_coordinators_mobile_list">
-              {coordinators.map((c, idx) => {
-                const floor = c.assignedFloor || (c.id === 'coord-1' ? 1 : c.id === 'coord-2' ? 2 : c.id === 'coord-3' ? 3 : c.id === 'coord-4' ? 4 : c.id === 'coord-5' ? 5 : 1);
-                const floorCitizenCount = residents.filter(r => (r.floor || getFloorFromUnit(r.unit)) === floor).length;
-                const floorPaidCount = billingRecords.filter(
-                  b => b.month === 'Mei' && b.year === 2026 && b.status === 'Lunas' && residents.some(r => r.ktp === b.residentKtp && (r.floor || getFloorFromUnit(r.unit)) === floor)
-                ).length;
+            {/* Form Tambah Petugas Baru (Koordinator / Security) */}
+            <div className="bg-slate-50 p-5 rounded-2xl border border-slate-200/60 space-y-4">
+              <div>
+                <h3 className="text-xs font-black text-slate-900 uppercase tracking-widest font-mono">Daftarkan Petugas Staf Baru</h3>
+                <p className="text-[10px] text-slate-400 font-mono mt-0.5">INPUT DATA KOORDINATOR LANTAI ATAU PETUGAS SECURITY BARU</p>
+              </div>
 
-                return (
-                  <div key={c.id} className="p-4 bg-slate-50 border border-slate-200 rounded-2xl space-y-2.5 shadow-xs">
-                    <div className="flex justify-between items-center">
-                      <div className="flex items-center gap-2">
-                        <span className="font-mono text-[9px] text-slate-400 font-bold"># {idx + 1} KOORDINATOR</span>
-                        <button
-                          onClick={() => handleOpenEditCoordinatorModal(c)}
-                          className="text-indigo-600 hover:text-indigo-800 hover:bg-indigo-50 p-1 rounded transition cursor-pointer"
-                          title="Edit Koordinator"
-                        >
-                          <Edit2 size={12} />
-                        </button>
-                      </div>
-                      <span className="px-2 py-0.5 bg-purple-50 text-purple-700 border border-purple-100 rounded text-[10px] font-bold font-mono uppercase">
-                        Lantai {floor}
-                      </span>
-                    </div>
-                    
-                    <div className="text-xs space-y-1">
-                      <p className="font-bold text-slate-950 text-sm">{c.name}</p>
-                      <p className="text-slate-500 font-mono">ID / KTP Akses: <span className="font-bold text-slate-700">{c.ktp}</span></p>
-                      
-                      <div className="flex justify-between items-center text-[11px] font-mono pt-2 border-t border-slate-250 mt-2 text-slate-600">
-                        <span>Hunian Bertanggung Jawab: {floorCitizenCount} Kamar</span>
-                        <span className="text-emerald-700 font-bold">Lunas: {floorPaidCount} / {floorCitizenCount}</span>
-                      </div>
-                    </div>
-                  </div>
-                );
-              })}
+              <form onSubmit={(e) => {
+                e.preventDefault();
+                if (!newCoordName.trim() || !newCoordKtp.trim()) {
+                  alert('Nama dan NIK/KTP petugas harus diisi!');
+                  return;
+                }
+                if (onAddCoordinator) {
+                  onAddCoordinator({
+                    name: newCoordName.trim(),
+                    ktp: newCoordKtp.trim(),
+                    assignedFloor: newCoordFloor
+                  });
+                  setNewCoordName('');
+                  setNewCoordKtp('');
+                  setNewCoordFloor(1);
+                  alert('Staf petugas baru berhasil didaftarkan! ✓');
+                }
+              }} className="grid grid-cols-1 md:grid-cols-4 gap-3 items-end">
+                <div className="space-y-1">
+                  <label className="block text-[9px] font-extrabold text-slate-400 uppercase tracking-wider font-mono">Nama Lengkap Petugas</label>
+                  <input
+                    type="text"
+                    value={newCoordName}
+                    onChange={(e) => setNewCoordName(e.target.value)}
+                    placeholder="eg. Komandan Bambang"
+                    className="block w-full px-3 py-2 bg-white border border-slate-200 rounded-xl text-xs font-semibold focus:outline-none focus:ring-1 focus:ring-purple-500 h-[34px] text-slate-900"
+                    required
+                  />
+                </div>
+                <div className="space-y-1">
+                  <label className="block text-[9px] font-extrabold text-slate-400 uppercase tracking-wider font-mono">NIK / KTP Akses (Password)</label>
+                  <input
+                    type="text"
+                    value={newCoordKtp}
+                    onChange={(e) => setNewCoordKtp(e.target.value)}
+                    placeholder="eg. 777777"
+                    className="block w-full px-3 py-2 bg-white border border-slate-200 rounded-xl text-xs font-mono font-bold focus:outline-none focus:ring-1 focus:ring-purple-500 h-[34px] text-slate-900"
+                    required
+                  />
+                </div>
+                <div className="space-y-1">
+                  <label className="block text-[9px] font-extrabold text-slate-400 uppercase tracking-wider font-mono">Penugasan Jabatan</label>
+                  <select
+                    value={newCoordFloor}
+                    onChange={(e) => setNewCoordFloor(parseInt(e.target.value, 10))}
+                    className="block w-full px-3 py-2 bg-white border border-slate-200 rounded-xl text-xs font-semibold focus:outline-none focus:ring-1 focus:ring-purple-500 h-[34px] text-slate-900"
+                  >
+                    <option value={0}>Petugas Keamanan (Security)</option>
+                    <option value={1}>Koordinator Lantai 1</option>
+                    <option value={2}>Koordinator Lantai 2</option>
+                    <option value={3}>Koordinator Lantai 3</option>
+                    <option value={4}>Koordinator Lantai 4</option>
+                    <option value={5}>Koordinator Lantai 5</option>
+                  </select>
+                </div>
+                <button
+                  type="submit"
+                  className="py-2 px-4 bg-purple-600 hover:bg-purple-700 text-white rounded-xl text-xs font-black uppercase transition cursor-pointer shadow-md shadow-purple-500/10 h-[34px]"
+                >
+                  + Daftarkan Staf
+                </button>
+              </form>
             </div>
 
-            {/* Desktop View: Interactive Table */}
-            <div className="hidden md:block overflow-x-auto">
-              <table className="min-w-full text-xs">
-                <thead>
-                  <tr className="border-b border-slate-150 text-slate-400 font-mono text-left uppercase text-[10px]">
-                    <th className="pb-3">No</th>
-                    <th className="pb-3">Nama Koordinator</th>
-                    <th className="pb-3">ID / NIK KTP Akses</th>
-                    <th className="pb-3 text-center">Urutan Lantai Tugas</th>
-                    <th className="pb-3 text-center">Jumlah Warga Lantai</th>
-                    <th className="pb-3 text-right text-slate-400">Metrik Input Terlayani</th>
-                    <th className="pb-3 text-right">Aksi</th>
-                  </tr>
-                </thead>
-                <tbody className="divide-y divide-slate-100 font-medium text-slate-700">
-                  {coordinators.map((c, idx) => {
-                    const floor = c.assignedFloor || (c.id === 'coord-1' ? 1 : c.id === 'coord-2' ? 2 : c.id === 'coord-3' ? 3 : c.id === 'coord-4' ? 4 : c.id === 'coord-5' ? 5 : 1);
-                    const floorCitizenCount = residents.filter(r => (r.floor || getFloorFromUnit(r.unit)) === floor).length;
-                    const floorPaidCount = billingRecords.filter(
-                      b => b.month === 'Mei' && b.year === 2026 && b.status === 'Lunas' && residents.some(r => r.ktp === b.residentKtp && (r.floor || getFloorFromUnit(r.unit)) === floor)
-                    ).length;
+            {/* SECTION 1: FLOOR COORDINATORS */}
+            <div className="space-y-3 pt-2">
+              <h3 className="text-xs font-black text-slate-900 uppercase tracking-widest font-mono border-b border-slate-100 pb-2">
+                1. Staf Koordinator Berwenang per Lantai
+              </h3>
 
-                    return (
-                      <tr key={c.id}>
-                        <td className="py-4 font-mono">{idx + 1}</td>
-                        <td className="py-4 font-bold text-slate-900">{c.name}</td>
-                        <td className="py-4 font-mono font-bold text-slate-500">{c.ktp}</td>
-                        <td className="py-4 text-center font-bold font-mono">
-                          <span className="px-2 py-0.5 bg-purple-50 text-purple-700 rounded-lg text-xxs uppercase">
-                            Lantai {floor}
-                          </span>
-                        </td>
-                        <td className="py-4 text-center font-mono font-bold text-slate-900">{floorCitizenCount} Kamar</td>
-                        <td className="py-4 text-right text-slate-500 font-mono">
-                          Mei: <span className="text-emerald-600 font-extrabold">{floorPaidCount}</span> / {floorCitizenCount} Lunas
-                        </td>
-                        <td className="py-4 text-right">
-                          <button
-                            onClick={() => handleOpenEditCoordinatorModal(c)}
-                            className="text-indigo-600 hover:text-indigo-850 hover:bg-indigo-50 p-1.5 rounded-lg transition-all cursor-pointer inline-flex items-center"
-                            title="Edit Koordinator"
-                          >
-                            <Edit2 size={13} />
-                          </button>
+              {/* Desktop View: Floor Coordinators Table */}
+              <div className="hidden md:block overflow-x-auto border border-slate-150 rounded-2xl shadow-inner bg-white">
+                <table className="min-w-full text-xs">
+                  <thead className="bg-slate-50 border-b border-slate-150">
+                    <tr className="text-slate-500 font-mono text-left uppercase text-[9px] font-black">
+                      <th className="py-3 px-4 w-12">No</th>
+                      <th className="py-3 px-4">Nama Koordinator</th>
+                      <th className="py-3 px-4">NIK KTP Akses (Password)</th>
+                      <th className="py-3 px-4 text-center">Tugas Lantai</th>
+                      <th className="py-3 px-4 text-center">Warga Lantai</th>
+                      <th className="py-3 px-4 text-right">Aksi</th>
+                    </tr>
+                  </thead>
+                  <tbody className="divide-y divide-slate-100 font-medium text-slate-700">
+                    {coordinators.filter(c => c.assignedFloor > 0).map((c, idx) => {
+                      const floor = c.assignedFloor;
+                      const floorCitizenCount = residents.filter(r => (r.floor || getFloorFromUnit(r.unit)) === floor).length;
+                      return (
+                        <tr key={c.id} className="hover:bg-slate-50/50">
+                          <td className="py-3 px-4 font-mono">{idx + 1}</td>
+                          <td className="py-3 px-4 font-bold text-slate-900">{c.name}</td>
+                          <td className="py-3 px-4 font-mono font-bold text-slate-500">{c.ktp}</td>
+                          <td className="py-3 px-4 text-center">
+                            <span className="px-2 py-0.5 bg-purple-50 text-purple-700 rounded-lg text-xxs font-bold uppercase font-mono">
+                              Lantai {floor}
+                            </span>
+                          </td>
+                          <td className="py-3 px-4 text-center font-mono font-bold text-slate-900">{floorCitizenCount} Kamar</td>
+                          <td className="py-3 px-4 text-right flex items-center justify-end gap-2">
+                            <button
+                              onClick={() => handleOpenEditCoordinatorModal(c)}
+                              className="text-indigo-600 hover:text-indigo-850 hover:bg-indigo-50 p-1.5 rounded-lg transition-all cursor-pointer"
+                              title="Edit Koordinator"
+                            >
+                              <Edit2 size={13} />
+                            </button>
+                            <button
+                              onClick={() => {
+                                if (window.confirm(`Hapus petugas koordinator ${c.name}?`)) {
+                                  onDeleteCoordinator && onDeleteCoordinator(c.id);
+                                }
+                              }}
+                              className="text-rose-500 hover:text-rose-700 hover:bg-rose-50 p-1.5 rounded-lg transition-all cursor-pointer"
+                              title="Hapus Koordinator"
+                            >
+                              <Trash2 size={13} />
+                            </button>
+                          </td>
+                        </tr>
+                      );
+                    })}
+                  </tbody>
+                </table>
+              </div>
+            </div>
+
+            {/* SECTION 2: SECURITY OFFICERS */}
+            <div className="space-y-3 pt-4">
+              <h3 className="text-xs font-black text-slate-900 uppercase tracking-widest font-mono border-b border-slate-100 pb-2">
+                2. Staf Petugas Keamanan (Security)
+              </h3>
+
+              {/* Desktop View: Security Table */}
+              <div className="hidden md:block overflow-x-auto border border-slate-150 rounded-2xl shadow-inner bg-white">
+                <table className="min-w-full text-xs">
+                  <thead className="bg-slate-50 border-b border-slate-150">
+                    <tr className="text-slate-500 font-mono text-left uppercase text-[9px] font-black">
+                      <th className="py-3 px-4 w-12">No</th>
+                      <th className="py-3 px-4">Nama Petugas Security</th>
+                      <th className="py-3 px-4">NIK KTP Akses (Password)</th>
+                      <th className="py-3 px-4 text-center">Tugas Area</th>
+                      <th className="py-3 px-4 text-right">Aksi</th>
+                    </tr>
+                  </thead>
+                  <tbody className="divide-y divide-slate-100 font-medium text-slate-700">
+                    {coordinators.filter(c => c.assignedFloor === 0).length === 0 ? (
+                      <tr>
+                        <td colSpan={5} className="py-6 text-center text-slate-400 font-bold font-mono">
+                          Belum ada petugas security terdaftar. Silakan tambahkan di form atas.
                         </td>
                       </tr>
-                    );
-                  })}
-                </tbody>
-              </table>
+                    ) : (
+                      coordinators.filter(c => c.assignedFloor === 0).map((c, idx) => (
+                        <tr key={c.id} className="hover:bg-slate-50/50">
+                          <td className="py-3 px-4 font-mono">{idx + 1}</td>
+                          <td className="py-3 px-4 font-bold text-slate-900">{c.name}</td>
+                          <td className="py-3 px-4 font-mono font-bold text-slate-500">{c.ktp}</td>
+                          <td className="py-3 px-4 text-center">
+                            <span className="px-2 py-0.5 bg-emerald-50 text-emerald-800 border border-emerald-100 rounded-lg text-xxs font-bold uppercase font-mono">
+                              POS KEAMANAN (SECURITY)
+                            </span>
+                          </td>
+                          <td className="py-3 px-4 text-right flex items-center justify-end gap-2">
+                            <button
+                              onClick={() => handleOpenEditCoordinatorModal(c)}
+                              className="text-indigo-600 hover:text-indigo-850 hover:bg-indigo-50 p-1.5 rounded-lg transition-all cursor-pointer"
+                              title="Edit Security"
+                            >
+                              <Edit2 size={13} />
+                            </button>
+                            <button
+                              onClick={() => {
+                                if (window.confirm(`Hapus petugas security ${c.name}?`)) {
+                                  onDeleteCoordinator && onDeleteCoordinator(c.id);
+                                }
+                              }}
+                              className="text-rose-500 hover:text-rose-700 hover:bg-rose-50 p-1.5 rounded-lg transition-all cursor-pointer"
+                              title="Hapus Security"
+                            >
+                              <Trash2 size={13} />
+                            </button>
+                          </td>
+                        </tr>
+                      ))
+                    )}
+                  </tbody>
+                </table>
+              </div>
             </div>
+
           </div>
         )}
 
@@ -3253,13 +3366,13 @@ Siti Aminah	357802...	Blok B	B-202	085755..."
           <div className="bg-white rounded-3xl max-w-md w-full p-6 shadow-2xl border border-slate-150 relative space-y-5 animate-fade-in text-slate-900">
             <div>
               <span className="text-[10px] text-purple-650 font-extrabold uppercase tracking-widest font-mono">Simper Admin</span>
-              <h3 className="text-lg font-black text-slate-950">Edit Detail Koordinator</h3>
-              <p className="text-xs text-slate-400 font-mono mt-0.5">PERUBAHAN DATA STAF KOORDINATOR LANTAI</p>
+              <h3 className="text-lg font-black text-slate-950">Edit Detail Petugas (Koordinator / Security)</h3>
+              <p className="text-xs text-slate-400 font-mono mt-0.5">PERUBAHAN DATA RESMI STAF PETUGAS RUSUNAWA</p>
             </div>
 
             <form onSubmit={handleSaveEditCoordinator} className="space-y-4">
               <div>
-                <label className="block text-xs font-bold uppercase text-slate-400 font-mono mb-1.5">Nama Lengkap Koordinator</label>
+                <label className="block text-xs font-bold uppercase text-slate-400 font-mono mb-1.5">Nama Lengkap Petugas</label>
                 <input
                   type="text"
                   value={editCoordName}
@@ -3281,17 +3394,18 @@ Siti Aminah	357802...	Blok B	B-202	085755..."
               </div>
 
               <div>
-                <label className="block text-xs font-bold uppercase text-slate-400 font-mono mb-1.5">Urutan Lantai Tugas</label>
+                <label className="block text-xs font-bold uppercase text-slate-400 font-mono mb-1.5">Penugasan / Jabatan</label>
                 <select
                   value={editCoordFloor}
                   onChange={(e) => setEditCoordFloor(parseInt(e.target.value, 10))}
                   className="block w-full px-3 py-2 bg-slate-50 border border-slate-200 rounded-xl text-xs font-semibold text-slate-900 focus:outline-none focus:ring-1 focus:ring-purple-500"
                 >
-                  <option value={1}>Lantai 1</option>
-                  <option value={2}>Lantai 2</option>
-                  <option value={3}>Lantai 3</option>
-                  <option value={4}>Lantai 4</option>
-                  <option value={5}>Lantai 5</option>
+                  <option value={0}>Petugas Keamanan (Security)</option>
+                  <option value={1}>Koordinator Lantai 1</option>
+                  <option value={2}>Koordinator Lantai 2</option>
+                  <option value={3}>Koordinator Lantai 3</option>
+                  <option value={4}>Koordinator Lantai 4</option>
+                  <option value={5}>Koordinator Lantai 5</option>
                 </select>
               </div>
 

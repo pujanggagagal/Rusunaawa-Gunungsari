@@ -54,10 +54,17 @@ export const Login: React.FC<LoginProps> = ({ residents, coordinators, onLoginSu
         setError('Password Koordinator salah.');
       }
     } else if (activeTab === 'security') {
-      if (identifier.trim().toLowerCase() === 'security' || identifier.trim() === '777777') {
-        onLoginSuccess('security', { name: 'Komandan Bambang', id: 'sec-1' });
+      const cleanInput = identifier.trim().replace(/\D/g, '');
+      const secOfficer = coordinators.find(c => {
+        const cleanKtp = (c.ktp || '').trim().replace(/\D/g, '');
+        return c.assignedFloor === 0 && ((cleanKtp && cleanKtp === cleanInput) || (c.ktp || '').trim() === identifier.trim());
+      });
+      if (secOfficer) {
+        onLoginSuccess('security', secOfficer);
+      } else if (identifier.trim().toLowerCase() === 'security' || identifier.trim() === '777777') {
+        onLoginSuccess('security', { name: 'Komandan Bambang', id: 'sec-1', assignedFloor: 0 });
       } else {
-        setError('Password Security salah.');
+        setError('Password Security salah (Masukkan NIK KTP Security).');
       }
     } else if (activeTab === 'admin') {
       if (identifier.trim().toLowerCase() === 'adminrusun') {
@@ -80,7 +87,12 @@ export const Login: React.FC<LoginProps> = ({ residents, coordinators, onLoginSu
       const coord = coordinators.find(c => c.ktp === idValue);
       if (coord) onLoginSuccess('koordinator', coord);
     } else if (role === 'security') {
-      onLoginSuccess('security', { name: 'Komandan Bambang', id: 'sec-1' });
+      const sec = coordinators.find(c => c.ktp === idValue && c.assignedFloor === 0);
+      if (sec) {
+        onLoginSuccess('security', sec);
+      } else {
+        onLoginSuccess('security', { name: 'Komandan Bambang', id: 'sec-1', assignedFloor: 0 });
+      }
     } else if (role === 'admin') {
       onLoginSuccess('admin', { name: 'Admin Diana', id: 'admin-1' });
     }
