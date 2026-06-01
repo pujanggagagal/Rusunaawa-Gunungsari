@@ -229,7 +229,7 @@ export const WargaDashboard: React.FC<WargaDashboardProps> = ({
 
   // Convert simulated date string to get simulated day of month
   const simDay = parseInt(simulatedDate.split('-')[2] || '1', 10);
-  const isPastDue = simDay > 10;
+  const isPastDue = simDay > 9;
 
   const handleOpenPayment = (bill: BillingRecord) => {
     setSelectedBill(bill);
@@ -411,16 +411,16 @@ export const WargaDashboard: React.FC<WargaDashboardProps> = ({
             <ShieldAlert className="h-6 w-6 animate-bounce" />
           </div>
           <div>
-            <h3 className="text-md font-bold text-slate-900">LISTRIK HUNIAN ANDA DIPUTUS OLEH KEAMANAN!</h3>
+            <h3 className="text-md font-bold text-slate-900">PEMBERITAHUAN NONAKTIF ALIRAN LISTRIK</h3>
             <p className="text-sm text-slate-700 mt-1">
-              Petugas Rusunawa mendeteksi adanya keterlambatan iuran air &amp; sampah wajib yang melewati batas jatuh tempo (tanggal 10). Aliran listrik ke unit <strong className="font-bold text-slate-900">{user.unit}</strong> dimatikan demi kedisiplinan RUSUN.
+              Mohon maaf, sistem mendeteksi adanya keterlambatan pembayaran iuran air &amp; sampah bulanan yang telah melewati batas jatuh tempo (tanggal 9). Sesuai dengan ketentuan tata tertib pengelola rusun, aliran listrik ke unit <strong className="font-bold text-slate-900">{user.unit}</strong> dinonaktifkan sementara.
             </p>
             <div className="mt-3 flex flex-wrap gap-2 items-center">
               <span className="text-xs bg-rose-100 text-rose-800 font-semibold px-2.5 py-1 rounded-lg">
-                ⚠️ Silakan Lunasi Tagihan Di Bawah
+                ⚠️ Silakan Lakukan Pelunasan Tagihan Di Bawah
               </span>
               <span className="text-xs text-slate-500 font-medium">
-                Setelah membayar, silakan hubungi Pos Security / Koordinator untuk menyalakan kembali MCB listrik.
+                Setelah pembayaran selesai diproses, silakan hubungi Pos Keamanan atau Koordinator Lantai untuk mengaktifkan kembali MCB listrik Anda.
               </span>
             </div>
           </div>
@@ -432,9 +432,9 @@ export const WargaDashboard: React.FC<WargaDashboardProps> = ({
               <AlertTriangle className="h-6 w-6" />
             </div>
             <div>
-              <h3 className="text-md font-bold text-slate-900">PERINGATAN JATUH TEMPO (TUNGGAKAN LISTRIK)</h3>
-              <p className="text-sm text-slate-700 mt-1">
-                Hari ini adalah tanggal <span className="font-bold font-mono">{simDay} Mei</span>. Batas akhir tanpa denda/sanksi adalah <span className="font-bold font-mono text-amber-700">tanggal 10</span> setiap bulan. Aliran listrik Hunian Anda berpotensi segera dinonaktifkan oleh petugas pos keamanan rusun jika belum dilunasi.
+              <h3 className="text-md font-bold text-slate-900">PENGUMUMAN BATAS PEMBAYARAN IURAN</h3>
+              <p className="text-sm text-slate-700 mt-1 leading-relaxed">
+                Pembayaran terakhir setiap bulannya adalah <strong>di tanggal 9</strong>. Sesuai aturan dari pihak pengelola, jika pembayaran tidak dilakukan maka akan dikenakan sanksi berupa pemutusan aliran listrik. Mohon segera lakukan pembayaran iuran bulanan Anda melalui koordinator lantai masing-masing untuk kenyamanan bersama. Terima kasih.
               </p>
             </div>
           </div>
@@ -775,11 +775,11 @@ export const WargaDashboard: React.FC<WargaDashboardProps> = ({
               </li>
               <li className="flex gap-2 items-start">
                 <span className="h-1.5 w-1.5 bg-emerald-600 rounded-full mt-1.5 flex-shrink-0"></span>
-                <span>Batas maksimal pembayaran iuran bulanan adalah tanggal <strong>10 setiap bulannya</strong>.</span>
+                <span>Batas maksimal pembayaran iuran bulanan adalah tanggal <strong>9 setiap bulannya</strong>.</span>
               </li>
               <li className="flex gap-2 items-start">
                 <span className="h-1.5 w-1.5 bg-emerald-600 rounded-full mt-1.5 flex-shrink-0"></span>
-                <span><strong>Sanksi MCB Listrik Dinonaktifkan:</strong> Security berhak mematikan listrik bagi warga yang memiliki tunggakan melewati batas tanggal 10.</span>
+                <span><strong>Sanksi MCB Listrik Dinonaktifkan:</strong> Pengelola berhak menonaktifkan listrik bagi warga yang memiliki tunggakan melewati batas tanggal 9.</span>
               </li>
               <li className="flex gap-2 items-start">
                 <span className="h-1.5 w-1.5 bg-emerald-600 rounded-full mt-1.5 flex-shrink-0"></span>
