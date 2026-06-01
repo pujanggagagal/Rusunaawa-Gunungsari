@@ -1517,6 +1517,65 @@ Siti Aminah	357802...	Blok B	B-202	085755..."
                             </div>
                           )}
                         </div>
+
+                        {/* Data Verifikasi Warga Terintegrasi */}
+                        {(() => {
+                          const vData = res.phone && res.phone.startsWith('VERIFIED_V1:')
+                            ? (() => { try { return JSON.parse(res.phone.substring('VERIFIED_V1:'.length)); } catch (e) { return null; } })()
+                            : null;
+                          return (
+                            <div className="mt-2.5 pt-2.5 border-t border-slate-100 space-y-2">
+                              {vData ? (
+                                <div className="space-y-1.5">
+                                  <div className="flex justify-between items-center bg-emerald-50 px-2.5 py-1 rounded-lg border border-emerald-200/40 text-emerald-800">
+                                    <span className="text-[10px] font-black uppercase tracking-wider font-mono">Verifikasi Warga</span>
+                                    <span className="text-[9px] font-mono bg-emerald-600 text-white px-2 py-0.5 rounded-full font-black animate-pulse">AKTIF 🟢</span>
+                                  </div>
+                                  
+                                  {/* Detail keluarga */}
+                                  <div className="bg-slate-50 p-2 rounded-xl text-[10px] text-slate-700 border border-slate-100">
+                                    <span className="block text-[8px] text-slate-400 uppercase font-bold font-mono">Anggota Keluarga ({vData.familyMembers?.length || 0} Jiwa)</span>
+                                    {vData.familyMembers && vData.familyMembers.length > 0 ? (
+                                      <ul className="mt-1 space-y-0.5 list-disc list-inside font-semibold text-slate-800">
+                                        {vData.familyMembers.map((fm: any, idx: number) => (
+                                          <li key={idx} className="truncate">
+                                            {fm.name} ({fm.age} th, {fm.gender === 'Laki-laki' ? 'L' : 'P'}) - {fm.occupation || '-'}
+                                          </li>
+                                        ))}
+                                      </ul>
+                                    ) : (
+                                      <span className="font-semibold text-slate-500 italic block mt-0.5">Tinggal Sendiri</span>
+                                    )}
+                                  </div>
+
+                                  {/* Detail kendaraan */}
+                                  <div className="bg-slate-50 p-2 rounded-xl text-[10px] text-slate-700 border border-slate-100">
+                                    <span className="block text-[8px] text-slate-400 uppercase font-bold font-mono">Kendaraan</span>
+                                    {vData.hasNoVehicle ? (
+                                      <span className="font-semibold text-slate-500 italic block mt-0.5">Tidak Ada Kendaraan Bermotor</span>
+                                    ) : vData.vehicles && vData.vehicles.length > 0 ? (
+                                      <ul className="mt-1 space-y-0.5 list-disc list-inside font-semibold text-slate-800">
+                                        {vData.vehicles.map((vh: any, idx: number) => (
+                                          <li key={idx} className="truncate">
+                                            {vh.type} - Nopol: {vh.plate || '-'}
+                                          </li>
+                                        ))}
+                                      </ul>
+                                    ) : (
+                                      <span className="font-semibold text-slate-500 italic block mt-0.5">-</span>
+                                    )}
+                                  </div>
+                                </div>
+                              ) : (
+                                <div className="flex justify-between items-center bg-slate-50 px-2.5 py-1.5 rounded-lg border border-slate-200/50 text-slate-500 text-[10px] font-bold">
+                                  <span>Status Verifikasi:</span>
+                                  <span className="text-[9px] bg-slate-200 text-slate-700 px-2 py-0.5 rounded-full font-black uppercase font-mono">BELUM ISI ⚪</span>
+                                </div>
+                              )}
+                            </div>
+                          );
+                        })()}
+
                       </div>
                     </div>
                   ))
@@ -1551,7 +1610,38 @@ Siti Aminah	357802...	Blok B	B-202	085755..."
                           <td className="py-3 font-mono text-slate-600 font-semibold">Lantai {res.floor || getFloorFromUnit(res.unit)}</td>
                         <td className="py-3">
                           <span className="font-semibold block text-slate-800">{res.name}</span>
-                          <span className="text-[10px] text-slate-400 font-mono">{res.block}</span>
+                          <span className="text-[10px] text-slate-400 font-mono block">{res.block}</span>
+                          {/* Data Verifikasi Warga Desktop */}
+                          {(() => {
+                            const vData = res.phone && res.phone.startsWith('VERIFIED_V1:')
+                              ? (() => { try { return JSON.parse(res.phone.substring('VERIFIED_V1:'.length)); } catch (e) { return null; } })()
+                              : null;
+                            if (!vData) return null;
+                            return (
+                              <div className="mt-1 space-y-1 max-w-sm">
+                                <div className="flex gap-1 items-center flex-wrap">
+                                  <span className="text-[8px] bg-emerald-50 text-emerald-800 font-extrabold border border-emerald-250/30 px-1.5 py-0.5 rounded uppercase font-mono tracking-wider">
+                                    ✓ Verifikasi Warga
+                                  </span>
+                                  <span className="text-[8px] bg-indigo-50 text-indigo-850 font-bold border border-indigo-100 px-1.5 py-0.5 rounded font-mono">
+                                    {vData.familyMembers?.length || 0} Anggota
+                                  </span>
+                                  <span className="text-[8px] bg-slate-50 text-slate-700 font-bold border border-slate-200 px-1.5 py-0.5 rounded font-mono">
+                                    {vData.hasNoVehicle ? '0 Kendaraan' : `${vData.vehicles?.length || 0} Kendaraan`}
+                                  </span>
+                                </div>
+                                
+                                <div className="text-[9px] text-slate-500 pl-1.5 border-l-2 border-emerald-400 py-0.5 font-medium space-y-0.5 max-w-[280px]">
+                                  {vData.familyMembers && vData.familyMembers.length > 0 && (
+                                    <p className="truncate"><strong className="text-slate-650 font-mono">Keluarga:</strong> {vData.familyMembers.map((f: any) => `${f.name} (${f.age} th)`).join(', ')}</p>
+                                  )}
+                                  {!vData.hasNoVehicle && vData.vehicles && vData.vehicles.length > 0 && (
+                                    <p className="truncate"><strong className="text-slate-650 font-mono">Kendaraan:</strong> {vData.vehicles.map((v: any) => `${v.type} (${v.plate || '-'})`).join(', ')}</p>
+                                  )}
+                                </div>
+                              </div>
+                            );
+                          })()}
                         </td>
                         <td className="py-3">
                           {editingResId === res.id ? (

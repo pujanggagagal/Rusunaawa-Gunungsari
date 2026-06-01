@@ -1146,6 +1146,27 @@ export const KoordinatorDashboard: React.FC<KoordinatorDashboardProps> = ({
                             <td className="py-3 font-semibold">
                               <span className="font-bold block text-slate-800 leading-none">{res.name}</span>
                               <span className="text-[9px] text-slate-400 font-mono block mt-1">{res.ktp}</span>
+                              {(() => {
+                                const vData = res.phone && res.phone.startsWith('VERIFIED_V1:')
+                                  ? (() => { try { return JSON.parse(res.phone.substring('VERIFIED_V1:'.length)); } catch (e) { return null; } })()
+                                  : null;
+                                if (!vData) return null;
+                                return (
+                                  <div className="mt-1 space-y-0.5 max-w-[250px]">
+                                    <div className="flex gap-1 items-center flex-wrap">
+                                      <span className="text-[7px] bg-emerald-50 text-emerald-800 font-extrabold border border-emerald-250/20 px-1.5 py-0.2 rounded uppercase font-mono tracking-wider">
+                                        ✓ Terverifikasi
+                                      </span>
+                                      <span className="text-[7px] bg-indigo-50 text-indigo-805 font-bold border border-indigo-100 px-1.5 py-0.2 rounded font-mono">
+                                        {vData.familyMembers?.length || 0} Jiwa
+                                      </span>
+                                      <span className="text-[7px] bg-slate-50 text-slate-700 font-bold border border-slate-200 px-1.5 py-0.2 rounded font-mono">
+                                        {vData.hasNoVehicle ? '0 Kndr' : `${vData.vehicles?.length || 0} Kndr`}
+                                      </span>
+                                    </div>
+                                  </div>
+                                );
+                              })()}
                             </td>
                             <td className="py-3 font-mono text-slate-500">
                               {meiRecord ? meiRecord.prevMeter : (aprRecord ? aprRecord.currentMeter : 100)}
