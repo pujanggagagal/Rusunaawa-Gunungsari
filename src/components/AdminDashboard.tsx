@@ -91,6 +91,9 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({
   const [editResFloor, setEditResFloor] = useState<number>(1);
   const [editResOccupancy, setEditResOccupancy] = useState('Dihuni');
   const [editResIsVacant, setEditResIsVacant] = useState(false);
+  const [editFamilyMembers, setEditFamilyMembers] = useState<Array<{ name: string; age: string; gender: 'Laki-laki' | 'Perempuan'; occupation: string }>>([]);
+  const [editVehicles, setEditVehicles] = useState<Array<{ type: string; plate: string }>>([]);
+  const [editHasNoVehicle, setEditHasNoVehicle] = useState(false);
 
   // States for editing Coordinator
   const [editingCoordinator, setEditingCoordinator] = useState<Coordinator | null>(null);
@@ -422,6 +425,15 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({
     setEditResFloor(res.floor || getFloorFromUnit(res.unit));
     setEditResOccupancy(res.occupancyStatus || 'Dihuni');
     setEditResIsVacant(res.isVacant || false);
+
+    // Initialize verification states from db JSON
+    const vData = res.phone && res.phone.startsWith('VERIFIED_V1:')
+      ? (() => { try { return JSON.parse(res.phone.substring('VERIFIED_V1:'.length)); } catch (e) { return null; } })()
+      : null;
+
+    setEditFamilyMembers(vData?.familyMembers || []);
+    setEditVehicles(vData?.vehicles || []);
+    setEditHasNoVehicle(vData ? !!vData.hasNoVehicle : false);
   };
 
   const handleSaveEditResident = (e: React.FormEvent) => {
@@ -431,13 +443,26 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({
       alert('Nama, KTP, dan Unit tidak boleh kosong!');
       return;
     }
+
+    // Build the updated verification payload to serialize into the phone field
+    const payload = {
+      whatsapp: editResPhone.trim(),
+      familyMembers: editFamilyMembers,
+      vehicles: editVehicles,
+      hasNoVehicle: editHasNoVehicle,
+      vehiclesCount: editHasNoVehicle ? 0 : editVehicles.length,
+      vehiclesType: editHasNoVehicle ? 'Tidak Ada' : editVehicles.map(v => `${v.type} (${v.plate || '-'})`).join(', '),
+      verifiedAt: new Date().toISOString()
+    };
+    const finalPhone = `VERIFIED_V1:${JSON.stringify(payload)}`;
+
     if (onEditResident) {
       onEditResident(editingResident.id, {
         name: editResName.trim(),
         ktp: editResKtp.trim(),
         unit: editResUnit.trim(),
         block: editResBlock,
-        phone: editResPhone.trim(),
+        phone: finalPhone,
         floor: editResFloor,
         occupancyStatus: editResOccupancy,
         isVacant: editResOccupancy === 'Kosong',
@@ -3035,6 +3060,171 @@ Siti Aminah	357802...	Blok B	B-202	085755..."
                   <option value="Dihuni">Dihuni (Aktif)</option>
                   <option value="Kosong">Kosong (Tidak Dihuni)</option>
                 </select>
+              </div>
+
+              {/* Seksi Edit Data Verifikasi Warga */}
+              <div className="border-t border-slate-200 pt-4 space-y-3">
+                <span className="text-[10px] text-purple-650 font-extrabold uppercase tracking-widest font-mono block">Data Verifikasi Warga (Pusat)</span>
+                
+                {/* Family Members list */}
+                <div className="space-y-2">
+                  <div className="flex justify-between items-center">
+                    <label className="block text-xs font-bold uppercase text-slate-400 font-mono">Anggota Keluarga Tinggal</label>
+                    <button
+                      type="button"
+                      onClick={() => setEditFamilyMembers(prev => [...prev, { name: '', age: '', gender: 'Laki-laki', occupation: '' }])}
+                      className="text-[9px] bg-purple-50 text-purple-750 font-extrabold px-2 py-1 rounded-lg border border-purple-200/50 hover:bg-purple-100 transition cursor-pointer"
+                    >
+                      + Tambah Jiwa
+                    </button>
+                  </div>
+                  
+                  {editFamilyMembers.length === 0 ? (
+                    <p className="text-[10px] text-slate-450 italic bg-slate-50 p-2 rounded-xl text-center border border-slate-100">Tinggal Sendiri / Belum Diisi</p>
+                  ) : (
+                    <div className="space-y-2 max-h-[140px] overflow-y-auto pr-1">
+                      {editFamilyMembers.map((fm, idx) => (
+                        <div key={idx} className="bg-slate-50 p-2.5 rounded-xl border border-slate-200/60 relative space-y-1.5 text-xs">
+                          <button
+                            type="button"
+                            onClick={() => setEditFamilyMembers(prev => prev.filter((_, i) => i !== idx))}
+                            className="absolute top-1.5 right-1.5 text-[9px] text-rose-500 font-bold hover:bg-rose-50 p-1 rounded"
+                          >
+                            Hapus
+                          </button>
+                          <div className="grid grid-cols-2 gap-2 pr-8">
+                            <input
+                              type="text"
+                              placeholder="Nama"
+                              value={fm.name}
+                              onChange={(e) => {
+                                const updated = [...editFamilyMembers];
+                                updated[idx].name = e.target.value;
+                                setEditFamilyMembers(updated);
+                              }}
+                              className="px-2 py-1 border border-slate-200 rounded-lg text-xxs bg-white text-slate-900"
+                              required
+                            />
+                            <input
+                              type="text"
+                              placeholder="Umur"
+                              value={fm.age}
+                              onChange={(e) => {
+                                const updated = [...editFamilyMembers];
+                                updated[idx].age = e.target.value;
+                                setEditFamilyMembers(updated);
+                              }}
+                              className="px-2 py-1 border border-slate-200 rounded-lg text-xxs bg-white text-slate-900"
+                              required
+                            />
+                          </div>
+                          <div className="grid grid-cols-2 gap-2">
+                            <select
+                              value={fm.gender}
+                              onChange={(e) => {
+                                const updated = [...editFamilyMembers];
+                                updated[idx].gender = e.target.value as any;
+                                setEditFamilyMembers(updated);
+                              }}
+                              className="px-2 py-1 border border-slate-200 rounded-lg text-xxs bg-white text-slate-900"
+                            >
+                              <option value="Laki-laki">Laki-laki</option>
+                              <option value="Perempuan">Perempuan</option>
+                            </select>
+                            <input
+                              type="text"
+                              placeholder="Pekerjaan"
+                              value={fm.occupation}
+                              onChange={(e) => {
+                                const updated = [...editFamilyMembers];
+                                updated[idx].occupation = e.target.value;
+                                setEditFamilyMembers(updated);
+                              }}
+                              className="px-2 py-1 border border-slate-200 rounded-lg text-xxs bg-white text-slate-900"
+                            />
+                          </div>
+                        </div>
+                      ))}
+                    </div>
+                  )}
+                </div>
+
+                {/* Vehicles list */}
+                <div className="space-y-2">
+                  <div className="flex justify-between items-center">
+                    <label className="block text-xs font-bold uppercase text-slate-400 font-mono">Kepemilikan Kendaraan</label>
+                    <button
+                      type="button"
+                      onClick={() => {
+                        setEditVehicles(prev => [...prev, { type: '', plate: '' }]);
+                        setEditHasNoVehicle(false);
+                      }}
+                      className="text-[9px] bg-purple-50 text-purple-750 font-extrabold px-2 py-1 rounded-lg border border-purple-200/50 hover:bg-purple-100 transition cursor-pointer"
+                    >
+                      + Tambah Unit
+                    </button>
+                  </div>
+
+                  <label className="flex items-center gap-2 bg-slate-50 p-2 rounded-xl border border-slate-200/60 cursor-pointer">
+                    <input
+                      type="checkbox"
+                      checked={editHasNoVehicle}
+                      onChange={(e) => {
+                        setEditHasNoVehicle(e.target.checked);
+                        if (e.target.checked) setEditVehicles([]);
+                      }}
+                      className="rounded text-purple-650 focus:ring-purple-500"
+                    />
+                    <span className="text-[10px] font-semibold text-slate-650">Tidak memiliki kendaraan bermotor di Rusunawa</span>
+                  </label>
+                  
+                  {!editHasNoVehicle && (
+                    editVehicles.length === 0 ? (
+                      <p className="text-[10px] text-slate-450 italic bg-slate-50 p-2 rounded-xl text-center border border-slate-100">Belum Ada Kendaraan</p>
+                    ) : (
+                      <div className="space-y-2 max-h-[140px] overflow-y-auto pr-1">
+                        {editVehicles.map((vh, idx) => (
+                          <div key={idx} className="bg-slate-50 p-2 rounded-xl border border-slate-200/60 relative flex gap-2 items-center text-xs pr-8">
+                            <input
+                              type="text"
+                              placeholder="Jenis (ex: NMAX)"
+                              value={vh.type}
+                              onChange={(e) => {
+                                const updated = [...editVehicles];
+                                updated[idx].type = e.target.value;
+                                setEditVehicles(updated);
+                              }}
+                              className="flex-1 px-2 py-1 border border-slate-200 rounded-lg text-xxs bg-white text-slate-900"
+                              required
+                            />
+                            <input
+                              type="text"
+                              placeholder="Nopol (ex: L 1234 XY)"
+                              value={vh.plate}
+                              onChange={(e) => {
+                                const updated = [...editVehicles];
+                                updated[idx].plate = e.target.value;
+                                setEditVehicles(updated);
+                              }}
+                              className="flex-1 px-2 py-1 border border-slate-200 rounded-lg text-xxs bg-white font-mono uppercase text-slate-900"
+                            />
+                            <button
+                              type="button"
+                              onClick={() => {
+                                const updated = editVehicles.filter((_, i) => i !== idx);
+                                setEditVehicles(updated);
+                                if (updated.length === 0) setEditHasNoVehicle(true);
+                              }}
+                              className="absolute right-1 text-[9px] text-rose-500 font-bold hover:bg-rose-50 p-1 rounded"
+                            >
+                              Hapus
+                            </button>
+                          </div>
+                        ))}
+                      </div>
+                    )
+                  )}
+                </div>
               </div>
 
               <div className="flex gap-3 pt-3">
