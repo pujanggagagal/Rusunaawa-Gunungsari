@@ -135,6 +135,7 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({
   const [dirFloorFilter, setDirFloorFilter] = useState<'all' | number>('all');
   const [dirBlockFilter, setDirBlockFilter] = useState<'all' | string>('all');
   const [dirStatusFilter, setDirStatusFilter] = useState<'all' | string>('all');
+  const [isVacantModalOpen, setIsVacantModalOpen] = useState(false);
 
   // Finance calculations
   const totalBalance = financeLogs.reduce((sum, log) => {
@@ -784,37 +785,55 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({
       </div>
 
       {/* Main Stats of Rusunawa */}
-      <div className="grid grid-cols-1 md:grid-cols-5 gap-4 mb-8">
-        <div className="bg-[#0700ad] text-white p-5 rounded-2xl border border-slate-800 relative overflow-hidden">
-          <span className="text-xxs font-mono text-white block uppercase tracking-wider">Total Kas Paguyuban</span>
-          <span className="text-xl font-bold font-mono text-white block mt-1.5">{formatRupiah(totalBalance)}</span>
-          <span className="text-[11px] text-white italic block mt-2">Saldo Bersih Arus Keuangan</span>
-        </div>
+      {(() => {
+        const vacantResidentsList = residents.filter(
+          (r) => r.isVacant || r.occupancyStatus === 'Kosong' || r.occupancyStatus === 'kosong' || r.name === 'Kamar Kosong' || r.name?.toLowerCase()?.includes('kamar kosong')
+        );
+        const vacantCount = vacantResidentsList.length;
 
-        <div className="bg-white p-5 rounded-2xl border border-slate-150">
-          <span className="text-xxs font-mono text-rose-500 block uppercase tracking-wider font-bold">Total Pengeluaran Kas</span>
-          <span className="text-xl font-bold font-mono text-rose-600 block mt-1.5">{formatRupiah(totalOutflow)}</span>
-          <span className="text-[10px] text-slate-500 block mt-2">Akumulasi pengeluaran paguyuban</span>
-        </div>
-        
-        <div className="bg-white p-5 rounded-2xl border border-slate-150">
-          <span className="text-xxs font-mono text-slate-400 block uppercase tracking-wider">Iuran PDAM Terbayar</span>
-          <span className="text-xl font-bold font-mono text-blue-600 block mt-1.5">{formatRupiah(cashInflowWater)}</span>
-          <span className="text-[10px] text-slate-500 block mt-2">Pemasukan iuran air meter</span>
-        </div>
+        return (
+          <div className="grid grid-cols-1 md:grid-cols-6 gap-4 mb-8">
+            <div className="bg-[#0700ad] text-white p-5 rounded-2xl border border-slate-800 relative overflow-hidden">
+              <span className="text-xxs font-mono text-white block uppercase tracking-wider">Total Kas Paguyuban</span>
+              <span className="text-xl font-bold font-mono text-white block mt-1.5">{formatRupiah(totalBalance)}</span>
+              <span className="text-[11px] text-white italic block mt-2">Saldo Bersih Arus Keuangan</span>
+            </div>
 
-        <div className="bg-white p-5 rounded-2xl border border-slate-150">
-          <span className="text-xxs font-mono text-slate-400 block uppercase tracking-wider">Iuran Sampah Terbayar</span>
-          <span className="text-xl font-bold font-mono text-emerald-600 block mt-1.5">{formatRupiah(cashInflowTrash)}</span>
-          <span className="text-[10px] text-slate-500 block mt-2">Flat Rp {appSettings.trashBillCost.toLocaleString('id-ID')} / hunian</span>
-        </div>
+            <div className="bg-white p-5 rounded-2xl border border-slate-150">
+              <span className="text-xxs font-mono text-rose-500 block uppercase tracking-wider font-bold">Total Pengeluaran Kas</span>
+              <span className="text-xl font-bold font-mono text-rose-600 block mt-1.5">{formatRupiah(totalOutflow)}</span>
+              <span className="text-[10px] text-slate-500 block mt-2">Akumulasi pengeluaran paguyuban</span>
+            </div>
+            
+            <div className="bg-white p-5 rounded-2xl border border-slate-150">
+              <span className="text-xxs font-mono text-slate-400 block uppercase tracking-wider">Iuran PDAM Terbayar</span>
+              <span className="text-xl font-bold font-mono text-blue-600 block mt-1.5">{formatRupiah(cashInflowWater)}</span>
+              <span className="text-[10px] text-slate-500 block mt-2">Pemasukan iuran air meter</span>
+            </div>
 
-        <div className="bg-white p-5 rounded-2xl border border-slate-150">
-          <span className="text-xxs font-mono text-slate-400 block uppercase tracking-wider">Total Warga Terdaftar</span>
-          <span className="text-xl font-bold font-mono text-slate-950 block mt-1.5">{residents.length} Hunian</span>
-          <span className="text-[10px] text-slate-500 block mt-2">5 Koordinator aktif</span>
-        </div>
-      </div>
+            <div className="bg-white p-5 rounded-2xl border border-slate-150">
+              <span className="text-xxs font-mono text-slate-400 block uppercase tracking-wider">Iuran Sampah Terbayar</span>
+              <span className="text-xl font-bold font-mono text-emerald-600 block mt-1.5">{formatRupiah(cashInflowTrash)}</span>
+              <span className="text-[10px] text-slate-500 block mt-2">Flat Rp {appSettings.trashBillCost.toLocaleString('id-ID')} / hunian</span>
+            </div>
+
+            <div className="bg-white p-5 rounded-2xl border border-slate-150">
+              <span className="text-xxs font-mono text-slate-400 block uppercase tracking-wider">Total Warga Terdaftar</span>
+              <span className="text-xl font-bold font-mono text-slate-950 block mt-1.5">{residents.length} Hunian</span>
+              <span className="text-[10px] text-slate-500 block mt-2">5 Koordinator aktif</span>
+            </div>
+
+            <div 
+              onClick={() => setIsVacantModalOpen(true)}
+              className="bg-white p-5 rounded-2xl border border-slate-150 cursor-pointer hover:border-amber-500 hover:shadow-md transition-all group select-none"
+            >
+              <span className="text-xxs font-mono text-slate-400 block uppercase tracking-wider group-hover:text-amber-600 transition-colors">Hunian Kosong</span>
+              <span className="text-xl font-bold font-mono text-amber-600 block mt-1.5">{vacantCount} Kamar</span>
+              <span className="text-[10px] text-slate-500 block mt-2 font-semibold text-slate-400 group-hover:text-amber-500 transition-colors">Klik untuk verifikasi list →</span>
+            </div>
+          </div>
+        );
+      })()}
 
       {/* Primary Tab Navigation */}
       <div className="flex border-b border-slate-200 mb-6 gap-2 overflow-x-auto scrollbar-none w-full">
@@ -3123,6 +3142,101 @@ Siti Aminah	357802...	Blok B	B-202	085755..."
                   </div>
                 </div>
               )}
+            </div>
+          </div>
+        );
+      })()}
+
+      {/* 8. GORGEOUS PREMIUM VACANT UNITS VERIFICATION MODAL */}
+      {isVacantModalOpen && (() => {
+        const vacantList = residents.filter(
+          (r) => r.isVacant || r.occupancyStatus === 'Kosong' || r.occupancyStatus === 'kosong' || r.name === 'Kamar Kosong' || r.name?.toLowerCase()?.includes('kamar kosong')
+        ).sort((a, b) => {
+          const aFloor = a.floor || getFloorFromUnit(a.unit);
+          const bFloor = b.floor || getFloorFromUnit(b.unit);
+          if (aFloor !== bFloor) return aFloor - bFloor;
+          return a.unit.localeCompare(b.unit, undefined, { numeric: true, sensitivity: 'base' });
+        });
+
+        return (
+          <div className="fixed inset-0 bg-slate-950/80 backdrop-blur-sm flex items-center justify-center p-4 z-50 animate-fade-in text-slate-800">
+            <div className="bg-white rounded-3xl w-full max-w-2xl border border-slate-100 shadow-2xl flex flex-col overflow-hidden animate-slide-up">
+              
+              {/* Modal Header */}
+              <div className="p-5 border-b border-slate-100 bg-gradient-to-r from-amber-50 to-orange-50/50 flex justify-between items-center">
+                <div className="flex items-center gap-2">
+                  <div className="h-8 w-8 bg-amber-100 text-amber-700 rounded-lg flex items-center justify-center font-bold">
+                    🚰
+                  </div>
+                  <div>
+                    <h3 className="text-sm font-black text-slate-900 uppercase tracking-wide">Daftar Hunian Kosong ({vacantList.length} Kamar)</h3>
+                    <p className="text-[10px] text-slate-500 font-medium leading-none">Hunian dibebaskan iuran (Rp 0) untuk keadilan tagihan</p>
+                  </div>
+                </div>
+                <button
+                  type="button"
+                  onClick={() => setIsVacantModalOpen(false)}
+                  className="text-slate-400 hover:text-slate-600 font-bold text-lg h-7 w-7 rounded-full bg-slate-100 flex items-center justify-center cursor-pointer transition-colors"
+                >
+                  &times;
+                </button>
+              </div>
+
+              {/* Modal Content */}
+              <div className="p-6 overflow-y-auto max-h-[450px]">
+                {vacantList.length === 0 ? (
+                  <div className="py-12 text-center text-slate-400 space-y-2">
+                    <p className="text-xs font-bold">Tidak ada hunian kosong.</p>
+                    <p className="text-[10px]">Seluruh hunian saat ini berstatus dihuni.</p>
+                  </div>
+                ) : (
+                  <div className="overflow-x-auto w-full">
+                    <table className="w-full text-xs text-left divide-y divide-slate-150">
+                      <thead>
+                        <tr className="text-[10px] uppercase font-mono font-extrabold text-slate-450 tracking-wider">
+                          <th className="pb-3 px-2">Lantai</th>
+                          <th className="pb-3 px-2">Blok</th>
+                          <th className="pb-3 px-2">Nomor Hunian</th>
+                          <th className="pb-3 px-2">Nama Terdaftar</th>
+                          <th className="pb-3 px-2">KTP</th>
+                          <th className="pb-3 px-2 text-center">Status</th>
+                        </tr>
+                      </thead>
+                      <tbody className="divide-y divide-slate-100 font-bold text-slate-700">
+                        {vacantList.map((res) => {
+                          const floor = res.floor || getFloorFromUnit(res.unit);
+                          return (
+                            <tr key={res.id} className="hover:bg-slate-50/50 transition-colors">
+                              <td className="py-2.5 px-2 font-mono">Lt {floor}</td>
+                              <td className="py-2.5 px-2">{res.block}</td>
+                              <td className="py-2.5 px-2 font-mono text-slate-900">{res.unit}</td>
+                              <td className="py-2.5 px-2 text-slate-800 font-semibold">{res.name}</td>
+                              <td className="py-2.5 px-2 font-mono text-slate-400 text-[10px]">{res.ktp}</td>
+                              <td className="py-2.5 px-2 text-center">
+                                <span className="px-2.5 py-0.5 bg-amber-50 text-amber-700 rounded-full text-[9px] uppercase border border-amber-150 font-bold">
+                                  Kosong (Rp 0)
+                                </span>
+                              </td>
+                            </tr>
+                          );
+                        })}
+                      </tbody>
+                    </table>
+                  </div>
+                )}
+              </div>
+
+              {/* Modal Footer */}
+              <div className="bg-slate-50 p-4 border-t border-slate-100 flex justify-end">
+                <button
+                  type="button"
+                  onClick={() => setIsVacantModalOpen(false)}
+                  className="px-4 py-2 bg-white hover:bg-slate-100 border border-slate-200 text-slate-700 font-extrabold text-[10px] rounded-xl uppercase transition-colors shadow-xs cursor-pointer"
+                >
+                  Tutup Verifikasi
+                </button>
+              </div>
+
             </div>
           </div>
         );
