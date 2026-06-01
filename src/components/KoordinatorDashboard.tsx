@@ -418,12 +418,29 @@ export const KoordinatorDashboard: React.FC<KoordinatorDashboardProps> = ({
       (b) => b.residentKtp === activeResident.ktp && b.month === 'Mei' && b.year === 2026
     );
 
+    if (currentMeiRecord) {
+      return { prev: currentMeiRecord.prevMeter, currentMeiRecord };
+    }
+
     // Get latest meter reading before May (April)
     const pastRecords = billingRecords.filter(
       (b) => b.residentKtp === activeResident.ktp && !(b.month === 'Mei' && b.year === 2026)
     );
 
-    const prev = pastRecords.length > 0 ? pastRecords[0].currentMeter : 100;
+    // Sort past records descending, prioritizing our imported CSV revision IDs (start with 'bill-')
+    const sortedPast = [...pastRecords].sort((a, b) => {
+      if (a.year !== b.year) return b.year - a.year;
+      const aIsRev = a.id.startsWith('bill-') ? 1 : 0;
+      const bIsRev = b.id.startsWith('bill-') ? 1 : 0;
+      if (aIsRev !== bIsRev) return bIsRev - aIsRev;
+      return 0;
+    });
+
+    const prev = sortedPast.length > 0 
+      ? sortedPast[0].currentMeter 
+      : (activeResident.initialMeter !== undefined && activeResident.initialMeter !== null
+          ? Number(activeResident.initialMeter)
+          : 100);
 
     return { prev, currentMeiRecord };
   };

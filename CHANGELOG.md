@@ -14,6 +14,11 @@ Seluruh log perubahan, optimasi sistem, dan perbaikan bug yang diterapkan pada r
   - Menghadirkan form khusus untuk memperbarui/mengoreksi angka meteran April yang salah.
   - Sistem secara cerdas menghitung ulang pemakaian April dan **mengalirkan (propagate)** nilai koreksi April tersebut sebagai angka dasar (prevMeter) pada catatan bulan Mei yang sudah ada, merevisi nominal tagihan Mei secara otomatis agar data historis tetap konsisten dan akurat.
 
+#### Fixed
+- **Sinkronisasi Angka Meteran Lalu (Koordinator Dashboard)**:
+  - Memperbaiki kutu logika pada fungsi `getPrevMeterAndCurrentMei()` yang sebelumnya mengabaikan `prevMeter` dari catatan Mei yang sudah terekam di database.
+  - Memperbaiki bug yang memunculkan data desimal lawas (`23.234` m³ dari data awal) dengan menyortir data historis dan memprioritaskan catatan revisi baru hasil impor CSV (prefix `bill-`).
+
 ---
 
 ### [1.2.0] - 2026-05-27
