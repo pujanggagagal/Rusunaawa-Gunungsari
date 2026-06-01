@@ -1607,18 +1607,18 @@ Siti Aminah	357802...	Blok B	B-202	085755..."
                 )}
               </div>
 
-              {/* Desktop View: Interactive Table */}
-              <div className="hidden md:block overflow-x-auto">
-                <table className="min-w-full text-xs">
-                  <thead>
-                    <tr className="border-b border-slate-150 text-slate-400 font-mono text-left uppercase text-[10px]">
-                      <th className="pb-3 px-4 w-32">Nomor Unit</th>
-                      <th className="pb-3 px-4 w-28">Lantai</th>
-                      <th className="pb-3 px-4">Nama Lengkap</th>
-                      <th className="pb-3 px-4">Nomor KTP (Login)</th>
-                      <th className="pb-3 px-4">No HP / Telp</th>
-                      <th className="pb-3 px-4">Status Hunian</th>
-                      <th className="pb-3 px-4 text-right">Tindakan</th>
+              {/* Desktop View: Interactive Table with Sticky Headers & Scroll Container */}
+              <div className="hidden md:block overflow-x-auto overflow-y-auto max-h-[600px] border border-slate-150 rounded-2xl shadow-inner bg-white select-none">
+                <table className="min-w-full text-xs table-auto">
+                  <thead className="sticky top-0 bg-slate-50 z-20 shadow-xs">
+                    <tr className="border-b border-slate-200 text-slate-500 font-mono text-left uppercase text-[9px] font-black bg-slate-50/95 backdrop-blur-xs">
+                      <th className="py-3 px-4 w-32">Nomor Unit</th>
+                      <th className="py-3 px-4 w-28">Lantai</th>
+                      <th className="py-3 px-4">Nama Lengkap</th>
+                      <th className="py-3 px-4">Nomor KTP (Login)</th>
+                      <th className="py-3 px-4">No HP / Telp</th>
+                      <th className="py-3 px-4">Status Hunian</th>
+                      <th className="py-3 px-4 text-right">Tindakan</th>
                     </tr>
                   </thead>
                   <tbody className="divide-y divide-slate-100">
