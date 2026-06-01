@@ -4,6 +4,18 @@ Seluruh log perubahan, optimasi sistem, dan perbaikan bug yang diterapkan pada r
 
 ---
 
+### [1.3.0] - 2026-06-01
+#### Added
+- **Menu Pembayaran & Catat PDAM (Tab Admin Baru)**:
+  - Menyediakan tab khusus **"🚰 Pembayaran & Catat PDAM"** di Dashboard Admin untuk memproses iuran secara terpusat.
+  - Memfasilitasi **Pencatatan Backup** angka meteran Mei jika koordinator berhalangan, lengkap dengan kalkulasi kubikasi pemakaian, biaya air PDAM, dan iuran sampah secara real-time.
+  - Menyediakan aksi **"Tandai Lunas"** instan untuk pembayaran tunai, yang otomatis memperbarui status listrik warga menjadi menyala dan mencatatkan kas masuk pembukuan keuangan.
+- **Koreksi Data Meteran Bulan Lalu (April)**:
+  - Menghadirkan form khusus untuk memperbarui/mengoreksi angka meteran April yang salah.
+  - Sistem secara cerdas menghitung ulang pemakaian April dan **mengalirkan (propagate)** nilai koreksi April tersebut sebagai angka dasar (prevMeter) pada catatan bulan Mei yang sudah ada, merevisi nominal tagihan Mei secara otomatis agar data historis tetap konsisten dan akurat.
+
+---
+
 ### [1.2.0] - 2026-05-27
 #### Added
 - **Progressive Web App (PWA) Support**: Menyulap website menjadi aplikasi PWA mandiri (standalone). Koordinator dapat langsung menginstal aplikasi resmi dengan ikon premium "Rusunawa Gunungsari" langsung di layar beranda (home screen) HP Android/iPhone mereka, berjalan layar penuh (full-screen) tanpa navigasi browser.

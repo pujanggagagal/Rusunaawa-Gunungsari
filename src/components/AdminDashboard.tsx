@@ -21,6 +21,9 @@ interface AdminDashboardProps {
   onEditCoordinator?: (id: string, updatedFields: Partial<Coordinator>) => void;
   appSettings: AppSettings;
   onUpdateAppSettings: (settings: AppSettings) => void;
+  onSaveMeter: (ktp: string, prevMeter: number, currentMeter: number) => void;
+  onPayBill: (billId: string, amount: number) => void;
+  onUpdateAprilMeter: (ktp: string, newAprilMeter: number) => void;
 }
 
 export const AdminDashboard: React.FC<AdminDashboardProps> = ({
@@ -38,9 +41,12 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({
   onEditResident,
   onEditCoordinator,
   appSettings,
-  onUpdateAppSettings
+  onUpdateAppSettings,
+  onSaveMeter,
+  onPayBill,
+  onUpdateAprilMeter
 }) => {
-  const [activeTab, setActiveTab] = useState<'finance' | 'residents' | 'coordinators' | 'reconciliation' | 'barcodes' | 'settings'>('finance');
+  const [activeTab, setActiveTab] = useState<'finance' | 'residents' | 'coordinators' | 'reconciliation' | 'billing' | 'barcodes' | 'settings'>('finance');
   
   // States for adding residents
   const [newResName, setNewResName] = useState('');
@@ -93,6 +99,14 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({
   // States for Reconciliation
   const [reconcileFloor, setReconcileFloor] = useState<number | null>(null);
   const [reconcileSuccess, setReconcileSuccess] = useState('');
+
+  // States for PDAM Backup & Payments Tab
+  const [selectedResidentKtp, setSelectedResidentKtp] = useState('');
+  const [inputAprilMeter, setInputAprilMeter] = useState('');
+  const [inputMayMeter, setInputMayMeter] = useState('');
+  const [searchQuery, setSearchQuery] = useState('');
+  const [billingSuccess, setBillingSuccess] = useState('');
+  const [billingError, setBillingError] = useState('');
 
   // States for Barcode Management & Print layout
   const [barcodeSearch, setBarcodeSearch] = useState('');
@@ -837,6 +851,16 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({
           }`}
         >
           🤝 Setoran &amp; Rekonsiliasi
+        </button>
+        <button
+          onClick={() => setActiveTab('billing')}
+          className={`flex-shrink-0 pb-3 text-xs font-bold font-mono uppercase tracking-wider border-b-2 px-4 transition-all cursor-pointer ${
+            activeTab === 'billing'
+              ? 'border-purple-600 text-purple-700'
+              : 'border-transparent text-slate-400 hover:text-slate-600'
+          }`}
+        >
+          🚰 Pembayaran &amp; Catat PDAM
         </button>
         <button
           onClick={() => setActiveTab('barcodes')}
@@ -2126,6 +2150,371 @@ Siti Aminah	357802...	Blok B	B-202	085755..."
 
           </div>
         )}
+
+
+        {/* BILLING & PDAM BACKUP MANAGEMENT TAB VIEW */}
+        {/* ======================================================== */}
+        {activeTab === 'billing' && (() => {
+          // Find selected resident details
+          const activeRes = residents.find(r => r.ktp === selectedResidentKtp);
+          
+          // Get April record and May record for selected resident
+          const aprRecord = activeRes ? billingRecords.find(b => b.residentKtp === activeRes.ktp && b.month === 'April' && b.year === 2026) : null;
+          const meiRecord = activeRes ? billingRecords.find(b => b.residentKtp === activeRes.ktp && b.month === 'Mei' && b.year === 2026) : null;
+
+          // Previous meter fallback: April record's currentMeter, or initialMeter, or 100
+          const prevMeterVal = activeRes
+            ? (meiRecord 
+                ? meiRecord.prevMeter 
+                : (aprRecord 
+                    ? aprRecord.currentMeter 
+                    : (activeRes.initialMeter !== undefined && activeRes.initialMeter !== null ? Number(activeRes.initialMeter) : 100)
+                  )
+              )
+            : 0;
+
+          // Filtered list of residents based on search query
+          const filteredResList = residents.filter(r => {
+            const query = searchQuery.toLowerCase();
+            return r.name.toLowerCase().includes(query) || 
+                   r.unit.toLowerCase().includes(query) || 
+                   r.block.toLowerCase().includes(query) ||
+                   r.ktp.includes(query);
+          });
+
+          // Sort naturally by Block -> Floor -> Unit
+          const sortedResList = [...filteredResList].sort((a, b) => {
+            if (a.block !== b.block) return a.block.localeCompare(b.block);
+            const floorA = a.floor || getFloorFromUnit(a.unit);
+            const floorB = b.floor || getFloorFromUnit(b.unit);
+            if (floorA !== floorB) return floorA - floorB;
+            return a.unit.localeCompare(b.unit, undefined, { numeric: true, sensitivity: 'base' });
+          });
+
+          const handleSaveMayMeter = (e: React.FormEvent) => {
+            e.preventDefault();
+            if (!activeRes) return;
+            const newMeterVal = Number(inputMayMeter);
+            if (isNaN(newMeterVal) || inputMayMeter === '') {
+              setBillingError('Silakan masukkan angka meteran yang valid.');
+              return;
+            }
+            if (newMeterVal < prevMeterVal) {
+              setBillingError(`Error: Angka baru (${newMeterVal} m³) tidak boleh lebih kecil dari meteran lalu (${prevMeterVal} m³).`);
+              return;
+            }
+            onSaveMeter(activeRes.ktp, prevMeterVal, newMeterVal);
+            setBillingSuccess(`Sukses menyimpan meteran Mei (${newMeterVal} m³) untuk Unit ${activeRes.unit}!`);
+            setBillingError('');
+            setInputMayMeter('');
+            setTimeout(() => setBillingSuccess(''), 4000);
+          };
+
+          const handleSaveAprilMeter = (e: React.FormEvent) => {
+            e.preventDefault();
+            if (!activeRes) return;
+            const newMeterVal = Number(inputAprilMeter);
+            if (isNaN(newMeterVal) || inputAprilMeter === '') {
+              setBillingError('Silakan masukkan angka meteran April yang valid.');
+              return;
+            }
+            onUpdateAprilMeter(activeRes.ktp, newMeterVal);
+            setBillingSuccess(`Sukses mengoreksi meteran April (${newMeterVal} m³) untuk Unit ${activeRes.unit}!`);
+            setBillingError('');
+            setInputAprilMeter('');
+            setTimeout(() => setBillingSuccess(''), 4000);
+          };
+
+          // May usage & live pricing calculations
+          const usage = inputMayMeter !== '' ? Math.max(0, Number(inputMayMeter) - prevMeterVal) : 0;
+          const pdamBill = calculatePdamBill(usage);
+          const trashBill = appSettings.trashBillCost;
+          const totalBill = pdamBill + trashBill;
+
+          return (
+            <div className="lg:col-span-3 space-y-6 animate-fade-in text-slate-900 w-full">
+              {/* Header Info */}
+              <div className="bg-gradient-to-r from-blue-900 to-indigo-900 p-6 rounded-3xl text-white shadow-xl flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
+                <div className="space-y-1">
+                  <div className="flex items-center gap-2">
+                    <span className="px-3 py-1 bg-blue-500/20 text-blue-200 border border-blue-400/30 text-[10px] font-black uppercase rounded-full">
+                      PENCATATAN BACKUP & PEMBAYARAN PDAM
+                    </span>
+                  </div>
+                  <h2 className="text-xl font-black tracking-tight">KONTROL IURAN & BACKUP PDAM WARGA</h2>
+                  <p className="text-xs text-slate-300 max-w-2xl font-medium">
+                    Membantu mencatatkan angka meteran air (backup) jika koordinator berhalangan, memproses pelunasan pembayaran secara tunai, serta melakukan koreksi angka meteran bulan lalu (April) yang bermasalah.
+                  </p>
+                </div>
+              </div>
+
+              {/* Status Alerts */}
+              {(billingSuccess || billingError) && (
+                <div className="space-y-2">
+                  {billingSuccess && (
+                    <div className="p-4 bg-emerald-50 border border-emerald-250 text-emerald-800 rounded-2xl flex items-center gap-2.5 font-bold text-xs">
+                      <CheckCircle2 size={16} className="text-emerald-600 shrink-0" />
+                      <span>{billingSuccess}</span>
+                    </div>
+                  )}
+                  {billingError && (
+                    <div className="p-4 bg-rose-50 border border-rose-250 text-rose-800 rounded-2xl flex items-center gap-2.5 font-bold text-xs">
+                      <AlertCircle size={16} className="text-rose-600 shrink-0" />
+                      <span>{billingError}</span>
+                    </div>
+                  )}
+                </div>
+              )}
+
+              <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 items-start w-full">
+                {/* COLUMN LEFT: INPUT WORKSTATION (5/12) */}
+                <div className="lg:col-span-5 bg-white p-5 rounded-3xl border border-slate-100 shadow-xl space-y-5">
+                  <h3 className="text-sm font-extrabold uppercase tracking-wider text-slate-800 border-b pb-2 flex items-center gap-2">
+                    <Settings size={16} className="text-blue-600" />
+                    Pilih &amp; Olah Data Warga
+                  </h3>
+
+                  {/* Dropdown Resident Selection */}
+                  <div className="space-y-1.5">
+                    <label className="block text-xs font-bold text-slate-700">Pilih Unit Hunian Warga</label>
+                    <select
+                      value={selectedResidentKtp}
+                      onChange={(e) => {
+                        setSelectedResidentKtp(e.target.value);
+                        setInputAprilMeter('');
+                        setInputMayMeter('');
+                        setBillingError('');
+                        setBillingSuccess('');
+                      }}
+                      className="block w-full px-3 py-2 bg-slate-50 border border-slate-200 rounded-xl text-xs font-bold text-slate-800 focus:outline-none focus:border-blue-500"
+                    >
+                      <option value="">-- Pilih Unit --</option>
+                      {residents.map((r) => (
+                        <option key={r.id} value={r.ktp}>
+                          [{r.unit}] - {r.name}
+                        </option>
+                      ))}
+                    </select>
+                  </div>
+
+                  {!activeRes ? (
+                    <div className="py-12 text-center text-slate-400 space-y-2">
+                      <Search size={32} className="mx-auto opacity-40 text-slate-500" />
+                      <p className="text-xs font-bold">Belum ada warga terpilih.</p>
+                      <p className="text-[10px]">Silakan pilih salah satu unit warga di atas untuk mulai mencatat atau melakukan koreksi data.</p>
+                    </div>
+                  ) : (
+                    <div className="space-y-6">
+                      {/* Resident Info Card */}
+                      <div className="p-4 bg-gradient-to-br from-slate-50 to-blue-50/20 border border-slate-100 rounded-2xl flex justify-between items-center text-xs">
+                        <div>
+                          <span className="text-[10px] uppercase font-mono tracking-wider font-bold text-slate-400">Unit Hunian</span>
+                          <div className="text-xl font-black text-slate-900 tracking-tight flex items-center gap-1.5 -mt-0.5">
+                            {activeRes.unit}
+                          </div>
+                          <span className="text-xs font-extrabold text-slate-700 block mt-0.5">{activeRes.name}</span>
+                          <span className="text-[9px] font-mono text-slate-400 block mt-0.5">KTP: {activeRes.ktp}</span>
+                        </div>
+                        <div className="text-right">
+                          <span className="text-[10px] uppercase font-mono tracking-wider text-slate-400 block font-bold">Meteran Bulan Lalu</span>
+                          <span className="text-lg font-mono font-black text-slate-750 block -mt-0.5">
+                            {prevMeterVal} <span className="text-xs">m³</span>
+                          </span>
+                          <span className="text-[8px] font-mono text-slate-500 block bg-slate-100 px-1.5 py-0.5 rounded-md mt-1 border border-slate-200">
+                            Terakhir: April 2026
+                          </span>
+                        </div>
+                      </div>
+
+                      {/* PART A: KOREKSI DATA APRIL (BULAN LALU) */}
+                      <form onSubmit={handleSaveAprilMeter} className="p-4 bg-amber-50/40 border border-amber-200/60 rounded-2xl space-y-3">
+                        <div className="flex items-center justify-between border-b border-amber-100 pb-1.5">
+                          <h4 className="text-xs font-black text-amber-800 uppercase tracking-wide flex items-center gap-1.5">
+                            <Edit2 size={13} />
+                            Koreksi Meteran April (Bulan Lalu)
+                          </h4>
+                          <span className="text-[8px] font-black uppercase px-2 py-0.5 bg-amber-100 text-amber-800 rounded font-mono">
+                            April 2026
+                          </span>
+                        </div>
+                        <p className="text-[10px] text-amber-700 leading-tight">
+                          Gunakan kolom ini untuk mengedit angka meteran akhir April jika terjadi kesalahan koordinator di lapangan. Sistem akan mengalirkan nilai perbaikan ini sebagai angka dasar pencatatan Mei.
+                        </p>
+                        <div className="flex gap-2">
+                          <input
+                            type="number"
+                            placeholder={`Koreksi April (Semula ${prevMeterVal} m³)`}
+                            value={inputAprilMeter}
+                            onChange={(e) => setInputAprilMeter(e.target.value)}
+                            className="flex-1 px-3 py-2 bg-white border border-amber-200 rounded-xl text-xs font-mono font-bold text-slate-800 focus:outline-none focus:border-amber-500"
+                          />
+                          <button
+                            type="submit"
+                            className="px-4 py-2 bg-amber-600 hover:bg-amber-700 text-white rounded-xl text-xs font-extrabold uppercase tracking-wide transition cursor-pointer select-none active:scale-[0.97]"
+                          >
+                            Koreksi
+                          </button>
+                        </div>
+                      </form>
+
+                      {/* PART B: PENCATATAN BACKUP MEI */}
+                      <form onSubmit={handleSaveMayMeter} className="p-4 bg-blue-50/20 border border-blue-100 rounded-2xl space-y-4">
+                        <div className="flex items-center justify-between border-b border-blue-100 pb-1.5">
+                          <h4 className="text-xs font-black text-blue-800 uppercase tracking-wide flex items-center gap-1.5">
+                            <Plus size={13} />
+                            Catat Meteran Mei (Backup)
+                          </h4>
+                          <span className="text-[8px] font-black uppercase px-2 py-0.5 bg-blue-100 text-blue-800 rounded font-mono">
+                            Mei 2026
+                          </span>
+                        </div>
+
+                        <div className="space-y-2">
+                          <label className="block text-[10px] font-extrabold text-slate-700 uppercase tracking-wider">Angka Baru Meteran Mei</label>
+                          <input
+                            type="number"
+                            placeholder={`Minimal angka ${prevMeterVal}`}
+                            value={inputMayMeter}
+                            onChange={(e) => setInputMayMeter(e.target.value)}
+                            className="block w-full px-4 py-3 bg-white border-2 border-slate-200 rounded-xl text-base font-mono font-black text-slate-900 focus:outline-none focus:border-blue-500"
+                          />
+                        </div>
+
+                        {/* Calculations preview */}
+                        {inputMayMeter !== '' && Number(inputMayMeter) >= prevMeterVal && (
+                          <div className="p-3 bg-slate-50 border border-slate-200 rounded-xl text-[10px] font-mono font-bold space-y-1.5 text-slate-600">
+                            <div className="flex justify-between">
+                              <span>Kubikasi Air Terpakai:</span>
+                              <span className="text-slate-900">{usage} m³</span>
+                            </div>
+                            <div className="flex justify-between">
+                              <span>Tarif Air PDAM:</span>
+                              <span className="text-slate-900">Rp {pdamBill.toLocaleString('id-ID')}</span>
+                            </div>
+                            <div className="flex justify-between">
+                              <span>Iuran Sampah:</span>
+                              <span className="text-slate-900">Rp {trashBill.toLocaleString('id-ID')}</span>
+                            </div>
+                            <div className="flex justify-between border-t pt-1.5 text-xs text-blue-800 font-extrabold">
+                              <span>ESTIMASI TOTAL:</span>
+                              <span>Rp {totalBill.toLocaleString('id-ID')}</span>
+                            </div>
+                          </div>
+                        )}
+
+                        <button
+                          type="submit"
+                          className="w-full py-3 bg-gradient-to-r from-blue-600 to-indigo-650 hover:from-blue-700 hover:to-indigo-750 text-white rounded-xl text-xs font-black uppercase tracking-wider transition shadow-md shadow-blue-500/10 cursor-pointer active:scale-[0.98]"
+                        >
+                          Catat &amp; Simpan Mei
+                        </button>
+                      </form>
+                    </div>
+                  )}
+                </div>
+
+                {/* COLUMN RIGHT: BILLING DIRECTORY & PAID ACTION (7/12) */}
+                <div className="lg:col-span-7 bg-white p-5 rounded-3xl border border-slate-100 shadow-xl space-y-4">
+                  <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-3 border-b pb-2">
+                    <h3 className="text-sm font-extrabold uppercase tracking-wider text-slate-800 flex items-center gap-2">
+                      <FileText size={16} className="text-indigo-600" />
+                      Daftar Tagihan &amp; Pembayaran Warga
+                    </h3>
+                    <div className="relative w-full sm:w-48">
+                      <input
+                        type="text"
+                        placeholder="Cari Unit / Nama..."
+                        value={searchQuery}
+                        onChange={(e) => setSearchQuery(e.target.value)}
+                        className="w-full pl-7 pr-3 py-1.5 bg-slate-50 border border-slate-200 rounded-xl text-xs font-semibold focus:outline-none focus:bg-white focus:border-indigo-500"
+                      />
+                      <Search size={12} className="absolute left-2.5 top-2 text-slate-400" />
+                    </div>
+                  </div>
+
+                  <div className="overflow-x-auto scrollbar-thin max-h-[500px]">
+                    <table className="w-full text-left text-xs divide-y divide-slate-100 table-auto">
+                      <thead>
+                        <tr className="text-[10px] uppercase font-extrabold text-slate-450 tracking-wider font-mono">
+                          <th className="py-2.5 px-2">Unit</th>
+                          <th className="py-2.5 px-2">Nama</th>
+                          <th className="py-2.5 px-2 text-right">Lalu (Apr)</th>
+                          <th className="py-2.5 px-2 text-right">Baru (Mei)</th>
+                          <th className="py-2.5 px-2 text-right">Tagihan</th>
+                          <th className="py-2.5 px-2 text-center">Status</th>
+                          <th className="py-2.5 px-2 text-center">Aksi</th>
+                        </tr>
+                      </thead>
+                      <tbody className="divide-y divide-slate-100 font-bold text-slate-750">
+                        {sortedResList.map((res) => {
+                          const meiRec = billingRecords.find(b => b.residentKtp === res.ktp && b.month === 'Mei' && b.year === 2026);
+                          const aprRec = billingRecords.find(b => b.residentKtp === res.ktp && b.month === 'April' && b.year === 2026);
+                          
+                          const lastMeterVal = meiRec 
+                            ? meiRec.prevMeter 
+                            : (aprRec 
+                                ? aprRec.currentMeter 
+                                : (res.initialMeter !== undefined && res.initialMeter !== null ? Number(res.initialMeter) : 100)
+                              );
+
+                          return (
+                            <tr key={res.id} className="hover:bg-slate-50/50 transition-colors">
+                              <td className="py-3 px-2 font-mono font-black text-slate-900">{res.unit}</td>
+                              <td className="py-3 px-2 max-w-[120px] truncate text-[11px] font-semibold text-slate-800" title={res.name}>
+                                {res.name}
+                              </td>
+                              <td className="py-3 px-2 text-right font-mono text-slate-500">{lastMeterVal} m³</td>
+                              <td className="py-3 px-2 text-right font-mono text-slate-900">
+                                {meiRec ? `${meiRec.currentMeter} m³` : '-'}
+                              </td>
+                              <td className="py-3 px-2 text-right font-mono text-slate-950 font-black">
+                                {meiRec ? `Rp ${meiRec.totalBill.toLocaleString('id-ID')}` : '-'}
+                              </td>
+                              <td className="py-3 px-2 text-center">
+                                {!meiRec ? (
+                                  <span className="px-2 py-0.5 bg-slate-100 text-slate-500 text-[8px] font-extrabold uppercase rounded font-mono">
+                                    Belum Catat
+                                  </span>
+                                ) : meiRec.status === 'Lunas' ? (
+                                  <span className="px-2 py-0.5 bg-emerald-50 text-emerald-700 text-[8px] font-extrabold uppercase rounded font-mono border border-emerald-100">
+                                    Lunas
+                                  </span>
+                                ) : (
+                                  <span className="px-2 py-0.5 bg-amber-50 text-amber-700 text-[8px] font-extrabold uppercase rounded font-mono border border-amber-100">
+                                    Belum Bayar
+                                  </span>
+                                )}
+                              </td>
+                              <td className="py-3 px-2 text-center">
+                                {meiRec && meiRec.status !== 'Lunas' && (
+                                  <button
+                                    onClick={() => {
+                                      if (window.confirm(`Konfirmasi pembayaran air & sampah Unit ${res.unit} sebesar Rp ${meiRec.totalBill.toLocaleString('id-ID')} secara TUNAI?`)) {
+                                        onPayBill(meiRec.id, meiRec.totalBill);
+                                        setBillingSuccess(`Pelunasan iuran Unit ${res.unit} berhasil diverifikasi!`);
+                                        setTimeout(() => setBillingSuccess(''), 4000);
+                                      }
+                                    }}
+                                    className="px-2.5 py-1 bg-emerald-600 hover:bg-emerald-700 text-white rounded-lg text-[9px] font-black uppercase tracking-wider transition cursor-pointer select-none active:scale-[0.97]"
+                                  >
+                                    Lunas ✓
+                                  </button>
+                                )}
+                                {(!meiRec || meiRec.status === 'Lunas') && (
+                                  <span className="text-[10px] text-slate-300">-</span>
+                                )}
+                              </td>
+                            </tr>
+                          );
+                        })}
+                      </tbody>
+                    </table>
+                  </div>
+                </div>
+              </div>
+            </div>
+          );
+        })()}
 
 
         {/* ======================================================== */}

@@ -447,6 +447,97 @@ export default function App() {
     });
   };
 
+  // Admin correction for previous month (April) meter readings
+  const handleUpdateAprilMeter = (residentKtp: string, newAprilMeter: number) => {
+    setData((prev) => {
+      // 1. Check if April billing record exists for this resident
+      const aprilBillIdx = prev.billing.findIndex(
+        (b) => b.residentKtp === residentKtp && b.month === 'April' && b.year === 2026
+      );
+
+      let updatedBilling = [...prev.billing];
+      if (aprilBillIdx > -1) {
+        // April record exists -> update currentMeter
+        const aprBill = updatedBilling[aprilBillIdx];
+        const prevMeter = aprBill.prevMeter;
+        const usage = Math.max(0, newAprilMeter - prevMeter);
+        const pdamBill = calculatePdamBill(usage);
+        const totalBill = pdamBill + aprBill.trashBill;
+        
+        updatedBilling[aprilBillIdx] = {
+          ...aprBill,
+          currentMeter: newAprilMeter,
+          usage,
+          pdamBill,
+          totalBill,
+        };
+      } else {
+        // April record does not exist -> Create one
+        const resident = prev.residents.find(r => r.ktp === residentKtp);
+        const prevMeter = resident?.initialMeter !== undefined && resident?.initialMeter !== null
+          ? Number(resident.initialMeter)
+          : 100;
+        const usage = Math.max(0, newAprilMeter - prevMeter);
+        const pdamBill = calculatePdamBill(usage);
+        const trashBill = appSettings.trashBillCost;
+        const totalBill = pdamBill + trashBill;
+
+        const newAprilBill: BillingRecord = {
+          id: `bill-${residentKtp}-april`,
+          residentKtp,
+          month: 'April',
+          year: 2026,
+          prevMeter,
+          currentMeter: newAprilMeter,
+          usage,
+          pdamBill,
+          trashBill,
+          totalBill,
+          status: 'Lunas' // April is historic, default to Paid
+        };
+        updatedBilling = [newAprilBill, ...updatedBilling];
+      }
+
+      // 2. Propagate this updated April currentMeter as prevMeter for May record (if it exists)
+      const meiBillIdx = updatedBilling.findIndex(
+        (b) => b.residentKtp === residentKtp && b.month === 'Mei' && b.year === 2026
+      );
+      if (meiBillIdx > -1) {
+        const meiBill = updatedBilling[meiBillIdx];
+        const prevMeter = newAprilMeter;
+        const usage = Math.max(0, meiBill.currentMeter - prevMeter);
+        const pdamBill = calculatePdamBill(usage);
+        const totalBill = pdamBill + meiBill.trashBill;
+
+        updatedBilling[meiBillIdx] = {
+          ...meiBill,
+          prevMeter,
+          usage,
+          pdamBill,
+          totalBill,
+        };
+      }
+
+      // Also update resident's initialMeter to sync the fallback
+      const updatedResidents = prev.residents.map((r) => {
+        if (r.ktp === residentKtp) {
+          return { ...r, initialMeter: newAprilMeter };
+        }
+        return r;
+      });
+
+      // Async sync to Supabase/Spreadsheet
+      syncTable('Billing', updatedBilling);
+      syncTable('Residents', updatedResidents);
+
+      return {
+        ...prev,
+        billing: updatedBilling,
+        residents: updatedResidents,
+      };
+    });
+  };
+
   // security toggle electricity switches
   const handleUpdateElectricity = (residentId: string, status: 'Menyala' | 'Diputus') => {
     setData((prev) => {
@@ -770,6 +861,9 @@ export default function App() {
                 onEditCoordinator={handleEditCoordinator}
                 appSettings={appSettings}
                 onUpdateAppSettings={setAppSettings}
+                onSaveMeter={handleSaveMeter}
+                onPayBill={handlePayBill}
+                onUpdateAprilMeter={handleUpdateAprilMeter}
               />
             )}
           </>
