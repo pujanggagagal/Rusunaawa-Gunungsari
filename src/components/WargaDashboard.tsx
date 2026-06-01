@@ -427,14 +427,14 @@ export const WargaDashboard: React.FC<WargaDashboardProps> = ({
         </div>
       ) : (
         currentMonthBill?.status === 'Belum Lunas' && isPastDue && (
-          <div id="electricity_alert_warning" className="bg-amber-50 border border-amber-200 text-amber-800 p-5 rounded-3xl flex flex-col sm:flex-row items-start gap-4 shadow-sm animate-fade-in">
+          <div id="electricity_alert_warning" className="bg-amber-50 border border-amber-200 text-amber-850 p-5 rounded-3xl flex flex-col sm:flex-row items-start gap-4 shadow-sm animate-fade-in">
             <div className="bg-amber-100 p-3 rounded-2xl text-amber-600 flex-shrink-0 animate-pulse">
               <AlertTriangle className="h-6 w-6" />
             </div>
-            <div>
-              <h3 className="text-md font-bold text-slate-900">PENGUMUMAN BATAS PEMBAYARAN IURAN</h3>
-              <p className="text-sm text-slate-700 mt-1 leading-relaxed">
-                Pembayaran terakhir setiap bulannya adalah <strong>di tanggal 9</strong>. Sesuai aturan dari pihak pengelola, jika pembayaran tidak dilakukan maka akan dikenakan sanksi berupa pemutusan aliran listrik. Mohon segera lakukan pembayaran iuran bulanan Anda melalui koordinator lantai masing-masing untuk kenyamanan bersama. Terima kasih.
+            <div className="space-y-1">
+              <h3 className="text-md font-bold text-slate-900">Pemberitahuan Batas Akhir Pembayaran Iuran</h3>
+              <p className="text-sm text-slate-700 leading-relaxed">
+                Yth. Bapak/Ibu Warga Rusunawa, kami menginfokan bahwa <strong>pembayaran terakhir setiap bulannya adalah di tanggal 9</strong>. Sesuai dengan aturan dari pihak pengelola, jika pembayaran tidak dilakukan maka akan dikenakan sanksi pemutusan aliran listrik oleh pihak pengelola. Demi kenyamanan bersama, mohon segera melakukan pembayaran melalui masing-masing koordinator. Terima kasih atas pengertian dan kerja samanya.
               </p>
             </div>
           </div>
