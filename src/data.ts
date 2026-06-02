@@ -3220,11 +3220,11 @@ export const INITIAL_RESIDENTS: Resident[] = [
 ];
 
 export const INITIAL_COORDINATORS: Coordinator[] = [
-  { id: 'coord-1', name: 'Eko Sulistyo', ktp: '888888', assignedFloor: 1, assignedBlock: 'Blok A' },
-  { id: 'coord-2', name: 'Siti Rahma', ktp: '999999', assignedFloor: 2, assignedBlock: 'Blok B' },
-  { id: 'coord-3', name: 'Rian Hidayat', ktp: '101010', assignedFloor: 3, assignedBlock: 'Blok C' },
-  { id: 'coord-4', name: 'Bambang S.', ktp: '202020', assignedFloor: 4, assignedBlock: 'Blok D' },
-  { id: 'coord-5', name: 'Lilik Handayani', ktp: '303030', assignedFloor: 5, assignedBlock: 'Blok E' }
+  { id: 'coord-1', name: 'Eko Sulistyo', ktp: '888888', assignedBlock: 'Blok A' },
+  { id: 'coord-2', name: 'Siti Rahma', ktp: '999999', assignedBlock: 'Blok B' },
+  { id: 'coord-3', name: 'Rian Hidayat', ktp: '101010', assignedBlock: 'Blok C' },
+  { id: 'coord-4', name: 'Bambang S.', ktp: '202020', assignedBlock: 'Blok D' },
+  { id: 'coord-5', name: 'Lilik Handayani', ktp: '303030', assignedBlock: 'Blok E' }
 ];
 
 export const INITIAL_BILLING_RECORDS: BillingRecord[] = [
@@ -6776,7 +6776,7 @@ export const INITIAL_BILLING_RECORDS: BillingRecord[] = [
     "pdamBill": 42500,
     "trashBill": 10000,
     "totalBill": 52500,
-    "status": "Belum Lunas"
+    "status": "Lunas"
   },
   {
     "id": "bill-generated-10d9z9nkv178",
@@ -6789,7 +6789,7 @@ export const INITIAL_BILLING_RECORDS: BillingRecord[] = [
     "pdamBill": 47500,
     "trashBill": 10000,
     "totalBill": 57500,
-    "status": "Belum Lunas"
+    "status": "Lunas"
   },
   {
     "id": "bill-generated-10ffz4vc141",
@@ -6802,7 +6802,7 @@ export const INITIAL_BILLING_RECORDS: BillingRecord[] = [
     "pdamBill": 25000,
     "trashBill": 10000,
     "totalBill": 35000,
-    "status": "Belum Lunas"
+    "status": "Lunas"
   },
   {
     "id": "bill-generated-158qp8ve645",
@@ -6815,7 +6815,7 @@ export const INITIAL_BILLING_RECORDS: BillingRecord[] = [
     "pdamBill": 32500,
     "trashBill": 10000,
     "totalBill": 42500,
-    "status": "Belum Lunas"
+    "status": "Lunas"
   },
   {
     "id": "bill-generated-1710zrs5w119",
@@ -6828,7 +6828,7 @@ export const INITIAL_BILLING_RECORDS: BillingRecord[] = [
     "pdamBill": 37500,
     "trashBill": 10000,
     "totalBill": 47500,
-    "status": "Belum Lunas"
+    "status": "Lunas"
   },
   {
     "id": "bill-generated-188ek65lc85",
@@ -6841,7 +6841,7 @@ export const INITIAL_BILLING_RECORDS: BillingRecord[] = [
     "pdamBill": 45000,
     "trashBill": 10000,
     "totalBill": 55000,
-    "status": "Belum Lunas"
+    "status": "Lunas"
   },
   {
     "id": "bill-generated-1tvoc6hdc198",
@@ -6854,7 +6854,7 @@ export const INITIAL_BILLING_RECORDS: BillingRecord[] = [
     "pdamBill": 32500,
     "trashBill": 10000,
     "totalBill": 42500,
-    "status": "Belum Lunas"
+    "status": "Lunas"
   },
   {
     "id": "bill-generated-2rwkah6vq91",
@@ -6867,7 +6867,7 @@ export const INITIAL_BILLING_RECORDS: BillingRecord[] = [
     "pdamBill": 32500,
     "trashBill": 10000,
     "totalBill": 42500,
-    "status": "Belum Lunas"
+    "status": "Lunas"
   },
   {
     "id": "bill-generated-3kaaws02m159",
@@ -6880,7 +6880,7 @@ export const INITIAL_BILLING_RECORDS: BillingRecord[] = [
     "pdamBill": 32500,
     "trashBill": 10000,
     "totalBill": 42500,
-    "status": "Belum Lunas"
+    "status": "Lunas"
   },
   {
     "id": "bill-generated-3pon9njvl231",
@@ -6893,7 +6893,7 @@ export const INITIAL_BILLING_RECORDS: BillingRecord[] = [
     "pdamBill": 0,
     "trashBill": 0,
     "totalBill": 0,
-    "status": "Belum Lunas"
+    "status": "Lunas"
   },
   {
     "id": "bill-generated-4dgm9jryf248",
@@ -6906,7 +6906,7 @@ export const INITIAL_BILLING_RECORDS: BillingRecord[] = [
     "pdamBill": 25000,
     "trashBill": 10000,
     "totalBill": 35000,
-    "status": "Belum Lunas"
+    "status": "Lunas"
   },
   {
     "id": "bill-generated-4vlnmsltc58",
@@ -6919,7 +6919,7 @@ export const INITIAL_BILLING_RECORDS: BillingRecord[] = [
     "pdamBill": 37500,
     "trashBill": 10000,
     "totalBill": 47500,
-    "status": "Belum Lunas"
+    "status": "Lunas"
   },
   {
     "id": "bill-generated-544j97rw398",
@@ -6932,7 +6932,7 @@ export const INITIAL_BILLING_RECORDS: BillingRecord[] = [
     "pdamBill": 32500,
     "trashBill": 10000,
     "totalBill": 42500,
-    "status": "Belum Lunas"
+    "status": "Lunas"
   },
   {
     "id": "bill-generated-5gbjzcn47255",
@@ -6945,7 +6945,7 @@ export const INITIAL_BILLING_RECORDS: BillingRecord[] = [
     "pdamBill": 37500,
     "trashBill": 10000,
     "totalBill": 47500,
-    "status": "Belum Lunas"
+    "status": "Lunas"
   },
   {
     "id": "bill-generated-5izobigfp250",
@@ -6958,7 +6958,7 @@ export const INITIAL_BILLING_RECORDS: BillingRecord[] = [
     "pdamBill": 45000,
     "trashBill": 10000,
     "totalBill": 55000,
-    "status": "Belum Lunas"
+    "status": "Lunas"
   },
   {
     "id": "bill-generated-604nxccii239",
@@ -6971,7 +6971,7 @@ export const INITIAL_BILLING_RECORDS: BillingRecord[] = [
     "pdamBill": 27500,
     "trashBill": 10000,
     "totalBill": 37500,
-    "status": "Belum Lunas"
+    "status": "Lunas"
   },
   {
     "id": "bill-generated-6k1awdg7249",
@@ -6984,7 +6984,7 @@ export const INITIAL_BILLING_RECORDS: BillingRecord[] = [
     "pdamBill": 25000,
     "trashBill": 10000,
     "totalBill": 35000,
-    "status": "Belum Lunas"
+    "status": "Lunas"
   },
   {
     "id": "bill-generated-6zozvatbg205",
@@ -6997,7 +6997,7 @@ export const INITIAL_BILLING_RECORDS: BillingRecord[] = [
     "pdamBill": 45000,
     "trashBill": 10000,
     "totalBill": 55000,
-    "status": "Belum Lunas"
+    "status": "Lunas"
   },
   {
     "id": "bill-generated-7fyf8xqc427",
@@ -7010,7 +7010,7 @@ export const INITIAL_BILLING_RECORDS: BillingRecord[] = [
     "pdamBill": 40000,
     "trashBill": 10000,
     "totalBill": 50000,
-    "status": "Belum Lunas"
+    "status": "Lunas"
   },
   {
     "id": "bill-generated-7k95rnzms32",
@@ -7023,7 +7023,7 @@ export const INITIAL_BILLING_RECORDS: BillingRecord[] = [
     "pdamBill": 47500,
     "trashBill": 10000,
     "totalBill": 57500,
-    "status": "Belum Lunas"
+    "status": "Lunas"
   },
   {
     "id": "bill-generated-7w4f9k5rs14",
@@ -7036,7 +7036,7 @@ export const INITIAL_BILLING_RECORDS: BillingRecord[] = [
     "pdamBill": 27500,
     "trashBill": 10000,
     "totalBill": 37500,
-    "status": "Belum Lunas"
+    "status": "Lunas"
   },
   {
     "id": "bill-generated-84uoiclrw26",
@@ -7049,7 +7049,7 @@ export const INITIAL_BILLING_RECORDS: BillingRecord[] = [
     "pdamBill": 40000,
     "trashBill": 10000,
     "totalBill": 50000,
-    "status": "Belum Lunas"
+    "status": "Lunas"
   },
   {
     "id": "bill-generated-8fnmks92k211",
@@ -7062,7 +7062,7 @@ export const INITIAL_BILLING_RECORDS: BillingRecord[] = [
     "pdamBill": 25000,
     "trashBill": 10000,
     "totalBill": 35000,
-    "status": "Belum Lunas"
+    "status": "Lunas"
   },
   {
     "id": "bill-generated-8hhh6in3k127",
@@ -7075,7 +7075,7 @@ export const INITIAL_BILLING_RECORDS: BillingRecord[] = [
     "pdamBill": 25000,
     "trashBill": 10000,
     "totalBill": 35000,
-    "status": "Belum Lunas"
+    "status": "Lunas"
   },
   {
     "id": "bill-generated-8jhczhjt8152",
@@ -7088,7 +7088,7 @@ export const INITIAL_BILLING_RECORDS: BillingRecord[] = [
     "pdamBill": 25000,
     "trashBill": 10000,
     "totalBill": 35000,
-    "status": "Belum Lunas"
+    "status": "Lunas"
   },
   {
     "id": "bill-generated-9314wac2t235",
@@ -7101,7 +7101,7 @@ export const INITIAL_BILLING_RECORDS: BillingRecord[] = [
     "pdamBill": 25000,
     "trashBill": 10000,
     "totalBill": 35000,
-    "status": "Belum Lunas"
+    "status": "Lunas"
   },
   {
     "id": "bill-generated-94ly1nss8144",
@@ -7114,7 +7114,7 @@ export const INITIAL_BILLING_RECORDS: BillingRecord[] = [
     "pdamBill": 30000,
     "trashBill": 10000,
     "totalBill": 40000,
-    "status": "Belum Lunas"
+    "status": "Lunas"
   },
   {
     "id": "bill-generated-9bf4tvo7u207",
@@ -7127,7 +7127,7 @@ export const INITIAL_BILLING_RECORDS: BillingRecord[] = [
     "pdamBill": 25000,
     "trashBill": 10000,
     "totalBill": 35000,
-    "status": "Belum Lunas"
+    "status": "Lunas"
   },
   {
     "id": "bill-generated-9ggoenqml37",
@@ -7140,7 +7140,7 @@ export const INITIAL_BILLING_RECORDS: BillingRecord[] = [
     "pdamBill": 25000,
     "trashBill": 10000,
     "totalBill": 35000,
-    "status": "Belum Lunas"
+    "status": "Lunas"
   },
   {
     "id": "bill-generated-9hw6whhbl44",
@@ -7153,7 +7153,7 @@ export const INITIAL_BILLING_RECORDS: BillingRecord[] = [
     "pdamBill": 42500,
     "trashBill": 10000,
     "totalBill": 52500,
-    "status": "Belum Lunas"
+    "status": "Lunas"
   },
   {
     "id": "bill-generated-9uf76af3o9",
@@ -7166,7 +7166,7 @@ export const INITIAL_BILLING_RECORDS: BillingRecord[] = [
     "pdamBill": 35000,
     "trashBill": 10000,
     "totalBill": 45000,
-    "status": "Belum Lunas"
+    "status": "Lunas"
   },
   {
     "id": "bill-generated-am8m2p0pv160",
@@ -7179,7 +7179,7 @@ export const INITIAL_BILLING_RECORDS: BillingRecord[] = [
     "pdamBill": 25000,
     "trashBill": 10000,
     "totalBill": 35000,
-    "status": "Belum Lunas"
+    "status": "Lunas"
   },
   {
     "id": "bill-generated-au75thlzy89",
@@ -7192,7 +7192,7 @@ export const INITIAL_BILLING_RECORDS: BillingRecord[] = [
     "pdamBill": 25000,
     "trashBill": 10000,
     "totalBill": 35000,
-    "status": "Belum Lunas"
+    "status": "Lunas"
   },
   {
     "id": "bill-generated-avv2y9iug150",
@@ -7205,7 +7205,7 @@ export const INITIAL_BILLING_RECORDS: BillingRecord[] = [
     "pdamBill": 25000,
     "trashBill": 10000,
     "totalBill": 35000,
-    "status": "Belum Lunas"
+    "status": "Lunas"
   },
   {
     "id": "bill-generated-b169gb4sl43",
@@ -7218,7 +7218,7 @@ export const INITIAL_BILLING_RECORDS: BillingRecord[] = [
     "pdamBill": 45000,
     "trashBill": 10000,
     "totalBill": 55000,
-    "status": "Belum Lunas"
+    "status": "Lunas"
   },
   {
     "id": "bill-generated-b5n0lobeu174",
@@ -7231,7 +7231,7 @@ export const INITIAL_BILLING_RECORDS: BillingRecord[] = [
     "pdamBill": 40000,
     "trashBill": 10000,
     "totalBill": 50000,
-    "status": "Belum Lunas"
+    "status": "Lunas"
   },
   {
     "id": "bill-generated-bhb9fqsuc113",
@@ -7244,7 +7244,7 @@ export const INITIAL_BILLING_RECORDS: BillingRecord[] = [
     "pdamBill": 25000,
     "trashBill": 10000,
     "totalBill": 35000,
-    "status": "Belum Lunas"
+    "status": "Lunas"
   },
   {
     "id": "bill-generated-cf9steapn126",
@@ -7257,7 +7257,7 @@ export const INITIAL_BILLING_RECORDS: BillingRecord[] = [
     "pdamBill": 45000,
     "trashBill": 10000,
     "totalBill": 55000,
-    "status": "Belum Lunas"
+    "status": "Lunas"
   },
   {
     "id": "bill-generated-cous9ngy3232",
@@ -7270,7 +7270,7 @@ export const INITIAL_BILLING_RECORDS: BillingRecord[] = [
     "pdamBill": 25000,
     "trashBill": 10000,
     "totalBill": 35000,
-    "status": "Belum Lunas"
+    "status": "Lunas"
   },
   {
     "id": "bill-generated-cwy3xi4ca123",
@@ -7283,7 +7283,7 @@ export const INITIAL_BILLING_RECORDS: BillingRecord[] = [
     "pdamBill": 35000,
     "trashBill": 10000,
     "totalBill": 45000,
-    "status": "Belum Lunas"
+    "status": "Lunas"
   },
   {
     "id": "bill-generated-d430v4ni4238",
@@ -7296,7 +7296,7 @@ export const INITIAL_BILLING_RECORDS: BillingRecord[] = [
     "pdamBill": 27500,
     "trashBill": 10000,
     "totalBill": 37500,
-    "status": "Belum Lunas"
+    "status": "Lunas"
   },
   {
     "id": "bill-generated-dwafazd9v188",
@@ -7309,7 +7309,7 @@ export const INITIAL_BILLING_RECORDS: BillingRecord[] = [
     "pdamBill": 0,
     "trashBill": 0,
     "totalBill": 0,
-    "status": "Belum Lunas"
+    "status": "Lunas"
   },
   {
     "id": "bill-generated-eev7ej6k3192",
@@ -7322,7 +7322,7 @@ export const INITIAL_BILLING_RECORDS: BillingRecord[] = [
     "pdamBill": 27500,
     "trashBill": 10000,
     "totalBill": 37500,
-    "status": "Belum Lunas"
+    "status": "Lunas"
   },
   {
     "id": "bill-generated-ekb2onqco61",
@@ -7335,7 +7335,7 @@ export const INITIAL_BILLING_RECORDS: BillingRecord[] = [
     "pdamBill": 47500,
     "trashBill": 10000,
     "totalBill": 57500,
-    "status": "Belum Lunas"
+    "status": "Lunas"
   },
   {
     "id": "bill-generated-elnzphwjm59",
@@ -7348,7 +7348,7 @@ export const INITIAL_BILLING_RECORDS: BillingRecord[] = [
     "pdamBill": 30000,
     "trashBill": 10000,
     "totalBill": 40000,
-    "status": "Belum Lunas"
+    "status": "Lunas"
   },
   {
     "id": "bill-generated-ez9hk40x851",
@@ -7361,7 +7361,7 @@ export const INITIAL_BILLING_RECORDS: BillingRecord[] = [
     "pdamBill": 50000,
     "trashBill": 10000,
     "totalBill": 60000,
-    "status": "Belum Lunas"
+    "status": "Lunas"
   },
   {
     "id": "bill-generated-fe98850ff224",
@@ -7374,7 +7374,7 @@ export const INITIAL_BILLING_RECORDS: BillingRecord[] = [
     "pdamBill": 25000,
     "trashBill": 10000,
     "totalBill": 35000,
-    "status": "Belum Lunas"
+    "status": "Lunas"
   },
   {
     "id": "bill-generated-fwtxpr06p42",
@@ -7387,7 +7387,7 @@ export const INITIAL_BILLING_RECORDS: BillingRecord[] = [
     "pdamBill": 37500,
     "trashBill": 10000,
     "totalBill": 47500,
-    "status": "Belum Lunas"
+    "status": "Lunas"
   },
   {
     "id": "bill-generated-fzg328ilg132",
@@ -7400,7 +7400,7 @@ export const INITIAL_BILLING_RECORDS: BillingRecord[] = [
     "pdamBill": 27500,
     "trashBill": 10000,
     "totalBill": 37500,
-    "status": "Belum Lunas"
+    "status": "Lunas"
   },
   {
     "id": "bill-generated-gf4g2r4t6180",
@@ -7413,7 +7413,7 @@ export const INITIAL_BILLING_RECORDS: BillingRecord[] = [
     "pdamBill": 50000,
     "trashBill": 10000,
     "totalBill": 60000,
-    "status": "Belum Lunas"
+    "status": "Lunas"
   },
   {
     "id": "bill-generated-gtpw6x4eq38",
@@ -7426,7 +7426,7 @@ export const INITIAL_BILLING_RECORDS: BillingRecord[] = [
     "pdamBill": 32500,
     "trashBill": 10000,
     "totalBill": 42500,
-    "status": "Belum Lunas"
+    "status": "Lunas"
   },
   {
     "id": "bill-generated-hd418rom828",
@@ -7439,7 +7439,7 @@ export const INITIAL_BILLING_RECORDS: BillingRecord[] = [
     "pdamBill": 25000,
     "trashBill": 10000,
     "totalBill": 35000,
-    "status": "Belum Lunas"
+    "status": "Lunas"
   },
   {
     "id": "bill-generated-hjovfr3ej164",
@@ -7452,7 +7452,7 @@ export const INITIAL_BILLING_RECORDS: BillingRecord[] = [
     "pdamBill": 25000,
     "trashBill": 10000,
     "totalBill": 35000,
-    "status": "Belum Lunas"
+    "status": "Lunas"
   },
   {
     "id": "bill-generated-i2nkdylfk245",
@@ -7465,7 +7465,7 @@ export const INITIAL_BILLING_RECORDS: BillingRecord[] = [
     "pdamBill": 25000,
     "trashBill": 10000,
     "totalBill": 35000,
-    "status": "Belum Lunas"
+    "status": "Lunas"
   },
   {
     "id": "bill-generated-i41bwuaur261",
@@ -7478,7 +7478,7 @@ export const INITIAL_BILLING_RECORDS: BillingRecord[] = [
     "pdamBill": 25000,
     "trashBill": 10000,
     "totalBill": 35000,
-    "status": "Belum Lunas"
+    "status": "Lunas"
   },
   {
     "id": "bill-generated-i6oxgc5ad172",
@@ -7491,7 +7491,7 @@ export const INITIAL_BILLING_RECORDS: BillingRecord[] = [
     "pdamBill": 30000,
     "trashBill": 10000,
     "totalBill": 40000,
-    "status": "Belum Lunas"
+    "status": "Lunas"
   },
   {
     "id": "bill-generated-inet6sony138",
@@ -7504,7 +7504,7 @@ export const INITIAL_BILLING_RECORDS: BillingRecord[] = [
     "pdamBill": 25000,
     "trashBill": 10000,
     "totalBill": 35000,
-    "status": "Belum Lunas"
+    "status": "Lunas"
   },
   {
     "id": "bill-generated-iwct2uxap4",
@@ -7517,7 +7517,7 @@ export const INITIAL_BILLING_RECORDS: BillingRecord[] = [
     "pdamBill": 45000,
     "trashBill": 10000,
     "totalBill": 55000,
-    "status": "Belum Lunas"
+    "status": "Lunas"
   },
   {
     "id": "bill-generated-jza0stdaj55",
@@ -7530,7 +7530,7 @@ export const INITIAL_BILLING_RECORDS: BillingRecord[] = [
     "pdamBill": 35000,
     "trashBill": 10000,
     "totalBill": 45000,
-    "status": "Belum Lunas"
+    "status": "Lunas"
   },
   {
     "id": "bill-generated-lfjpyhfxh53",
@@ -7543,7 +7543,7 @@ export const INITIAL_BILLING_RECORDS: BillingRecord[] = [
     "pdamBill": 25000,
     "trashBill": 10000,
     "totalBill": 35000,
-    "status": "Belum Lunas"
+    "status": "Lunas"
   },
   {
     "id": "bill-generated-m2g9i2zxs168",
@@ -7556,7 +7556,7 @@ export const INITIAL_BILLING_RECORDS: BillingRecord[] = [
     "pdamBill": 25000,
     "trashBill": 10000,
     "totalBill": 35000,
-    "status": "Belum Lunas"
+    "status": "Lunas"
   },
   {
     "id": "bill-generated-mdzz844i895",
@@ -7569,7 +7569,7 @@ export const INITIAL_BILLING_RECORDS: BillingRecord[] = [
     "pdamBill": 50000,
     "trashBill": 10000,
     "totalBill": 60000,
-    "status": "Belum Lunas"
+    "status": "Lunas"
   },
   {
     "id": "bill-generated-mg52927yr86",
@@ -7582,7 +7582,7 @@ export const INITIAL_BILLING_RECORDS: BillingRecord[] = [
     "pdamBill": 45000,
     "trashBill": 10000,
     "totalBill": 55000,
-    "status": "Belum Lunas"
+    "status": "Lunas"
   },
   {
     "id": "bill-generated-mhq24tita257",
@@ -7595,7 +7595,7 @@ export const INITIAL_BILLING_RECORDS: BillingRecord[] = [
     "pdamBill": 25000,
     "trashBill": 10000,
     "totalBill": 35000,
-    "status": "Belum Lunas"
+    "status": "Lunas"
   },
   {
     "id": "bill-generated-nelz96jf3260",
@@ -7608,7 +7608,7 @@ export const INITIAL_BILLING_RECORDS: BillingRecord[] = [
     "pdamBill": 25000,
     "trashBill": 10000,
     "totalBill": 35000,
-    "status": "Belum Lunas"
+    "status": "Lunas"
   },
   {
     "id": "bill-generated-noh7bblun156",
@@ -7621,7 +7621,7 @@ export const INITIAL_BILLING_RECORDS: BillingRecord[] = [
     "pdamBill": 25000,
     "trashBill": 10000,
     "totalBill": 35000,
-    "status": "Belum Lunas"
+    "status": "Lunas"
   },
   {
     "id": "bill-generated-o57ghcyf4195",
@@ -7634,7 +7634,7 @@ export const INITIAL_BILLING_RECORDS: BillingRecord[] = [
     "pdamBill": 0,
     "trashBill": 0,
     "totalBill": 0,
-    "status": "Belum Lunas"
+    "status": "Lunas"
   },
   {
     "id": "bill-generated-objw76xjl191",
@@ -7647,7 +7647,7 @@ export const INITIAL_BILLING_RECORDS: BillingRecord[] = [
     "pdamBill": 45000,
     "trashBill": 10000,
     "totalBill": 55000,
-    "status": "Belum Lunas"
+    "status": "Lunas"
   },
   {
     "id": "bill-generated-okwsh1qbt110",
@@ -7660,7 +7660,7 @@ export const INITIAL_BILLING_RECORDS: BillingRecord[] = [
     "pdamBill": 47500,
     "trashBill": 10000,
     "totalBill": 57500,
-    "status": "Belum Lunas"
+    "status": "Lunas"
   },
   {
     "id": "bill-generated-ovqfvpkcb146",
@@ -7673,7 +7673,7 @@ export const INITIAL_BILLING_RECORDS: BillingRecord[] = [
     "pdamBill": 35000,
     "trashBill": 10000,
     "totalBill": 45000,
-    "status": "Belum Lunas"
+    "status": "Lunas"
   },
   {
     "id": "bill-generated-pdzfsxdsq52",
@@ -7686,7 +7686,7 @@ export const INITIAL_BILLING_RECORDS: BillingRecord[] = [
     "pdamBill": 32500,
     "trashBill": 10000,
     "totalBill": 42500,
-    "status": "Belum Lunas"
+    "status": "Lunas"
   },
   {
     "id": "bill-generated-pkxebnx6s177",
@@ -7699,7 +7699,7 @@ export const INITIAL_BILLING_RECORDS: BillingRecord[] = [
     "pdamBill": 25000,
     "trashBill": 10000,
     "totalBill": 35000,
-    "status": "Belum Lunas"
+    "status": "Lunas"
   },
   {
     "id": "bill-generated-qm60evqub18",
@@ -7712,7 +7712,7 @@ export const INITIAL_BILLING_RECORDS: BillingRecord[] = [
     "pdamBill": 25000,
     "trashBill": 10000,
     "totalBill": 35000,
-    "status": "Belum Lunas"
+    "status": "Lunas"
   },
   {
     "id": "bill-generated-qst4qqkiz22",
@@ -7725,7 +7725,7 @@ export const INITIAL_BILLING_RECORDS: BillingRecord[] = [
     "pdamBill": 30000,
     "trashBill": 10000,
     "totalBill": 40000,
-    "status": "Belum Lunas"
+    "status": "Lunas"
   },
   {
     "id": "bill-generated-qxg388k0j183",
@@ -7738,7 +7738,7 @@ export const INITIAL_BILLING_RECORDS: BillingRecord[] = [
     "pdamBill": 25000,
     "trashBill": 10000,
     "totalBill": 35000,
-    "status": "Belum Lunas"
+    "status": "Lunas"
   },
   {
     "id": "bill-generated-r0qzd9zfz3",
@@ -7751,7 +7751,7 @@ export const INITIAL_BILLING_RECORDS: BillingRecord[] = [
     "pdamBill": 30000,
     "trashBill": 10000,
     "totalBill": 40000,
-    "status": "Belum Lunas"
+    "status": "Lunas"
   },
   {
     "id": "bill-generated-r751unxzn11",
@@ -7764,7 +7764,7 @@ export const INITIAL_BILLING_RECORDS: BillingRecord[] = [
     "pdamBill": 25000,
     "trashBill": 10000,
     "totalBill": 35000,
-    "status": "Belum Lunas"
+    "status": "Lunas"
   },
   {
     "id": "bill-generated-r8ncze2u0108",
@@ -7777,7 +7777,7 @@ export const INITIAL_BILLING_RECORDS: BillingRecord[] = [
     "pdamBill": 40000,
     "trashBill": 10000,
     "totalBill": 50000,
-    "status": "Belum Lunas"
+    "status": "Lunas"
   },
   {
     "id": "bill-generated-r9snkxidy227",
@@ -7790,7 +7790,7 @@ export const INITIAL_BILLING_RECORDS: BillingRecord[] = [
     "pdamBill": 37500,
     "trashBill": 10000,
     "totalBill": 47500,
-    "status": "Belum Lunas"
+    "status": "Lunas"
   },
   {
     "id": "bill-generated-rhvqdsec7129",
@@ -7803,7 +7803,7 @@ export const INITIAL_BILLING_RECORDS: BillingRecord[] = [
     "pdamBill": 40000,
     "trashBill": 10000,
     "totalBill": 50000,
-    "status": "Belum Lunas"
+    "status": "Lunas"
   },
   {
     "id": "bill-generated-rr94nhy6q107",
@@ -7816,7 +7816,7 @@ export const INITIAL_BILLING_RECORDS: BillingRecord[] = [
     "pdamBill": 25000,
     "trashBill": 10000,
     "totalBill": 35000,
-    "status": "Belum Lunas"
+    "status": "Lunas"
   },
   {
     "id": "bill-generated-s5eosp4dp176",
@@ -7829,7 +7829,7 @@ export const INITIAL_BILLING_RECORDS: BillingRecord[] = [
     "pdamBill": 37500,
     "trashBill": 10000,
     "totalBill": 47500,
-    "status": "Belum Lunas"
+    "status": "Lunas"
   },
   {
     "id": "bill-generated-s73os2ow8149",
@@ -7842,7 +7842,7 @@ export const INITIAL_BILLING_RECORDS: BillingRecord[] = [
     "pdamBill": 42500,
     "trashBill": 10000,
     "totalBill": 52500,
-    "status": "Belum Lunas"
+    "status": "Lunas"
   },
   {
     "id": "bill-generated-tcjrer9u6253",
@@ -7855,7 +7855,7 @@ export const INITIAL_BILLING_RECORDS: BillingRecord[] = [
     "pdamBill": 45000,
     "trashBill": 10000,
     "totalBill": 55000,
-    "status": "Belum Lunas"
+    "status": "Lunas"
   },
   {
     "id": "bill-generated-tlbjgp2ir15",
@@ -7868,7 +7868,7 @@ export const INITIAL_BILLING_RECORDS: BillingRecord[] = [
     "pdamBill": 0,
     "trashBill": 0,
     "totalBill": 0,
-    "status": "Belum Lunas"
+    "status": "Lunas"
   },
   {
     "id": "bill-generated-tvh5smxw3163",
@@ -7881,7 +7881,7 @@ export const INITIAL_BILLING_RECORDS: BillingRecord[] = [
     "pdamBill": 37500,
     "trashBill": 10000,
     "totalBill": 47500,
-    "status": "Belum Lunas"
+    "status": "Lunas"
   },
   {
     "id": "bill-generated-vafwm3x4x50",
@@ -7894,7 +7894,7 @@ export const INITIAL_BILLING_RECORDS: BillingRecord[] = [
     "pdamBill": 50000,
     "trashBill": 10000,
     "totalBill": 60000,
-    "status": "Belum Lunas"
+    "status": "Lunas"
   },
   {
     "id": "bill-generated-vna4p519y46",
@@ -7907,7 +7907,7 @@ export const INITIAL_BILLING_RECORDS: BillingRecord[] = [
     "pdamBill": 27500,
     "trashBill": 10000,
     "totalBill": 37500,
-    "status": "Belum Lunas"
+    "status": "Lunas"
   },
   {
     "id": "bill-generated-w4tp5m1mu23",
@@ -7920,7 +7920,7 @@ export const INITIAL_BILLING_RECORDS: BillingRecord[] = [
     "pdamBill": 32500,
     "trashBill": 10000,
     "totalBill": 42500,
-    "status": "Belum Lunas"
+    "status": "Lunas"
   },
   {
     "id": "bill-generated-w568mwkp9219",
@@ -7933,7 +7933,7 @@ export const INITIAL_BILLING_RECORDS: BillingRecord[] = [
     "pdamBill": 45000,
     "trashBill": 10000,
     "totalBill": 55000,
-    "status": "Belum Lunas"
+    "status": "Lunas"
   },
   {
     "id": "bill-generated-w57svk6mb225",
@@ -7946,7 +7946,7 @@ export const INITIAL_BILLING_RECORDS: BillingRecord[] = [
     "pdamBill": 30000,
     "trashBill": 10000,
     "totalBill": 40000,
-    "status": "Belum Lunas"
+    "status": "Lunas"
   },
   {
     "id": "bill-generated-wg58s559g209",
@@ -7959,7 +7959,7 @@ export const INITIAL_BILLING_RECORDS: BillingRecord[] = [
     "pdamBill": 45000,
     "trashBill": 10000,
     "totalBill": 55000,
-    "status": "Belum Lunas"
+    "status": "Lunas"
   },
   {
     "id": "bill-generated-wny3o0gkj25",
@@ -7972,7 +7972,7 @@ export const INITIAL_BILLING_RECORDS: BillingRecord[] = [
     "pdamBill": 25000,
     "trashBill": 10000,
     "totalBill": 35000,
-    "status": "Belum Lunas"
+    "status": "Lunas"
   },
   {
     "id": "bill-generated-wv8m0rtrb246",
@@ -7985,7 +7985,7 @@ export const INITIAL_BILLING_RECORDS: BillingRecord[] = [
     "pdamBill": 47500,
     "trashBill": 10000,
     "totalBill": 57500,
-    "status": "Belum Lunas"
+    "status": "Lunas"
   },
   {
     "id": "bill-generated-x5ldrotu7215",
@@ -7998,7 +7998,7 @@ export const INITIAL_BILLING_RECORDS: BillingRecord[] = [
     "pdamBill": 42500,
     "trashBill": 10000,
     "totalBill": 52500,
-    "status": "Belum Lunas"
+    "status": "Lunas"
   },
   {
     "id": "bill-generated-xtbeklxqa157",
@@ -8011,7 +8011,7 @@ export const INITIAL_BILLING_RECORDS: BillingRecord[] = [
     "pdamBill": 45000,
     "trashBill": 10000,
     "totalBill": 55000,
-    "status": "Belum Lunas"
+    "status": "Lunas"
   },
   {
     "id": "bill-generated-yjml511ea226",
@@ -8024,7 +8024,7 @@ export const INITIAL_BILLING_RECORDS: BillingRecord[] = [
     "pdamBill": 25000,
     "trashBill": 10000,
     "totalBill": 35000,
-    "status": "Belum Lunas"
+    "status": "Lunas"
   },
   {
     "id": "bill-generated-ypw0njvup233",
@@ -8037,7 +8037,7 @@ export const INITIAL_BILLING_RECORDS: BillingRecord[] = [
     "pdamBill": 27500,
     "trashBill": 10000,
     "totalBill": 37500,
-    "status": "Belum Lunas"
+    "status": "Lunas"
   }
 ];
 
@@ -8588,17 +8588,8 @@ export const saveStoredData = (data: {
   localStorage.setItem('rg_sim_date', data.simulatedDate);
 };
 
-export const calculatePdamBill = (
-  usage: number, 
-  settings?: { pdamMinUsage: number; pdamMinPrice: number; pdamCostPerCubic: number }
-): number => {
+export const calculatePdamBill = (usage: number): number => {
   if (usage <= 0) return 0;
-  const minUsage = settings?.pdamMinUsage ?? 10;
-  const minPrice = settings?.pdamMinPrice ?? 25000;
-  const costPerCubic = settings?.pdamCostPerCubic ?? 2500;
-
-  if (usage <= minUsage) return minPrice;
-  // Calculate excess water usage rate
-  return minPrice + (usage - minUsage) * costPerCubic;
+  if (usage <= 10) return 25000;
+  return usage * 2500;
 };
-
