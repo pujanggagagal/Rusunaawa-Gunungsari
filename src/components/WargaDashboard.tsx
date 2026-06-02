@@ -241,6 +241,23 @@ export const WargaDashboard: React.FC<WargaDashboardProps> = ({
   const userBills = billingRecords.filter((b) => b.residentKtp === user.ktp);
   const currentMonthBill = userBills.find((b) => b.month === 'Mei' && b.year === 2026);
 
+  // Filter only April & Mei 2026 billing records for resident view
+  const recentBills = userBills.filter(
+    (b) => (b.month === 'Mei' || b.month === 'April') && b.year === 2026
+  );
+
+  // Sort chronologically for chart (April -> Mei)
+  const chartBills = [...recentBills].sort((a, b) => {
+    const months: Record<string, number> = { 'Januari': 1, 'Februari': 2, 'Maret': 3, 'April': 4, 'Mei': 5 };
+    return (months[a.month] || 0) - (months[b.month] || 0);
+  });
+
+  // Sort reverse chronological for table (Mei -> April)
+  const listBills = [...recentBills].sort((a, b) => {
+    const months: Record<string, number> = { 'Januari': 1, 'Februari': 2, 'Maret': 3, 'April': 4, 'Mei': 5 };
+    return (months[b.month] || 0) - (months[a.month] || 0);
+  });
+
   // Financial calculations for Paguyuban
   const totalBalance = financeLogs.reduce((sum, log) => {
     return log.type === 'Pemasukan' ? sum + log.amount : sum - log.amount;
@@ -625,7 +642,7 @@ export const WargaDashboard: React.FC<WargaDashboardProps> = ({
             {/* Custom SVG Bar Chart */}
             <div className="bg-slate-50/50 p-4 rounded-2xl border border-slate-100">
               <div className="h-44 w-full flex items-end justify-center gap-4 sm:gap-10 pt-4 pb-2">
-                {userBills.slice().reverse().map((bill) => {
+                {chartBills.map((bill) => {
                   const maxUsage = 25; // Scale base representation
                   const heightPct = Math.min((bill.usage / maxUsage) * 100, 100);
                   const isPaid = bill.status === 'Lunas';
@@ -663,7 +680,7 @@ export const WargaDashboard: React.FC<WargaDashboardProps> = ({
               
               {/* Mobile Card stack layout */}
               <div className="block sm:hidden space-y-3.5" id="warga_bill_list_mobile">
-                {userBills.map((bill) => (
+                {listBills.map((bill) => (
                   <div key={bill.id} className="p-4 bg-white border border-slate-150 rounded-xl space-y-3 shadow-xs">
                     <div className="flex justify-between items-center">
                       <span className="font-bold text-slate-800 text-sm font-mono uppercase">{bill.month} {bill.year}</span>
@@ -701,7 +718,7 @@ export const WargaDashboard: React.FC<WargaDashboardProps> = ({
                     </tr>
                   </thead>
                   <tbody className="divide-y divide-slate-100 bg-white">
-                    {userBills.map((bill) => (
+                    {listBills.map((bill) => (
                       <tr key={bill.id} className="text-slate-700 hover:bg-slate-50/50 transition">
                         <td className="px-4 py-3 font-bold text-slate-800">{bill.month} {bill.year}</td>
                         <td className="px-4 py-3 font-mono">
