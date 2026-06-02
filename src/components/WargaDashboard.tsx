@@ -586,14 +586,15 @@ export const WargaDashboard: React.FC<WargaDashboardProps> = ({
                   </div>
 
                   {currentMonthBill.status === 'Belum Lunas' ? (
-                    <button
-                      onClick={() => handleOpenPayment(currentMonthBill)}
-                      id={`pay_btn_mei`}
-                      className="w-full py-3 bg-emerald-600 hover:bg-emerald-700 text-white font-bold rounded-xl text-xs flex justify-center items-center gap-2 cursor-pointer shadow-md shadow-emerald-700/25 transition-all duration-150 select-none active:scale-98"
-                    >
-                      <CreditCard size={15} />
-                      Selesaikan Pembayaran Sekarang
-                    </button>
+                    <div className="p-3.5 bg-amber-50 text-amber-900 text-xs rounded-2xl border border-amber-200 flex flex-col gap-1.5 font-medium">
+                      <div className="flex items-center gap-1.5 font-bold">
+                        <AlertTriangle size={14} className="text-amber-600" />
+                        <span>Pembayaran Melalui Koordinator</span>
+                      </div>
+                      <p className="text-slate-650 leading-relaxed text-[11px]">
+                        Silakan lakukan pembayaran tunai/transfer melalui Koordinator Lantai/Blok Anda. Setelah koordinator menerima dana, status tagihan Anda akan diperbarui menjadi Lunas oleh sistem.
+                      </p>
+                    </div>
                   ) : (
                     currentMonthBill.paymentDate && (
                       <div className="p-3 bg-emerald-50 text-emerald-800 text-xs rounded-xl border border-emerald-100 flex items-center gap-2 font-semibold">
@@ -840,79 +841,6 @@ export const WargaDashboard: React.FC<WargaDashboardProps> = ({
         </div>
 
       </div>
-
-      {/* Modern Payment Modal Pop-Up sheet */}
-      {showPaymentModal && selectedBill && (
-        <div id="payment_modal" className="fixed inset-0 z-50 overflow-y-auto bg-slate-950/50 backdrop-blur-xs flex items-center justify-center p-4">
-          <div className="bg-white rounded-3xl max-w-md w-full p-6 shadow-2xl border border-slate-150 relative space-y-5 animate-fade-in">
-            <div>
-              <span className="text-[10px] text-emerald-600 font-extrabold uppercase tracking-widest font-mono">Simper Gateway</span>
-              <h3 className="text-lg font-black text-slate-950">Konfirmasi Setoran Iuran</h3>
-              <p className="text-xs text-slate-400 font-mono mt-0.5">SISTEM PEMBAYARAN RUSUN DI LUAR JARINGAN</p>
-            </div>
-            
-            <div className="p-4 bg-slate-50 rounded-2xl border border-slate-150 space-y-3">
-              <div className="flex justify-between items-center text-xs sm:text-sm text-slate-600">
-                <span>Hunian Unit:</span> 
-                <span className="font-mono font-bold text-slate-900">{user.block}, Unit {user.unit}</span>
-              </div>
-              
-              <div className="flex justify-between items-center text-xs sm:text-sm text-slate-600">
-                <span>Nama Warga:</span> 
-                <span className="font-semibold text-slate-900">{user.name}</span>
-              </div>
-
-              <div className="flex justify-between items-center text-xs sm:text-sm text-slate-600">
-                <span>Iuran Periode:</span> 
-                <span className="font-mono font-bold text-indigo-700 bg-indigo-50 px-2 py-0.5 rounded text-xs">{selectedBill.month} {selectedBill.year}</span>
-              </div>
-
-              <div className="border-t border-slate-200/60 my-2"></div>
-
-              <div className="flex justify-between items-center text-xs sm:text-sm text-slate-600">
-                <span>Biaya Air ({selectedBill.usage} m³):</span> 
-                <span className="font-mono text-slate-800">{formatRupiah(selectedBill.pdamBill)}</span>
-              </div>
-              
-              <div className="flex justify-between items-center text-xs sm:text-sm text-slate-600">
-                <span>Iuran Sampah Wajib:</span> 
-                <span className="font-mono text-slate-800">{formatRupiah(selectedBill.trashBill)}</span>
-              </div>
-
-              <div className="border-t border-slate-200 pt-2.5 flex justify-between items-center text-sm sm:text-md font-bold text-slate-900">
-                <span>Total Setoran:</span> 
-                <span className="font-mono text-emerald-700 font-black text-base">{formatRupiah(selectedBill.totalBill)}</span>
-              </div>
-            </div>
-
-            <div className="bg-indigo-50 border border-indigo-100/70 p-3.5 rounded-2xl space-y-1 text-slate-700 text-left">
-              <span className="text-[9px] font-black uppercase tracking-wider text-indigo-600 font-mono block">Panduan Setoran &amp; Transfer:</span>
-              <p className="text-[10.5px] leading-relaxed font-medium">{appSettings.paymentInstructions}</p>
-            </div>
-
-            <p className="text-[10px] text-slate-400 text-center leading-relaxed font-semibold bg-slate-50 p-2.5 rounded-lg">
-              🔒 <strong>Konfigurasi Pengujian:</strong> Klik "Konfirmasi Bayar" akan memicu pembayaran simulasi secara instan, memasukkan saldo ke Kas Paguyuban, serta menormalkan Listrik warga.
-            </p>
-
-            <div className="flex gap-3">
-              <button
-                onClick={() => setShowPaymentModal(false)}
-                id="btn_cancel_payment"
-                className="flex-1 py-3 bg-slate-100 hover:bg-slate-200 text-slate-700 font-bold rounded-xl text-xs cursor-pointer transition"
-              >
-                Batalkan
-              </button>
-              <button
-                onClick={handleConfirmPayment}
-                id="btn_confirm_payment"
-                className="flex-1 py-3 bg-emerald-600 hover:bg-emerald-700 text-white font-bold rounded-xl text-xs cursor-pointer shadow-md shadow-emerald-700/20 transition duration-150"
-              >
-                Konfirmasi Bayar
-              </button>
-            </div>
-          </div>
-        </div>
-      )}
 
       {/* Modern Data Verifikasi Modal Pop-Up */}
       {(showVerificationModal || isForceEditVerification) && (
