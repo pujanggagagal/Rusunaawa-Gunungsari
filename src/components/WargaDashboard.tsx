@@ -730,63 +730,64 @@ export const WargaDashboard: React.FC<WargaDashboardProps> = ({
         {/* Right Section / Treasury & Rules Tab */}
         <div className="space-y-6">
           
-          {/* Transparency Treasury Box */}
-          <div id="paguyuban_treasury_card" className="bg-white rounded-3xl border border-slate-150 shadow-lg shadow-slate-100/40 p-6 space-y-5">
-            <div className="flex items-center gap-2 border-b border-slate-100 pb-3">
-              <Coins className="text-indigo-600" size={18} />
-              <h3 className="text-md font-bold text-slate-900">Transparansi Khas Paguyuban</h3>
-            </div>
-
-            {/* Glowing obsidian balance representation */}
-            <div className="bg-slate-950 text-slate-200 rounded-2xl p-5 border border-slate-800 relative overflow-hidden shadow-inner flex flex-col justify-between">
-              <div className="absolute -top-10 -right-10 opacity-5 pointer-events-none text-white">
-                <Coins size={140} />
-              </div>
-              <div className="space-y-1 z-10">
-                <span className="text-[10px] uppercase font-mono tracking-widest text-slate-400 font-bold">Total Saldo Kas RT/Paguyuban</span>
-                <h4 className="text-2xl font-black font-mono tracking-tight text-emerald-400">{formatRupiah(totalBalance)}</h4>
+          {/* HIDE SEMENTARA KEUANGAN PAGUYUBAN */}
+          {false && (
+            <div id="paguyuban_treasury_card" className="bg-white rounded-3xl border border-slate-150 shadow-lg shadow-slate-100/40 p-6 space-y-5">
+              <div className="flex items-center gap-2 border-b border-slate-100 pb-3">
+                <Coins className="text-indigo-600" size={18} />
+                <h3 className="text-md font-bold text-slate-900">Transparansi Khas Paguyuban</h3>
               </div>
 
-              <div className="grid grid-cols-2 gap-4 mt-6 border-t border-slate-800 pt-3 text-xs z-10">
-                <div>
-                  <span className="text-slate-400 block font-mono text-[9px] uppercase tracking-wider">Akumulasi Masuk</span>
-                  <span className="font-mono text-[11px] text-emerald-300 font-bold mt-0.5 block">{formatRupiah(totalInflow)}</span>
+              {/* Glowing obsidian balance representation */}
+              <div className="bg-slate-950 text-slate-200 rounded-2xl p-5 border border-slate-800 relative overflow-hidden shadow-inner flex flex-col justify-between">
+                <div className="absolute -top-10 -right-10 opacity-5 pointer-events-none text-white">
+                  <Coins size={140} />
                 </div>
-                <div>
-                  <span className="text-slate-400 block font-mono text-[9px] uppercase tracking-wider font-bold">Akumulasi Keluar</span>
-                  <span className="font-mono text-[11px] text-slate-300 font-bold mt-0.5 block">{formatRupiah(totalOutflow)}</span>
+                <div className="space-y-1 z-10">
+                  <span className="text-[10px] uppercase font-mono tracking-widest text-slate-400 font-bold">Total Saldo Kas RT/Paguyuban</span>
+                  <h4 className="text-2xl font-black font-mono tracking-tight text-emerald-400">{formatRupiah(totalBalance)}</h4>
+                </div>
+
+                <div className="grid grid-cols-2 gap-4 mt-6 border-t border-slate-800 pt-3 text-xs z-10">
+                  <div>
+                    <span className="text-slate-400 block font-mono text-[9px] uppercase tracking-wider">Akumulasi Masuk</span>
+                    <span className="font-mono text-[11px] text-emerald-300 font-bold mt-0.5 block">{formatRupiah(totalInflow)}</span>
+                  </div>
+                  <div>
+                    <span className="text-slate-400 block font-mono text-[9px] uppercase tracking-wider font-bold">Akumulasi Keluar</span>
+                    <span className="font-mono text-[11px] text-slate-300 font-bold mt-0.5 block">{formatRupiah(totalOutflow)}</span>
+                  </div>
                 </div>
               </div>
-            </div>
 
-            {/* Ledger transaction logs list */}
-            <div className="space-y-3">
-              <h4 className="text-xs font-extrabold uppercase text-slate-400 tracking-wider font-mono">Buku Kas (Arus Transaksi Riil)</h4>
-              <div className="space-y-2.5 max-h-[295px] overflow-y-auto pr-1">
-                {financeLogs.map((log) => {
-                  const isInflow = log.type === 'Pemasukan';
-                  return (
-                    <div key={log.id} className="p-3 bg-slate-50/70 hover:bg-slate-50 rounded-xl border border-slate-200/50 flex justify-between items-start gap-2 text-xs">
-                      <div className="space-y-1">
-                        <p className="font-bold text-slate-800 leading-snug">{log.description}</p>
-                        <p className="text-slate-400 font-mono text-[9px] flex items-center gap-1">
-                          <span>{new Date(log.date).toLocaleDateString('id', { day: 'numeric', month: 'short' })}</span>
-                          <span>•</span>
-                          <span className="text-[10px] text-indigo-500 font-semibold">{log.category}</span>
-                        </p>
+              {/* Ledger transaction logs list */}
+              <div className="space-y-3">
+                <h4 className="text-xs font-extrabold uppercase text-slate-400 tracking-wider font-mono">Buku Kas (Arus Transaksi Riil)</h4>
+                <div className="space-y-2.5 max-h-[295px] overflow-y-auto pr-1">
+                  {financeLogs.map((log) => {
+                    const isInflow = log.type === 'Pemasukan';
+                    return (
+                      <div key={log.id} className="p-3 bg-slate-50/70 hover:bg-slate-50 rounded-xl border border-slate-200/50 flex justify-between items-start gap-2 text-xs">
+                        <div className="space-y-1">
+                          <p className="font-bold text-slate-850 leading-snug">{log.description}</p>
+                          <p className="text-slate-400 font-mono text-[9px] flex items-center gap-1">
+                            <span>{new Date(log.date).toLocaleDateString('id', { day: 'numeric', month: 'short' })}</span>
+                            <span>•</span>
+                            <span className="text-[10px] text-indigo-500 font-semibold">{log.category}</span>
+                          </p>
+                        </div>
+                        <span className={`font-mono text-xs font-black whitespace-nowrap self-center ${
+                          isInflow ? 'text-emerald-600' : 'text-rose-600'
+                        }`}>
+                          {isInflow ? '+' : '-'} {log.amount.toLocaleString('id-ID')}
+                        </span>
                       </div>
-                      <span className={`font-mono text-xs font-black whitespace-nowrap self-center ${
-                        isInflow ? 'text-emerald-600' : 'text-rose-600'
-                      }`}>
-                        {isInflow ? '+' : '-'} {log.amount.toLocaleString('id-ID')}
-                      </span>
-                    </div>
-                  );
-                })}
+                    );
+                  })}
+                </div>
               </div>
             </div>
-
-          </div>
+          )}
 
           {/* Rules Guidelines Block */}
           <div className="bg-emerald-50 border border-emerald-100 rounded-3xl p-6 space-y-4">

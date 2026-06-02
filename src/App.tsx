@@ -359,28 +359,14 @@ export default function App() {
         return r;
       });
 
-      // Create new cash log
-      const newLog: FinancialLog = {
-        id: `fin-${Date.now()}`,
-        type: 'Pemasukan',
-        amount: amount,
-        description: `Pembayaran PDAM & Sampah Unit ${resident?.unit || 'Kamar'} (${targetBill?.month} ${targetBill?.year})`,
-        date: new Date().toISOString(),
-        category: 'Iuran Warga'
-      };
-
-      const updatedFinance = [newLog, ...prev.finance];
-
       // AutoSync asynchronously to Google Sheets
       syncTable('Billing', updatedBilling);
       syncTable('Residents', updatedResidents);
-      syncTable('Finance', updatedFinance);
 
       return {
         ...prev,
         billing: updatedBilling,
         residents: updatedResidents,
-        finance: updatedFinance,
       };
     });
 
