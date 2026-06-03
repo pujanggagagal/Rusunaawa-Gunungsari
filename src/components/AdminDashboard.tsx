@@ -2256,7 +2256,7 @@ Siti Aminah	357802...	Blok B	B-202	085755..."
                                 }}
                                 className="px-3.5 py-1.5 bg-gradient-to-r from-purple-600 to-indigo-600 hover:from-purple-700 hover:to-indigo-700 text-white rounded-xl font-extrabold text-[10px] uppercase shadow-md shadow-purple-500/10 cursor-pointer transition-colors active:scale-95"
                               >
-                                Verifikasi Uang
+                                Dana Diterima Bendahara
                               </button>
                             ) : floorLunasCount > 0 ? (
                               <span className="text-xs text-slate-400 font-bold">Terverifikasi</span>
@@ -4237,7 +4237,7 @@ Siti Aminah	357802...	Blok B	B-202	085755..."
                       onClick={handleConfirmReconcile}
                       className="py-2.5 bg-purple-600 hover:bg-purple-700 text-white font-black text-[10px] rounded-xl uppercase transition-colors shadow-md shadow-purple-500/10"
                     >
-                      Konfirmasi Setoran ✓
+                      Dana Sudah Diterima oleh Bendahara ✓
                     </button>
                   </div>
                 </div>
