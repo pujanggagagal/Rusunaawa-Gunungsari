@@ -850,11 +850,24 @@ export default function App() {
     });
   };
 
-  const handleDeleteBillingRecord = (billId: string) => {
+  const handleEditFinanceLog = (logId: string, updatedFields: Partial<FinancialLog>) => {
     setData((prev) => {
-      const updatedBilling = prev.billing.filter(b => b.id !== billId);
-      syncTable('Billing', updatedBilling);
-      return { ...prev, billing: updatedBilling };
+      const updatedFinance = prev.finance.map((log) => {
+        if (log.id === logId) {
+          return { ...log, ...updatedFields };
+        }
+        return log;
+      });
+      syncTable('Finance', updatedFinance);
+      return { ...prev, finance: updatedFinance };
+    });
+  };
+
+  const handleDeleteFinanceLog = (logId: string) => {
+    setData((prev) => {
+      const updatedFinance = prev.finance.filter(log => log.id !== logId);
+      syncTable('Finance', updatedFinance);
+      return { ...prev, finance: updatedFinance };
     });
   };
 
@@ -933,6 +946,8 @@ export default function App() {
                 onEditBillingRecord={handleEditBillingRecord}
                 onAddBillingRecord={handleAddBillingRecord}
                 onDeleteBillingRecord={handleDeleteBillingRecord}
+                onEditFinanceLog={handleEditFinanceLog}
+                onDeleteFinanceLog={handleDeleteFinanceLog}
               />
             )}
           </>

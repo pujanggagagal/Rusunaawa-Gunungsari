@@ -29,6 +29,8 @@ interface AdminDashboardProps {
   onEditBillingRecord?: (billId: string, updatedFields: Partial<BillingRecord>) => void;
   onAddBillingRecord?: (bill: Omit<BillingRecord, 'id'>) => void;
   onDeleteBillingRecord?: (billId: string) => void;
+  onEditFinanceLog?: (id: string, updatedFields: Partial<FinancialLog>) => void;
+  onDeleteFinanceLog?: (id: string) => void;
 }
 
 export const AdminDashboard: React.FC<AdminDashboardProps> = ({
@@ -54,7 +56,9 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({
   onUpdateAprilMeter,
   onEditBillingRecord,
   onAddBillingRecord,
-  onDeleteBillingRecord
+  onDeleteBillingRecord,
+  onEditFinanceLog,
+  onDeleteFinanceLog
 }) => {
   const [activeTab, setActiveTab] = useState<'finance' | 'residents' | 'coordinators' | 'reconciliation' | 'billing' | 'pdam-all' | 'barcodes' | 'settings'>('finance');
 
@@ -84,6 +88,14 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({
   const [pdamAllMonthFilter, setPdamAllMonthFilter] = useState<'all' | string>('all');
   const [pdamAllYearFilter, setPdamAllYearFilter] = useState<'all' | number>('all');
   const [pdamAllStatusFilter, setPdamAllStatusFilter] = useState<'all' | string>('all');
+  
+  // States for editing a financial log
+  const [editingFinanceLog, setEditingFinanceLog] = useState<FinancialLog | null>(null);
+  const [editFinAmount, setEditFinAmount] = useState<number | ''>('');
+  const [editFinDesc, setEditFinDesc] = useState<string>('');
+  const [editFinCat, setEditFinCat] = useState<string>('');
+  const [editFinFundUser, setEditFinFundUser] = useState<string>('');
+  const [editFinType, setEditFinType] = useState<'Pemasukan' | 'Pengeluaran'>('Pengeluaran');
   
   // States for adding residents
   const [newResName, setNewResName] = useState('');
@@ -1217,12 +1229,44 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({
                         <p className="text-[10px] text-slate-400 font-mono mt-1">
                           Kategori: {log.category} • Waktu: {new Date(log.date).toLocaleDateString('id', { day: 'numeric', month: 'long', year: 'numeric' })}
                         </p>
+                        <div className="flex items-center gap-3">
+                          <span className={`text-sm font-mono font-bold whitespace-nowrap ${
+                            log.type === 'Pemasukan' ? 'text-emerald-600' : 'text-rose-500'
+                          }`}>
+                            {log.type === 'Pemasukan' ? '+' : '-'} {formatRupiah(log.amount)}
+                          </span>
+                          
+                          <div className="flex gap-1 shrink-0">
+                            <button
+                              type="button"
+                              onClick={() => {
+                                setEditingFinanceLog(log);
+                                setEditFinAmount(log.amount);
+                                setEditFinDesc(log.description);
+                                setEditFinCat(log.category);
+                                setEditFinFundUser(log.fundUser || '');
+                                setEditFinType(log.type);
+                              }}
+                              className="p-1 text-blue-600 hover:text-blue-800 hover:bg-slate-100 rounded transition cursor-pointer"
+                              title="Edit Transaksi"
+                            >
+                              <Edit2 size={13} />
+                            </button>
+                            <button
+                              type="button"
+                              onClick={() => {
+                                if (window.confirm(`Apakah Anda yakin ingin menghapus catatan transaksi "${log.description}"?`)) {
+                                  if (onDeleteFinanceLog) onDeleteFinanceLog(log.id);
+                                }
+                              }}
+                              className="p-1 text-rose-600 hover:text-rose-800 hover:bg-slate-100 rounded transition cursor-pointer"
+                              title="Hapus Transaksi"
+                            >
+                              <Trash2 size={13} />
+                            </button>
+                          </div>
+                        </div>
                       </div>
-                      <span className={`text-sm font-mono font-bold whitespace-nowrap ${
-                        log.type === 'Pemasukan' ? 'text-emerald-600' : 'text-rose-500'
-                      }`}>
-                        {log.type === 'Pemasukan' ? '+' : '-'} {formatRupiah(log.amount)}
-                      </span>
                     </div>
                   ))
                 )}
@@ -4254,6 +4298,166 @@ Siti Aminah	357802...	Blok B	B-202	085755..."
           </div>
         );
       })()}
+
+
+      {/* 9. GORGEOUS PREMIUM EDIT FINANCE LOG MODAL */}
+      {editingFinanceLog && (
+        <div className="fixed inset-0 bg-slate-950/80 backdrop-blur-sm flex items-center justify-center p-4 z-50 animate-fade-in text-slate-800">
+          <div className="bg-white rounded-3xl w-full max-w-md border border-slate-100 shadow-2xl flex flex-col overflow-hidden animate-slide-up">
+            
+            {/* Modal Header */}
+            <div className="p-5 border-b border-slate-100 bg-gradient-to-r from-blue-50 to-indigo-50/50 flex justify-between items-center">
+              <div className="flex items-center gap-2">
+                <div className="h-8 w-8 bg-blue-100 text-blue-700 rounded-lg flex items-center justify-center font-bold">
+                  📝
+                </div>
+                <div>
+                  <h3 className="text-sm font-black text-slate-900 uppercase tracking-wide">Edit Catatan Buku Kas</h3>
+                  <p className="text-[10px] text-slate-500 font-medium leading-none">Ubah data transaksi keuangan paguyuban</p>
+                </div>
+              </div>
+              <button
+                type="button"
+                onClick={() => setEditingFinanceLog(null)}
+                className="text-slate-400 hover:text-slate-600 font-bold text-lg h-7 w-7 rounded-full bg-slate-100 flex items-center justify-center cursor-pointer transition-colors"
+              >
+                &times;
+              </button>
+            </div>
+
+            {/* Modal Content */}
+            <div className="p-6 space-y-4">
+              {/* Jenis Kas */}
+              <div>
+                <label className="block text-xs font-bold uppercase text-slate-400 font-mono mb-1.5">Jenis Transaksi</label>
+                <div className="grid grid-cols-2 gap-2">
+                  <button
+                    type="button"
+                    onClick={() => setEditFinType('Pemasukan')}
+                    className={`py-2 text-xs font-bold rounded-xl transition-all cursor-pointer ${
+                      editFinType === 'Pemasukan'
+                        ? 'bg-emerald-500 text-white shadow-md shadow-emerald-500/10'
+                        : 'bg-slate-50 hover:bg-slate-100 text-slate-600'
+                    }`}
+                  >
+                    Pemasukan (+)
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => setEditFinType('Pengeluaran')}
+                    className={`py-2 text-xs font-bold rounded-xl transition-all cursor-pointer ${
+                      editFinType === 'Pengeluaran'
+                        ? 'bg-rose-500 text-white shadow-md shadow-rose-500/10'
+                        : 'bg-slate-50 hover:bg-slate-100 text-slate-600'
+                    }`}
+                  >
+                    Pengeluaran (-)
+                  </button>
+                </div>
+              </div>
+
+              {/* Jumlah (Rp) */}
+              <div>
+                <label className="block text-xs font-bold uppercase text-slate-400 font-mono mb-1.5">Jumlah (Rp)</label>
+                <input
+                  type="number"
+                  value={editFinAmount}
+                  onChange={(e) => setEditFinAmount(e.target.value === '' ? '' : Number(e.target.value))}
+                  placeholder="Masukkan jumlah dana..."
+                  className="block w-full px-3 py-2 bg-slate-50 border border-slate-200 rounded-xl text-xs font-medium text-slate-900 focus:outline-none focus:ring-1 focus:ring-blue-500"
+                />
+              </div>
+
+              {/* Deskripsi */}
+              <div>
+                <label className="block text-xs font-bold uppercase text-slate-400 font-mono mb-1.5">Deskripsi Transaksi</label>
+                <input
+                  type="text"
+                  value={editFinDesc}
+                  onChange={(e) => setEditFinDesc(e.target.value)}
+                  placeholder="eg: Pembayaran Iuran Sampah atau Perbaikan Pompa"
+                  className="block w-full px-3 py-2 bg-slate-50 border border-slate-200 rounded-xl text-xs font-medium text-slate-900 focus:outline-none focus:ring-1 focus:ring-blue-500"
+                />
+              </div>
+
+              {/* Kategori */}
+              <div>
+                <label className="block text-xs font-bold uppercase text-slate-400 font-mono mb-1.5">Kategori</label>
+                <select
+                  value={editFinCat}
+                  onChange={(e) => setEditFinCat(e.target.value)}
+                  className="block w-full px-3 py-2 bg-slate-50 border border-slate-200 rounded-xl text-xs font-semibold focus:outline-none focus:ring-1 focus:ring-blue-500"
+                >
+                  <option value="">Pilih Kategori</option>
+                  <option value="Iuran Air">Iuran Air</option>
+                  <option value="Iuran Sampah">Iuran Sampah</option>
+                  <option value="Setoran Koordinator">Setoran Koordinator</option>
+                  <option value="Sumbangan Untuk Kerohanian">Sumbangan Untuk Kerohanian</option>
+                  <option value="Pemeliharaan Pompa">Pemeliharaan Pompa Air</option>
+                  <option value="Kebersihan/Kesehatan">Kebersihan &amp; Kerja Bakti</option>
+                  <option value="Perbaikan Listrik Hub">Perbaikan Kelistrikan Umum</option>
+                  <option value="Kesekretariatan">Alat Kantor / Kertas Iuran</option>
+                  <option value="Perbaikan Fasilitas Umum Lainnya">Perbaikan Fasilitas Umum Lainnya</option>
+                </select>
+              </div>
+
+              {/* Penerima / Penyetor (Opsional) */}
+              <div>
+                <label className="block text-xs font-bold uppercase text-slate-400 font-mono mb-1.5">Pihak Terkait / Penerima / Penyetor (Opsional)</label>
+                <input
+                  type="text"
+                  value={editFinFundUser}
+                  onChange={(e) => setEditFinFundUser(e.target.value)}
+                  placeholder="eg: Staf Pompa Air, Koordinator Lantai 2"
+                  className="block w-full px-3 py-2 bg-slate-50 border border-slate-200 rounded-xl text-xs font-medium text-slate-900 focus:outline-none focus:ring-1 focus:ring-blue-500"
+                />
+              </div>
+            </div>
+
+            {/* Modal Footer */}
+            <div className="bg-slate-50 p-4 border-t border-slate-100 flex justify-end gap-2">
+              <button
+                type="button"
+                onClick={() => setEditingFinanceLog(null)}
+                className="px-4 py-2 bg-white hover:bg-slate-100 border border-slate-200 text-slate-700 font-extrabold text-[10px] rounded-xl uppercase transition-colors shadow-xs cursor-pointer"
+              >
+                Batal
+              </button>
+              <button
+                type="button"
+                onClick={() => {
+                  if (!editFinAmount || Number(editFinAmount) <= 0) {
+                    alert('Masukkan jumlah dana yang valid');
+                    return;
+                  }
+                  if (!editFinDesc.trim()) {
+                    alert('Masukkan deskripsi transaksi');
+                    return;
+                  }
+                  if (!editFinCat) {
+                    alert('Pilih kategori transaksi');
+                    return;
+                  }
+                  if (onEditFinanceLog) {
+                    onEditFinanceLog(editingFinanceLog.id, {
+                      amount: Number(editFinAmount),
+                      description: editFinDesc.trim(),
+                      category: editFinCat,
+                      fundUser: editFinFundUser.trim() || undefined,
+                      type: editFinType
+                    });
+                  }
+                  setEditingFinanceLog(null);
+                }}
+                className="px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white font-extrabold text-[10px] rounded-xl uppercase transition-colors shadow-md shadow-blue-500/10 cursor-pointer"
+              >
+                Simpan Perubahan
+              </button>
+            </div>
+
+          </div>
+        </div>
+      )}
 
     </div>
   );
