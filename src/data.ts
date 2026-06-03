@@ -3220,11 +3220,11 @@ export const INITIAL_RESIDENTS: Resident[] = [
 ];
 
 export const INITIAL_COORDINATORS: Coordinator[] = [
-  { id: 'coord-1', name: 'Eko Sulistyo', ktp: '888888', assignedBlock: 'Blok A' },
-  { id: 'coord-2', name: 'Siti Rahma', ktp: '999999', assignedBlock: 'Blok B' },
-  { id: 'coord-3', name: 'Rian Hidayat', ktp: '101010', assignedBlock: 'Blok C' },
-  { id: 'coord-4', name: 'Bambang S.', ktp: '202020', assignedBlock: 'Blok D' },
-  { id: 'coord-5', name: 'Lilik Handayani', ktp: '303030', assignedBlock: 'Blok E' }
+  { id: 'coord-1', name: 'Eko Sulistyo', ktp: '888888', assignedFloor: 1, assignedBlock: 'Blok A' },
+  { id: 'coord-2', name: 'Siti Rahma', ktp: '999999', assignedFloor: 2, assignedBlock: 'Blok B' },
+  { id: 'coord-3', name: 'Rian Hidayat', ktp: '101010', assignedFloor: 3, assignedBlock: 'Blok C' },
+  { id: 'coord-4', name: 'Bambang S.', ktp: '202020', assignedFloor: 4, assignedBlock: 'Blok D' },
+  { id: 'coord-5', name: 'Lilik Handayani', ktp: '303030', assignedFloor: 5, assignedBlock: 'Blok E' }
 ];
 
 export const INITIAL_BILLING_RECORDS: BillingRecord[] = [
@@ -8588,8 +8588,11 @@ export const saveStoredData = (data: {
   localStorage.setItem('rg_sim_date', data.simulatedDate);
 };
 
-export const calculatePdamBill = (usage: number): number => {
+export const calculatePdamBill = (usage: number, settings?: { pdamMinUsage: number; pdamMinPrice: number; pdamCostPerCubic: number }): number => {
+  const minUsage = settings?.pdamMinUsage ?? 10;
+  const minPrice = settings?.pdamMinPrice ?? 25000;
+  const costPerCubic = settings?.pdamCostPerCubic ?? 2500;
   if (usage <= 0) return 0;
-  if (usage <= 10) return 25000;
-  return usage * 2500;
+  if (usage <= minUsage) return minPrice;
+  return usage * costPerCubic;
 };
