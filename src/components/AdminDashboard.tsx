@@ -2090,9 +2090,9 @@ Siti Aminah	357802...	Blok B	B-202	085755..."
                 .reduce((sum, b) => sum + b.totalBill, 0);
               const countKasSementara = billingRecords.filter(b => b.month === 'Mei' && b.year === 2026 && b.status === 'Terbayar di Koordinator').length;
 
-              // 2. Sum of Setoran Koordinator in finance logs
+              // 2. Sum of Setoran Koordinator, Iuran Air, and Iuran Sampah in finance logs
               const totalVerifiedDeposits = financeLogs
-                .filter(log => log.type === 'Pemasukan' && log.category === 'Setoran Koordinator')
+                .filter(log => log.type === 'Pemasukan' && (log.category === 'Setoran Koordinator' || log.category === 'Iuran Air' || log.category === 'Iuran Sampah'))
                 .reduce((s, log) => s + log.amount, 0);
 
               // 3. Calculate Outstanding (Belum Lunas) iuran
@@ -2194,8 +2194,8 @@ Siti Aminah	357802...	Blok B	B-202	085755..."
                       // Check if verify setoran exists in finance logs
                       const verifyRecord = financeLogs.find(
                         log => log.type === 'Pemasukan' && 
-                               log.category === 'Setoran Koordinator' && 
-                               log.description.includes(`lantai ${floorNum}`)
+                               (log.category === 'Setoran Koordinator' || log.category === 'Iuran Air' || log.category === 'Iuran Sampah') && 
+                               log.description.toLowerCase().includes(`lantai ${floorNum}`)
                       );
 
                       return (
@@ -4126,13 +4126,26 @@ Siti Aminah	357802...	Blok B	B-202	085755..."
         const pdamBillAmount = floorMeiCollectedBills.reduce((s, r) => s + r.pdamBill, 0);
 
         const handleConfirmReconcile = () => {
-          onAddExpense(
-            totalCollectedOnFloor, 
-            `Setoran iuran rusun dari koordinator lantai ${floorNum} (${coord.name}) - Mei 2026`, 
-            "Setoran Koordinator", 
-            coord.name, 
-            "Pemasukan"
-          );
+          // 1. Catat kas masuk untuk Iuran Air (PDAM) jika ada
+          if (pdamBillAmount > 0) {
+            onAddExpense(
+              pdamBillAmount, 
+              `Setoran Iuran Air PDAM Lantai ${floorNum} (${coord.name}) - Mei 2026`, 
+              "Iuran Air", 
+              coord.name, 
+              "Pemasukan"
+            );
+          }
+          // 2. Catat kas masuk untuk Iuran Sampah jika ada
+          if (trashBillAmount > 0) {
+            onAddExpense(
+              trashBillAmount, 
+              `Setoran Iuran Sampah Lantai ${floorNum} (${coord.name}) - Mei 2026`, 
+              "Iuran Sampah", 
+              coord.name, 
+              "Pemasukan"
+            );
+          }
           
           if (onReconcileFloorBills) {
             const billIds = floorMeiCollectedBills.map(b => b.id);
@@ -4182,7 +4195,7 @@ Siti Aminah	357802...	Blok B	B-202	085755..."
                     </div>
                     <div className="flex justify-between text-[10px] font-bold">
                       <span className="text-slate-400">STATUS BILLS MEI 2026:</span>
-                      <span className="text-emerald-600">{floorMeiPaidBills.length} Warga Lunas</span>
+                      <span className="text-emerald-600">{floorMeiCollectedBills.length} Warga Lunas</span>
                     </div>
                   </div>
 
