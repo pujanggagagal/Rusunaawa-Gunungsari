@@ -850,6 +850,14 @@ export default function App() {
     });
   };
 
+  const handleDeleteBillingRecord = (billId: string) => {
+    setData((prev) => {
+      const updatedBilling = prev.billing.filter(b => b.id !== billId);
+      syncTable('Billing', updatedBilling);
+      return { ...prev, billing: updatedBilling };
+    });
+  };
+
   const handleEditFinanceLog = (logId: string, updatedFields: Partial<FinancialLog>) => {
     setData((prev) => {
       const updatedFinance = prev.finance.map((log) => {
