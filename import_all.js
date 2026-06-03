@@ -212,7 +212,7 @@ for (let i = 1; i < billingRows.length; i++) {
     pdamBill: realWaterBill,
     trashBill: realTrashBill,
     totalBill: realTotalBill,
-    status: monthName === 'April' ? 'Lunas' : (isPaid ? 'Lunas' : 'Belum Lunas'),
+    status: monthName === 'April' ? (resident.isVacant ? 'Belum Lunas' : 'Lunas') : (isPaid ? 'Lunas' : 'Belum Lunas'),
     paymentDate: isPaid ? rawPaymentDate : undefined
   });
 }
@@ -347,7 +347,7 @@ for (const resident of residentsList) {
       pdamBill: defWaterBill,
       trashBill: defTrashBill,
       totalBill: defTotalBill,
-      status: 'Lunas'
+      status: resident.isVacant ? 'Belum Lunas' : 'Lunas'
     });
     generatedCount++;
   }

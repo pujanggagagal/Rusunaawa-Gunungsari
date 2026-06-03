@@ -3365,7 +3365,7 @@ export const INITIAL_BILLING_RECORDS: BillingRecord[] = [
     "pdamBill": 0,
     "trashBill": 0,
     "totalBill": 0,
-    "status": "Lunas",
+    "status": "Belum Lunas",
     "paymentDate": "2026-05-01 12:40:04.748+00"
   },
   {
@@ -3421,7 +3421,7 @@ export const INITIAL_BILLING_RECORDS: BillingRecord[] = [
     "pdamBill": 0,
     "trashBill": 0,
     "totalBill": 0,
-    "status": "Lunas",
+    "status": "Belum Lunas",
     "paymentDate": "2026-05-01 12:41:23.263+00"
   },
   {
@@ -3519,7 +3519,7 @@ export const INITIAL_BILLING_RECORDS: BillingRecord[] = [
     "pdamBill": 0,
     "trashBill": 0,
     "totalBill": 0,
-    "status": "Lunas",
+    "status": "Belum Lunas",
     "paymentDate": "2026-05-01 12:39:00.707+00"
   },
   {
@@ -3547,7 +3547,7 @@ export const INITIAL_BILLING_RECORDS: BillingRecord[] = [
     "pdamBill": 0,
     "trashBill": 0,
     "totalBill": 0,
-    "status": "Lunas",
+    "status": "Belum Lunas",
     "paymentDate": "2026-05-01 12:40:39.733+00"
   },
   {
@@ -3645,7 +3645,7 @@ export const INITIAL_BILLING_RECORDS: BillingRecord[] = [
     "pdamBill": 0,
     "trashBill": 0,
     "totalBill": 0,
-    "status": "Lunas",
+    "status": "Belum Lunas",
     "paymentDate": "2026-05-01 12:39:22.3+00"
   },
   {
@@ -3701,7 +3701,7 @@ export const INITIAL_BILLING_RECORDS: BillingRecord[] = [
     "pdamBill": 0,
     "trashBill": 0,
     "totalBill": 0,
-    "status": "Lunas",
+    "status": "Belum Lunas",
     "paymentDate": "2026-05-01 12:40:04.747+00"
   },
   {
@@ -3799,7 +3799,7 @@ export const INITIAL_BILLING_RECORDS: BillingRecord[] = [
     "pdamBill": 0,
     "trashBill": 0,
     "totalBill": 0,
-    "status": "Lunas",
+    "status": "Belum Lunas",
     "paymentDate": "2026-05-01 12:39:50.962+00"
   },
   {
@@ -4443,7 +4443,7 @@ export const INITIAL_BILLING_RECORDS: BillingRecord[] = [
     "pdamBill": 0,
     "trashBill": 0,
     "totalBill": 0,
-    "status": "Lunas",
+    "status": "Belum Lunas",
     "paymentDate": "2026-05-01 12:39:57.831+00"
   },
   {
@@ -4863,7 +4863,7 @@ export const INITIAL_BILLING_RECORDS: BillingRecord[] = [
     "pdamBill": 0,
     "trashBill": 0,
     "totalBill": 0,
-    "status": "Lunas",
+    "status": "Belum Lunas",
     "paymentDate": "2026-05-01 12:41:23.263+00"
   },
   {
@@ -5199,7 +5199,7 @@ export const INITIAL_BILLING_RECORDS: BillingRecord[] = [
     "pdamBill": 0,
     "trashBill": 0,
     "totalBill": 0,
-    "status": "Lunas",
+    "status": "Belum Lunas",
     "paymentDate": "2026-05-01 12:40:54.094+00"
   },
   {
@@ -5633,7 +5633,7 @@ export const INITIAL_BILLING_RECORDS: BillingRecord[] = [
     "pdamBill": 0,
     "trashBill": 0,
     "totalBill": 0,
-    "status": "Lunas",
+    "status": "Belum Lunas",
     "paymentDate": "2026-05-01 12:40:32.674+00"
   },
   {
@@ -5955,7 +5955,7 @@ export const INITIAL_BILLING_RECORDS: BillingRecord[] = [
     "pdamBill": 0,
     "trashBill": 0,
     "totalBill": 0,
-    "status": "Lunas",
+    "status": "Belum Lunas",
     "paymentDate": "2026-05-01 12:39:29.619+00"
   },
   {
@@ -5969,7 +5969,7 @@ export const INITIAL_BILLING_RECORDS: BillingRecord[] = [
     "pdamBill": 0,
     "trashBill": 0,
     "totalBill": 0,
-    "status": "Lunas",
+    "status": "Belum Lunas",
     "paymentDate": "2026-05-01 12:38:10.406+00"
   },
   {
@@ -5997,7 +5997,7 @@ export const INITIAL_BILLING_RECORDS: BillingRecord[] = [
     "pdamBill": 0,
     "trashBill": 0,
     "totalBill": 0,
-    "status": "Lunas",
+    "status": "Belum Lunas",
     "paymentDate": "2026-05-01 12:39:43.922+00"
   },
   {
@@ -6067,7 +6067,7 @@ export const INITIAL_BILLING_RECORDS: BillingRecord[] = [
     "pdamBill": 0,
     "trashBill": 0,
     "totalBill": 0,
-    "status": "Lunas",
+    "status": "Belum Lunas",
     "paymentDate": "2026-05-01 12:38:39.552+00"
   },
   {
@@ -6081,7 +6081,7 @@ export const INITIAL_BILLING_RECORDS: BillingRecord[] = [
     "pdamBill": 0,
     "trashBill": 0,
     "totalBill": 0,
-    "status": "Lunas",
+    "status": "Belum Lunas",
     "paymentDate": "2026-05-01 12:41:16.071+00"
   },
   {
@@ -6109,7 +6109,7 @@ export const INITIAL_BILLING_RECORDS: BillingRecord[] = [
     "pdamBill": 0,
     "trashBill": 0,
     "totalBill": 0,
-    "status": "Lunas",
+    "status": "Belum Lunas",
     "paymentDate": "2026-05-01 12:39:00.707+00"
   },
   {
@@ -6417,7 +6417,7 @@ export const INITIAL_BILLING_RECORDS: BillingRecord[] = [
     "pdamBill": 0,
     "trashBill": 0,
     "totalBill": 0,
-    "status": "Lunas",
+    "status": "Belum Lunas",
     "paymentDate": "2026-05-01 12:41:16.073+00"
   },
   {
@@ -6599,7 +6599,7 @@ export const INITIAL_BILLING_RECORDS: BillingRecord[] = [
     "pdamBill": 0,
     "trashBill": 0,
     "totalBill": 0,
-    "status": "Lunas",
+    "status": "Belum Lunas",
     "paymentDate": "2026-05-01 12:40:25.497+00"
   },
   {
@@ -6641,7 +6641,7 @@ export const INITIAL_BILLING_RECORDS: BillingRecord[] = [
     "pdamBill": 0,
     "trashBill": 0,
     "totalBill": 0,
-    "status": "Lunas",
+    "status": "Belum Lunas",
     "paymentDate": "2026-05-01 12:38:18.427+00"
   },
   {
@@ -6893,7 +6893,7 @@ export const INITIAL_BILLING_RECORDS: BillingRecord[] = [
     "pdamBill": 0,
     "trashBill": 0,
     "totalBill": 0,
-    "status": "Lunas"
+    "status": "Belum Lunas"
   },
   {
     "id": "bill-generated-4dgm9jryf248",
@@ -7309,7 +7309,7 @@ export const INITIAL_BILLING_RECORDS: BillingRecord[] = [
     "pdamBill": 0,
     "trashBill": 0,
     "totalBill": 0,
-    "status": "Lunas"
+    "status": "Belum Lunas"
   },
   {
     "id": "bill-generated-eev7ej6k3192",
@@ -7634,7 +7634,7 @@ export const INITIAL_BILLING_RECORDS: BillingRecord[] = [
     "pdamBill": 0,
     "trashBill": 0,
     "totalBill": 0,
-    "status": "Lunas"
+    "status": "Belum Lunas"
   },
   {
     "id": "bill-generated-objw76xjl191",
@@ -7868,7 +7868,7 @@ export const INITIAL_BILLING_RECORDS: BillingRecord[] = [
     "pdamBill": 0,
     "trashBill": 0,
     "totalBill": 0,
-    "status": "Lunas"
+    "status": "Belum Lunas"
   },
   {
     "id": "bill-generated-tvh5smxw3163",
