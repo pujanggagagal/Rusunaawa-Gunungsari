@@ -36,6 +36,8 @@ interface KoordinatorDashboardProps {
   onSaveMeter: (ktp: string, prevMeter: number, currentMeter: number) => void;
   appSettings: AppSettings;
   onPayBill?: (billId: string, amount: number) => void;
+  onVerifyPayment: (billId: string) => void;
+  onUpdateAprilMeter: (ktp: string, newAprilMeter: number) => void;
 }
 
 export const KoordinatorDashboard: React.FC<KoordinatorDashboardProps> = ({
@@ -45,7 +47,9 @@ export const KoordinatorDashboard: React.FC<KoordinatorDashboardProps> = ({
   onLogout,
   onSaveMeter,
   appSettings,
-  onPayBill
+  onPayBill,
+  onVerifyPayment,
+  onUpdateAprilMeter
 }) => {
   // Extract assignedFloor. If not defined to avoid type issues, fetch from ID or default to 1.
   const targetFloor = coordinator.assignedFloor || (coordinator.id === 'coord-1' ? 1 : coordinator.id === 'coord-2' ? 2 : coordinator.id === 'coord-3' ? 3 : coordinator.id === 'coord-4' ? 4 : coordinator.id === 'coord-5' ? 5 : 1);
@@ -72,6 +76,7 @@ export const KoordinatorDashboard: React.FC<KoordinatorDashboardProps> = ({
   
   const [selectedResidentKtp, setSelectedResidentKtp] = useState('');
   const [currentMeterInput, setCurrentMeterInput] = useState<number | ''>('');
+  const [inputAprilMeter, setInputAprilMeter] = useState<number | ''>('');
   const [error, setError] = useState('');
   const [success, setSuccess] = useState('');
 
@@ -179,9 +184,20 @@ export const KoordinatorDashboard: React.FC<KoordinatorDashboardProps> = ({
       } else {
         setCurrentMeterInput('');
       }
+
+      // Pre-populate April meter input
+      const matchApril = billingRecords.find(
+        (b) => b.residentKtp === activeResident.ktp && b.month === 'April' && b.year === 2026
+      );
+      if (matchApril) {
+        setInputAprilMeter(matchApril.currentMeter);
+      } else {
+        setInputAprilMeter(activeResident.initialMeter !== undefined && activeResident.initialMeter !== null ? Number(activeResident.initialMeter) : 100);
+      }
     } else {
       setSelectedResidentKtp('');
       setCurrentMeterInput('');
+      setInputAprilMeter('');
     }
   }, [activeResident?.ktp, billingRecords]);
 
@@ -556,6 +572,36 @@ export const KoordinatorDashboard: React.FC<KoordinatorDashboardProps> = ({
     }
   };
 
+  const handleSaveAprilMeter = (e: React.FormEvent) => {
+    e.preventDefault();
+    setError('');
+    setSuccess('');
+
+    if (!activeResident) {
+      setError('Pilih warga terlebih dahulu.');
+      return;
+    }
+
+    if (inputAprilMeter === '' || inputAprilMeter === undefined) {
+      setError('Silakan masukkan angka meteran April yang valid.');
+      return;
+    }
+
+    if (appSettings.isMaintenanceMode) {
+      setError('Kesalahan: Sistem masuk dalam Mode Pemeliharaan (Terkuci sementara oleh Admin Pusat).');
+      return;
+    }
+
+    const value = Number(inputAprilMeter);
+    if (value < 0) {
+      setError('Angka meteran tidak boleh negatif.');
+      return;
+    }
+
+    onUpdateAprilMeter(activeResident.ktp, value);
+    setSuccess(`✓ Sukses mengoreksi meteran April (${value} m³) untuk Unit ${activeResident.unit}!`);
+  };
+
   // Calculations for dynamic preview
   const isActiveResVacant = activeResident?.isVacant || activeResident?.occupancyStatus === 'Kosong' || activeResident?.occupancyStatus === 'kosong' || activeResident?.name === 'Kamar Kosong' || activeResident?.name?.toLowerCase()?.includes('kamar kosong');
   const usageFloat = isActiveResVacant ? 0 : (currentMeterInput !== '' ? Number(currentMeterInput) - prevMeterValue : 0);
@@ -749,7 +795,8 @@ export const KoordinatorDashboard: React.FC<KoordinatorDashboardProps> = ({
               <p className="text-[10px] text-slate-400">Silakan ubah filter pencarian atau pilih tombol Semua Lantai.</p>
             </div>
           ) : (
-            <form onSubmit={handleSave} className="space-y-4">
+            <>
+              <form onSubmit={handleSave} className="space-y-4">
               
               {/* Resident identity display inside form */}
               <div className="p-4 bg-gradient-to-br from-slate-50 to-cyan-50/20 border border-slate-100 rounded-2xl flex justify-between items-center">
@@ -915,6 +962,34 @@ export const KoordinatorDashboard: React.FC<KoordinatorDashboardProps> = ({
                 {appSettings.isMaintenanceMode ? 'PENGINPUTAN TERKUNCI' : 'Simpan &amp; Rekam Tagihan'}
               </button>
             </form>
+            
+            {/* Form Koreksi Meteran Bulan Lalu (April) */}
+            <div className="border-t border-slate-150 pt-4 mt-2.5 space-y-3">
+              <span className="text-[10px] text-cyan-750 font-extrabold uppercase tracking-widest font-mono block">
+                ⚙️ Koreksi Data Meteran Bulan Lalu (April 2026)
+              </span>
+              <form onSubmit={handleSaveAprilMeter} className="space-y-3">
+                <div className="flex gap-2">
+                  <div className="relative flex-1">
+                    <input
+                      type="number"
+                      placeholder="Meteran April (Bulan Lalu)"
+                      value={inputAprilMeter}
+                      onChange={(e) => setInputAprilMeter(e.target.value === '' ? '' : Number(e.target.value))}
+                      className="block w-full py-2.5 px-3 bg-slate-50 border border-slate-250 rounded-xl text-xs font-mono font-bold text-slate-905 focus:outline-none focus:border-cyan-500 focus:bg-white focus:ring-1 focus:ring-cyan-500"
+                    />
+                    <span className="absolute right-3 top-2.5 text-[10px] font-bold font-mono text-slate-400">m³</span>
+                  </div>
+                  <button
+                    type="submit"
+                    className="px-4 py-2 bg-slate-800 hover:bg-slate-900 text-white rounded-xl text-xxs font-black uppercase tracking-wider transition cursor-pointer select-none active:scale-[0.97] border-0"
+                  >
+                    Simpan Koreksi
+                  </button>
+                </div>
+              </form>
+              </div>
+            </>
           )}
 
           <div className="p-3 bg-amber-50 rounded-2xl border border-amber-100 flex items-start gap-2.5 text-slate-600">
@@ -1046,24 +1121,28 @@ export const KoordinatorDashboard: React.FC<KoordinatorDashboardProps> = ({
                                 </span>
                                 {meiRecord.status === 'Lunas' ? (
                                   <span className="px-2 py-0.5 bg-emerald-50 text-emerald-600 border border-emerald-100 rounded text-[8px] font-black uppercase">
-                                    Lunas
+                                    Lunas ✓
+                                  </span>
+                                ) : meiRecord.status === 'Terbayar di Koordinator' ? (
+                                  <span className="px-2 py-0.5 bg-amber-50 text-amber-700 border border-amber-100 rounded text-[8px] font-black uppercase">
+                                    Terbayar (Koor)
                                   </span>
                                 ) : (
                                   <div className="flex items-center gap-1.5 mt-0.5">
-                                    <span className="px-2 py-0.5 bg-amber-50 text-amber-600 border border-amber-100 rounded text-[8px] font-black uppercase">
+                                    <span className="px-2 py-0.5 bg-rose-50 text-rose-600 border border-rose-100 rounded text-[8px] font-black uppercase">
                                       Belum Bayar
                                     </span>
-                                    {onPayBill && (
+                                    {onVerifyPayment && (
                                       <button
                                         type="button"
                                         onClick={() => {
-                                          if (window.confirm(`Konfirmasi pembayaran air & sampah Unit ${res.unit} sebesar Rp ${meiRecord.totalBill.toLocaleString('id-ID')} secara TUNAI?`)) {
-                                            onPayBill(meiRecord.id, meiRecord.totalBill);
+                                          if (window.confirm(`Verifikasi pembayaran tunai Unit ${res.unit} sebesar Rp ${meiRecord.totalBill.toLocaleString('id-ID')}?`)) {
+                                            onVerifyPayment(meiRecord.id);
                                           }
                                         }}
-                                        className="px-2 py-0.5 bg-emerald-600 hover:bg-emerald-700 text-white rounded text-[8px] font-black uppercase tracking-wider transition cursor-pointer select-none active:scale-[0.97]"
+                                        className="px-2 py-0.5 bg-cyan-600 hover:bg-cyan-700 text-white rounded text-[8px] font-black uppercase tracking-wider transition cursor-pointer select-none active:scale-[0.97]"
                                       >
-                                        Bayar ✓
+                                        Verifikasi Bayar ✓
                                       </button>
                                     )}
                                   </div>
@@ -1194,22 +1273,26 @@ export const KoordinatorDashboard: React.FC<KoordinatorDashboardProps> = ({
                                     <span className="px-2 py-0.5 bg-emerald-100 text-emerald-800 border border-emerald-200 rounded font-extrabold text-[9px]">
                                       Lunas ✓
                                     </span>
+                                  ) : meiRecord.status === 'Terbayar di Koordinator' ? (
+                                    <span className="px-2 py-0.5 bg-amber-50 text-amber-750 border border-amber-100 rounded font-bold text-[9px]">
+                                      Terbayar (Koor)
+                                    </span>
                                   ) : (
                                     <div className="flex items-center gap-1.5 mt-0.5">
-                                      <span className="px-2 py-0.5 bg-amber-55 text-amber-700 border border-amber-100 rounded font-bold text-[9px]">
+                                      <span className="px-2 py-0.5 bg-rose-50 text-rose-600 border border-rose-100 rounded font-bold text-[9px]">
                                         Belum Bayar
                                       </span>
-                                      {onPayBill && (
+                                      {onVerifyPayment && (
                                         <button
                                           type="button"
                                           onClick={() => {
-                                            if (window.confirm(`Konfirmasi pembayaran air & sampah Unit ${res.unit} sebesar Rp ${meiRecord.totalBill.toLocaleString('id-ID')} secara TUNAI?`)) {
-                                              onPayBill(meiRecord.id, meiRecord.totalBill);
+                                            if (window.confirm(`Verifikasi pembayaran tunai Unit ${res.unit} sebesar Rp ${meiRecord.totalBill.toLocaleString('id-ID')}?`)) {
+                                              onVerifyPayment(meiRecord.id);
                                             }
                                           }}
-                                          className="px-2 py-0.5 bg-emerald-650 hover:bg-emerald-700 text-white rounded text-[9px] font-black uppercase tracking-wider transition cursor-pointer select-none active:scale-[0.97]"
+                                          className="px-2 py-0.5 bg-cyan-600 hover:bg-cyan-700 text-white rounded text-[9px] font-black uppercase tracking-wider transition cursor-pointer select-none active:scale-[0.97]"
                                         >
-                                          Lunas ✓
+                                          Verifikasi Bayar ✓
                                         </button>
                                       )}
                                     </div>
@@ -1258,10 +1341,10 @@ export const KoordinatorDashboard: React.FC<KoordinatorDashboardProps> = ({
           return b;
         });
         const totalCollected = meiBills
-          .filter(b => b.status === 'Lunas')
+          .filter(b => b.status === 'Terbayar di Koordinator' || b.status === 'Lunas')
           .reduce((sum, b) => sum + b.totalBill, 0);
 
-        const unpaidBills = meiBills.filter(b => b.status !== 'Lunas');
+        const unpaidBills = meiBills.filter(b => b.status === 'Belum Lunas');
         const totalOutstanding = unpaidBills.reduce((sum, b) => sum + b.totalBill, 0);
         const unpaidCount = unpaidBills.length;
         const totalWargaCount = floorResidents.length;
@@ -1294,7 +1377,7 @@ export const KoordinatorDashboard: React.FC<KoordinatorDashboardProps> = ({
                 <div>
                   <span className="text-[10px] uppercase font-mono font-extrabold text-slate-400 block tracking-wider">Total Kas Terkumpul</span>
                   <h3 className="text-xl font-black text-slate-900 mt-1">Rp {totalCollected.toLocaleString('id-ID')}</h3>
-                  <p className="text-[9px] text-emerald-650 font-bold mt-0.5">Dari warga yang sudah Lunas</p>
+                  <p className="text-[9px] text-emerald-650 font-bold mt-0.5">Sudah Terbayar / Lunas</p>
                 </div>
                 <div className="h-10 w-10 bg-emerald-50 text-emerald-600 rounded-xl flex items-center justify-center shrink-0">
                   <Coins size={20} />
@@ -1402,9 +1485,13 @@ export const KoordinatorDashboard: React.FC<KoordinatorDashboardProps> = ({
                                 <span className="px-2 py-0.5 bg-emerald-50 text-emerald-700 border border-emerald-150 rounded text-[8px] font-black uppercase">
                                   Sudah Lunas ✓
                                 </span>
-                              ) : (
+                              ) : meiRec.status === 'Terbayar di Koordinator' ? (
                                 <span className="px-2 py-0.5 bg-amber-50 text-amber-700 border border-amber-150 rounded text-[8px] font-black uppercase">
-                                  Belum Lunas
+                                  Terbayar (Koor)
+                                </span>
+                              ) : (
+                                <span className="px-2 py-0.5 bg-rose-50 text-rose-600 border border-rose-100 rounded text-[8px] font-black uppercase">
+                                  Belum Bayar
                                 </span>
                               )}
                             </div>
@@ -1425,17 +1512,17 @@ export const KoordinatorDashboard: React.FC<KoordinatorDashboardProps> = ({
                             </div>
                           </div>
 
-                          {meiRec && meiRec.status !== 'Lunas' && onPayBill && (
+                          {meiRec && meiRec.status === 'Belum Lunas' && onVerifyPayment && (
                             <button
                               type="button"
                               onClick={() => {
                                 if (window.confirm(`Konfirmasi pembayaran air & sampah Unit ${res.unit} sebesar Rp ${meiRec.totalBill.toLocaleString('id-ID')} secara TUNAI?`)) {
-                                  onPayBill(meiRec.id, meiRec.totalBill);
+                                  onVerifyPayment(meiRec.id);
                                 }
                               }}
-                              className="w-full py-2.5 bg-emerald-600 hover:bg-emerald-700 text-white rounded-xl text-xs font-black uppercase tracking-wider transition cursor-pointer select-none active:scale-[0.98] shadow-md shadow-emerald-500/10 border-0"
+                              className="w-full py-2.5 bg-cyan-600 hover:bg-cyan-700 text-white rounded-xl text-xs font-black uppercase tracking-wider transition cursor-pointer select-none active:scale-[0.98] shadow-md shadow-cyan-500/10 border-0"
                             >
-                              Terima Pembayaran Tunai ✓
+                              Verifikasi Pembayaran Tunai ✓
                             </button>
                           )}
                         </div>
@@ -1492,27 +1579,31 @@ export const KoordinatorDashboard: React.FC<KoordinatorDashboardProps> = ({
                                   <span className="px-2.5 py-1 bg-emerald-50 text-emerald-700 rounded-full font-bold text-[9px] uppercase border border-emerald-150">
                                     Lunas ✓
                                   </span>
-                                ) : (
+                                ) : meiRec.status === 'Terbayar di Koordinator' ? (
                                   <span className="px-2.5 py-1 bg-amber-50 text-amber-700 rounded-full font-bold text-[9px] uppercase border border-amber-150">
+                                    Terbayar (Koor)
+                                  </span>
+                                ) : (
+                                  <span className="px-2.5 py-1 bg-rose-50 text-rose-600 rounded-full font-bold text-[9px] uppercase border border-rose-100">
                                     Belum Lunas
                                   </span>
                                 )}
                               </td>
                               <td className="py-3 px-2 text-center">
-                                {meiRec && meiRec.status !== 'Lunas' && onPayBill ? (
+                                {meiRec && meiRec.status === 'Belum Lunas' && onVerifyPayment ? (
                                   <button
                                     type="button"
                                     onClick={() => {
                                       if (window.confirm(`Konfirmasi pembayaran air & sampah Unit ${res.unit} sebesar Rp ${meiRec.totalBill.toLocaleString('id-ID')} secara TUNAI?`)) {
-                                        onPayBill(meiRec.id, meiRec.totalBill);
+                                        onVerifyPayment(meiRec.id);
                                       }
                                     }}
-                                    className="px-3.5 py-1 bg-emerald-600 hover:bg-emerald-700 text-white rounded-xl text-[9px] font-black uppercase tracking-wider transition cursor-pointer select-none active:scale-[0.97] shadow-sm shadow-emerald-500/10 border-0"
+                                    className="px-3.5 py-1 bg-cyan-600 hover:bg-cyan-700 text-white rounded-xl text-[9px] font-black uppercase tracking-wider transition cursor-pointer select-none active:scale-[0.97] shadow-sm shadow-cyan-500/10 border-0"
                                   >
-                                    Tandai Lunas ✓
+                                    Verifikasi Bayar ✓
                                   </button>
                                 ) : (
-                                  <span className="text-[10px] text-slate-350">-</span>
+                                  <span className="text-[10px] text-slate-355">-</span>
                                 )}
                               </td>
                             </tr>

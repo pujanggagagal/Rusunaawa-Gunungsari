@@ -31,6 +31,7 @@ interface AdminDashboardProps {
   onDeleteBillingRecord?: (billId: string) => void;
   onEditFinanceLog?: (id: string, updatedFields: Partial<FinancialLog>) => void;
   onDeleteFinanceLog?: (id: string) => void;
+  onReconcileFloorBills?: (billIds: string[]) => void;
 }
 
 export const AdminDashboard: React.FC<AdminDashboardProps> = ({
@@ -58,7 +59,8 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({
   onAddBillingRecord,
   onDeleteBillingRecord,
   onEditFinanceLog,
-  onDeleteFinanceLog
+  onDeleteFinanceLog,
+  onReconcileFloorBills
 }) => {
   const [activeTab, setActiveTab] = useState<'finance' | 'residents' | 'coordinators' | 'reconciliation' | 'billing' | 'pdam-all' | 'barcodes' | 'settings'>('finance');
 
@@ -198,6 +200,10 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({
   const totalBalance = financeLogs.reduce((sum, log) => {
     return log.type === 'Pemasukan' ? sum + log.amount : sum - log.amount;
   }, 0);
+
+  const totalKasSementara = billingRecords
+    .filter((b) => b.status === 'Terbayar di Koordinator')
+    .reduce((sum, b) => sum + b.totalBill, 0);
 
   const totalInflow = financeLogs
     .filter((log) => log.type === 'Pemasukan')
@@ -872,10 +878,15 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({
 
         return (
           <div className="grid grid-cols-1 md:grid-cols-6 gap-4 mb-8">
-            <div className="bg-[#0700ad] text-white p-5 rounded-2xl border border-slate-800 relative overflow-hidden">
-              <span className="text-xxs font-mono text-white block uppercase tracking-wider">Total Kas Paguyuban</span>
-              <span className="text-xl font-bold font-mono text-white block mt-1.5">{formatRupiah(totalBalance)}</span>
-              <span className="text-[11px] text-white italic block mt-2">Saldo Bersih Arus Keuangan</span>
+            <div className="bg-[#0700ad] text-white p-5 rounded-2xl border border-slate-800 relative overflow-hidden flex flex-col justify-between">
+              <div>
+                <span className="text-xxs font-mono text-white block uppercase tracking-wider">Total Kas Utama Paguyuban</span>
+                <span className="text-xl font-bold font-mono text-white block mt-1">{formatRupiah(totalBalance)}</span>
+              </div>
+              <div className="mt-2.5 pt-2 border-t border-white/20">
+                <span className="text-[9px] font-mono text-purple-200 block uppercase tracking-wider font-bold">Kas Sementara (Di Koordinator)</span>
+                <span className="text-xs font-bold font-mono text-yellow-350 block">{formatRupiah(totalKasSementara)}</span>
+              </div>
             </div>
 
             <div className="bg-white p-5 rounded-2xl border border-slate-150">
@@ -2072,28 +2083,33 @@ Siti Aminah	357802...	Blok B	B-202	085755..."
               </div>
             </div>
 
-            {/* Reconciliation status summary blocks */}
-            {(() => {
-              // 1. Calculate iuran received
-              const meiPaidRecords = billingRecords.filter(b => b.month === 'Mei' && b.year === 2026 && b.status === 'Lunas');
-              const totalMeiCollected = meiPaidRecords.reduce((s, r) => s + r.totalBill, 0);
+                  {(() => {
+              // 1. Calculate Kas Sementara ready for deposit (month: Mei)
+              const totalKasSementaraOverall = billingRecords
+                .filter(b => b.month === 'Mei' && b.year === 2026 && b.status === 'Terbayar di Koordinator')
+                .reduce((sum, b) => sum + b.totalBill, 0);
+              const countKasSementara = billingRecords.filter(b => b.month === 'Mei' && b.year === 2026 && b.status === 'Terbayar di Koordinator').length;
 
               // 2. Sum of Setoran Koordinator in finance logs
               const totalVerifiedDeposits = financeLogs
                 .filter(log => log.type === 'Pemasukan' && log.category === 'Setoran Koordinator')
                 .reduce((s, log) => s + log.amount, 0);
 
-              const remainderToDeposit = Math.max(0, totalMeiCollected - totalVerifiedDeposits);
+              // 3. Calculate Outstanding (Belum Lunas) iuran
+              const totalOutstandingOverall = billingRecords
+                .filter(b => b.month === 'Mei' && b.year === 2026 && b.status === 'Belum Lunas')
+                .reduce((sum, b) => sum + b.totalBill, 0);
+              const countOutstanding = billingRecords.filter(b => b.month === 'Mei' && b.year === 2026 && b.status === 'Belum Lunas').length;
 
               return (
                 <div className="grid grid-cols-1 md:grid-cols-3 gap-5 text-slate-900">
                   <div className="bg-white p-5 rounded-2xl border border-slate-100 shadow-sm flex items-center justify-between">
                     <div>
-                      <p className="text-xxs font-extrabold uppercase text-slate-450 font-mono tracking-wider">Total Iuran Terkumpul (Mei 26)</p>
-                      <h3 className="text-2xl font-black text-slate-900 mt-1">Rp {totalMeiCollected.toLocaleString('id-ID')}</h3>
-                      <p className="text-[10px] text-slate-500 mt-1 font-semibold">Tergabung dari {meiPaidRecords.length} warga lunas.</p>
+                      <p className="text-xxs font-extrabold uppercase text-slate-450 font-mono tracking-wider">Kas Sementara (Di Koordinator)</p>
+                      <h3 className="text-2xl font-black text-amber-605 mt-1">Rp {totalKasSementaraOverall.toLocaleString('id-ID')}</h3>
+                      <p className="text-[10px] text-slate-550 mt-1 font-semibold">Dari {countKasSementara} unit siap disetor.</p>
                     </div>
-                    <div className="h-10 w-10 bg-purple-50 text-purple-600 rounded-xl flex items-center justify-center shrink-0">
+                    <div className="h-10 w-10 bg-amber-50 text-amber-600 rounded-xl flex items-center justify-center shrink-0">
                       <Coins size={20} />
                     </div>
                   </div>
@@ -2102,7 +2118,7 @@ Siti Aminah	357802...	Blok B	B-202	085755..."
                     <div>
                       <p className="text-xxs font-extrabold uppercase text-slate-450 font-mono tracking-wider">Diverifikasi &amp; Masuk Kas Utama</p>
                       <h3 className="text-2xl font-black text-emerald-600 mt-1">Rp {totalVerifiedDeposits.toLocaleString('id-ID')}</h3>
-                      <p className="text-[10px] text-slate-600 mt-1 font-bold">Telah terekam di ledger bank pusat.</p>
+                      <p className="text-[10px] text-slate-600 mt-1 font-bold">Telah terekam di kas paguyuban.</p>
                     </div>
                     <div className="h-10 w-10 bg-emerald-50 text-emerald-600 rounded-xl flex items-center justify-center shrink-0">
                       <CheckCircle2 size={20} />
@@ -2111,13 +2127,13 @@ Siti Aminah	357802...	Blok B	B-202	085755..."
 
                   <div className="bg-white p-5 rounded-2xl border border-slate-100 shadow-sm flex items-center justify-between">
                     <div>
-                      <p className="text-xxs font-extrabold uppercase text-slate-450 font-mono tracking-wider">Sisa Belum Disetor (Held by Coord)</p>
-                      <h3 className={`text-2xl font-black mt-1 ${remainderToDeposit > 0 ? 'text-amber-600 animate-pulse' : 'text-slate-500'}`}>
-                        Rp {remainderToDeposit.toLocaleString('id-ID')}
+                      <p className="text-xxs font-extrabold uppercase text-slate-450 font-mono tracking-wider">Belum Tertagih ke Warga</p>
+                      <h3 className="text-2xl font-black text-slate-500 mt-1">
+                        Rp {totalOutstandingOverall.toLocaleString('id-ID')}
                       </h3>
-                      <p className="text-[10px] text-slate-500 mt-1 font-semibold">Sisa iuran tunai di tangan koordinator.</p>
+                      <p className="text-[10px] text-slate-500 mt-1 font-semibold">{countOutstanding} unit belum membayar.</p>
                     </div>
-                    <div className="h-10 w-10 bg-amber-50 text-amber-600 rounded-xl flex items-center justify-center shrink-0">
+                    <div className="h-10 w-10 bg-slate-50 text-slate-500 rounded-xl flex items-center justify-center shrink-0">
                       <ShieldAlert size={20} />
                     </div>
                   </div>
@@ -2152,9 +2168,9 @@ Siti Aminah	357802...	Blok B	B-202	085755..."
                       const floorRes = residents.filter(r => (r.floor || getFloorFromUnit(r.unit)) === floorNum);
                       const floorTotalResCount = floorRes.length;
 
-                      // Filter billing on this floor
-                      const floorMeiPaidBills = billingRecords.filter(
-                        b => b.month === 'Mei' && b.year === 2026 && b.status === 'Lunas' && floorRes.some(r => r.ktp === b.residentKtp)
+                      // Filter billing with status 'Terbayar di Koordinator'
+                      const floorMeiCollectedBills = billingRecords.filter(
+                        b => b.month === 'Mei' && b.year === 2026 && b.status === 'Terbayar di Koordinator' && floorRes.some(r => r.ktp === b.residentKtp)
                       ).map(b => {
                         const res = floorRes.find(r => r.ktp === b.residentKtp);
                         const isVacant = res?.isVacant || res?.occupancyStatus === 'Kosong' || res?.occupancyStatus === 'kosong' || res?.name === 'Kamar Kosong' || res?.name?.toLowerCase()?.includes('kamar kosong');
@@ -2163,9 +2179,17 @@ Siti Aminah	357802...	Blok B	B-202	085755..."
                         }
                         return b;
                       });
-                      const floorPaidCount = floorMeiPaidBills.length;
-                      
-                      const totalCollectedOnFloor = floorMeiPaidBills.reduce((s, r) => s + r.totalBill, 0);
+                      const floorCollectedCount = floorMeiCollectedBills.length;
+                      const totalCollectedOnFloor = floorMeiCollectedBills.reduce((s, r) => s + r.totalBill, 0);
+
+                      // Filter billing with status 'Lunas'
+                      const floorMeiLunasBills = billingRecords.filter(
+                        b => b.month === 'Mei' && b.year === 2026 && b.status === 'Lunas' && floorRes.some(r => r.ktp === b.residentKtp)
+                      );
+                      const floorLunasCount = floorMeiLunasBills.length;
+
+                      // Total verified + temporary payments
+                      const totalPaidCount = floorCollectedCount + floorLunasCount;
 
                       // Check if verify setoran exists in finance logs
                       const verifyRecord = financeLogs.find(
@@ -2190,11 +2214,11 @@ Siti Aminah	357802...	Blok B	B-202	085755..."
                           </td>
                           <td className="py-4 px-4 text-center">
                             <div className="inline-flex flex-col items-center">
-                              <span className="font-mono font-bold text-slate-900">{floorPaidCount} / {floorTotalResCount} Kamar</span>
+                              <span className="font-mono font-bold text-slate-900">{totalPaidCount} / {floorTotalResCount} Kamar</span>
                               <div className="w-20 bg-slate-100 h-1 rounded-full overflow-hidden mt-1">
                                 <div 
-                                  className="bg-emerald-500 h-full" 
-                                  style={{ width: `${floorTotalResCount > 0 ? (floorPaidCount / floorTotalResCount) * 100 : 0}%` }} 
+                                  className="bg-emerald-555 h-full bg-emerald-500" 
+                                  style={{ width: `${floorTotalResCount > 0 ? (totalPaidCount / floorTotalResCount) * 100 : 0}%` }} 
                                 />
                               </div>
                             </div>
@@ -2203,43 +2227,41 @@ Siti Aminah	357802...	Blok B	B-202	085755..."
                             Rp {totalCollectedOnFloor.toLocaleString('id-ID')}
                           </td>
                           <td className="py-4 px-4 text-right font-mono pr-2">
-                            {verifyRecord ? (
+                            {totalCollectedOnFloor > 0 ? (
+                              <span className="text-amber-700 bg-amber-50 border border-amber-100 px-2 py-0.5 rounded font-extrabold text-[10px] animate-pulse">
+                                MENUNGGU SETORAN ⚠️
+                              </span>
+                            ) : floorLunasCount > 0 ? (
                               <div className="inline-flex flex-col items-end">
                                 <span className="text-emerald-700 bg-emerald-50 border border-emerald-150 px-2 py-0.5 rounded font-extrabold text-[10px]">
                                   SUDAH MASUK KAS ✓
                                 </span>
-                                <span className="text-[9px] text-slate-400 leading-none mt-1 font-semibold">Tgl: {verifyRecord.date}</span>
+                                {verifyRecord && (
+                                  <span className="text-[9px] text-slate-400 leading-none mt-1 font-semibold">Tgl: {new Date(verifyRecord.date).toLocaleDateString('id-ID')}</span>
+                                )}
                               </div>
                             ) : (
-                              totalCollectedOnFloor > 0 ? (
-                                <span className="text-amber-700 bg-amber-50 border border-amber-100 px-2 py-0.5 rounded font-extrabold text-[10px] animate-pulse font-bold">
-                                  MENUNGGU SETORAN ⚠️
-                                </span>
-                              ) : (
-                                <span className="text-slate-405 bg-slate-50 px-2 py-0.5 rounded font-bold text-[10px]">
-                                  NIL (BELUM ADA KAS)
-                                </span>
-                              )
+                              <span className="text-slate-400 bg-slate-50 px-2 py-0.5 rounded font-bold text-[10px]">
+                                NIL (BELUM ADA KAS)
+                              </span>
                             )}
                           </td>
                           <td className="py-4 px-6 text-right">
-                            {verifyRecord ? (
+                            {totalCollectedOnFloor > 0 ? (
+                              <button
+                                type="button"
+                                onClick={() => {
+                                  setReconcileFloor(floorNum);
+                                  setReconcileSuccess('');
+                                }}
+                                className="px-3.5 py-1.5 bg-gradient-to-r from-purple-600 to-indigo-600 hover:from-purple-700 hover:to-indigo-700 text-white rounded-xl font-extrabold text-[10px] uppercase shadow-md shadow-purple-500/10 cursor-pointer transition-colors active:scale-95"
+                              >
+                                Verifikasi Uang
+                              </button>
+                            ) : floorLunasCount > 0 ? (
                               <span className="text-xs text-slate-400 font-bold">Terverifikasi</span>
                             ) : (
-                              totalCollectedOnFloor > 0 ? (
-                                <button
-                                  type="button"
-                                  onClick={() => {
-                                    setReconcileFloor(floorNum);
-                                    setReconcileSuccess('');
-                                  }}
-                                  className="px-3.5 py-1.5 bg-gradient-to-r from-purple-600 to-indigo-600 hover:from-purple-700 hover:to-indigo-700 text-white rounded-xl font-extrabold text-[10px] uppercase shadow-md shadow-purple-500/10 cursor-pointer transition-colors active:scale-95"
-                                >
-                                  Verifikasi Uang
-                                </button>
-                              ) : (
-                                <span className="text-xs text-slate-400 font-medium">Belum ada tagihan</span>
-                              )
+                              <span className="text-xs text-slate-400 font-medium">Belum ada tagihan</span>
                             )}
                           </td>
                         </tr>
@@ -4093,13 +4115,15 @@ Siti Aminah	357802...	Blok B	B-202	085755..."
         const floorNum = reconcileFloor;
         const coord = coordinators.find(c => (c.assignedFloor || (c.id === 'coord-1' ? 1 : c.id === 'coord-2' ? 2 : c.id === 'coord-3' ? 3 : c.id === 'coord-4' ? 4 : c.id === 'coord-5' ? 5 : 1)) === floorNum) || { name: 'Koordinator', id: '' };
         const floorRes = residents.filter(r => (r.floor || getFloorFromUnit(r.unit)) === floorNum);
-        const floorMeiPaidBills = billingRecords.filter(
-          b => b.month === 'Mei' && b.year === 2026 && b.status === 'Lunas' && floorRes.some(r => r.ktp === b.residentKtp)
+        
+        // Target bills that are currently ready to be verified (status 'Terbayar di Koordinator')
+        const floorMeiCollectedBills = billingRecords.filter(
+          b => b.month === 'Mei' && b.year === 2026 && b.status === 'Terbayar di Koordinator' && floorRes.some(r => r.ktp === b.residentKtp)
         );
-        const totalCollectedOnFloor = floorMeiPaidBills.reduce((s, r) => s + r.totalBill, 0);
+        const totalCollectedOnFloor = floorMeiCollectedBills.reduce((s, r) => s + r.totalBill, 0);
 
-        const trashBillAmount = floorMeiPaidBills.reduce((s, r) => s + r.trashBill, 0);
-        const pdamBillAmount = floorMeiPaidBills.reduce((s, r) => s + r.pdamBill, 0);
+        const trashBillAmount = floorMeiCollectedBills.reduce((s, r) => s + r.trashBill, 0);
+        const pdamBillAmount = floorMeiCollectedBills.reduce((s, r) => s + r.pdamBill, 0);
 
         const handleConfirmReconcile = () => {
           onAddExpense(
@@ -4109,6 +4133,12 @@ Siti Aminah	357802...	Blok B	B-202	085755..."
             coord.name, 
             "Pemasukan"
           );
+          
+          if (onReconcileFloorBills) {
+            const billIds = floorMeiCollectedBills.map(b => b.id);
+            onReconcileFloorBills(billIds);
+          }
+          
           setReconcileSuccess(`Setoran masuk sebesar Rp ${totalCollectedOnFloor.toLocaleString('id-ID')} berhasil dicatatkan dan diverifikasi!`);
           setTimeout(() => {
             setReconcileFloor(null);

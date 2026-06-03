@@ -58,7 +58,7 @@ export interface BillingRecord {
   pdamBill: number; // Calculation: basic or linear
   trashBill: number; // Fixed 10,000
   totalBill: number;
-  status: 'Lunas' | 'Belum Lunas';
+  status: 'Lunas' | 'Belum Lunas' | 'Terbayar di Koordinator';
   paymentDate?: string;
 }
 

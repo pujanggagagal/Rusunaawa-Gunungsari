@@ -18,8 +18,8 @@ import {
   User,
   ShieldAlert,
   PhoneCall,
-  ArrowUpRight,
-  Info
+  Info,
+  Clock
 } from 'lucide-react';
 
 interface WargaDashboardProps {
@@ -241,21 +241,28 @@ export const WargaDashboard: React.FC<WargaDashboardProps> = ({
   const userBills = billingRecords.filter((b) => b.residentKtp === user.ktp);
   const currentMonthBill = userBills.find((b) => b.month === 'Mei' && b.year === 2026);
 
-  // Filter only April & Mei 2026 billing records for resident view
-  const recentBills = userBills.filter(
-    (b) => (b.month === 'Mei' || b.month === 'April') && b.year === 2026
-  );
+  // Dynamic filter: Sort all user bills by year and month descending, then take the top 2.
+  const monthMap: Record<string, number> = {
+    'Januari': 0, 'Februari': 1, 'Maret': 2, 'April': 3, 'Mei': 4, 'Juni': 5,
+    'Juli': 6, 'Agustus': 7, 'September': 8, 'Oktober': 9, 'November': 10, 'Desember': 11
+  };
+  const recentBills = [...userBills]
+    .sort((a, b) => {
+      if (a.year !== b.year) return b.year - a.year;
+      return (monthMap[b.month] ?? 0) - (monthMap[a.month] ?? 0);
+    })
+    .slice(0, 2);
 
-  // Sort chronologically for chart (April -> Mei)
+  // Sort chronologically for chart (oldest to newest)
   const chartBills = [...recentBills].sort((a, b) => {
-    const months: Record<string, number> = { 'Januari': 1, 'Februari': 2, 'Maret': 3, 'April': 4, 'Mei': 5 };
-    return (months[a.month] || 0) - (months[b.month] || 0);
+    if (a.year !== b.year) return a.year - b.year;
+    return (monthMap[a.month] ?? 0) - (monthMap[b.month] ?? 0);
   });
 
-  // Sort reverse chronological for table (Mei -> April)
+  // Sort reverse chronological for table (newest to oldest)
   const listBills = [...recentBills].sort((a, b) => {
-    const months: Record<string, number> = { 'Januari': 1, 'Februari': 2, 'Maret': 3, 'April': 4, 'Mei': 5 };
-    return (months[b.month] || 0) - (months[a.month] || 0);
+    if (a.year !== b.year) return b.year - a.year;
+    return (monthMap[b.month] ?? 0) - (monthMap[a.month] ?? 0);
   });
 
   // Financial calculations for Paguyuban
@@ -379,10 +386,14 @@ export const WargaDashboard: React.FC<WargaDashboardProps> = ({
               {currentMonthBill ? (
                 currentMonthBill.status === 'Lunas' ? (
                   <span className="text-[10px] bg-emerald-50 text-emerald-700 font-extrabold px-2 py-0.5 rounded-md border border-emerald-200">
-                    Selesai Lunas
+                    Selesai Lunas ✓
+                  </span>
+                ) : currentMonthBill.status === 'Terbayar di Koordinator' ? (
+                  <span className="text-[10px] bg-yellow-50 text-yellow-750 font-extrabold px-2.5 py-0.5 rounded-md border border-yellow-200">
+                    Menunggu Verifikasi Bendahara
                   </span>
                 ) : (
-                  <span className="text-[10px] bg-red-50 text-red-700 font-extrabold px-2 py-0.5 rounded-md border border-red-200 animate-pulse">
+                  <span className="text-[10px] bg-rose-50 text-rose-700 font-extrabold px-2 py-0.5 rounded-md border border-rose-200 animate-pulse">
                     Belum Dibayar
                   </span>
                 )
@@ -507,6 +518,11 @@ export const WargaDashboard: React.FC<WargaDashboardProps> = ({
                       <CheckCircle2 size={13} />
                       Terbayar Lunas
                     </span>
+                  ) : currentMonthBill.status === 'Terbayar di Koordinator' ? (
+                    <span id="bill_status_coordinator" className="px-3.5 py-1.5 bg-yellow-50 text-yellow-750 border border-yellow-200/60 rounded-xl text-xs font-bold inline-flex items-center gap-1.5 shadow-xs">
+                      <Clock size={13} className="text-yellow-600 animate-pulse" />
+                      Menunggu Verifikasi Bendahara
+                    </span>
                   ) : (
                     <span id="bill_status_unpaid" className="px-3.5 py-1.5 bg-rose-50 text-rose-600 border border-rose-200/60 rounded-xl text-xs font-bold inline-flex items-center gap-1.5 shadow-xs animate-pulse">
                       <ShieldAlert size={13} />
@@ -591,8 +607,18 @@ export const WargaDashboard: React.FC<WargaDashboardProps> = ({
                         <AlertTriangle size={14} className="text-amber-600" />
                         <span>Pembayaran Melalui Koordinator</span>
                       </div>
-                      <p className="text-slate-650 leading-relaxed text-[11px]">
-                        Silakan lakukan pembayaran tunai/transfer melalui Koordinator Lantai/Blok Anda. Setelah koordinator menerima dana, status tagihan Anda akan diperbarui menjadi Lunas oleh sistem.
+                      <p className="text-slate-600 leading-relaxed text-[11px]">
+                        Silakan lakukan pembayaran tunai/transfer melalui Koordinator Lantai/Blok Anda. Setelah koordinator menerima dana, status tagihan Anda akan diperbarui menjadi Terbayar di Koordinator dan menunggu setoran ke Bendahara.
+                      </p>
+                    </div>
+                  ) : currentMonthBill.status === 'Terbayar di Koordinator' ? (
+                    <div className="p-3.5 bg-yellow-50 text-yellow-900 text-xs rounded-2xl border border-yellow-200 flex flex-col gap-1.5 font-medium">
+                      <div className="flex items-center gap-1.5 font-bold">
+                        <Info size={14} className="text-yellow-600" />
+                        <span>Pembayaran Diterima Koordinator</span>
+                      </div>
+                      <p className="text-slate-600 leading-relaxed text-[11px]">
+                        Pembayaran telah diterima by koordinator lantai Anda dan listrik telah dinormalisasi. Menunggu rekonsiliasi oleh bendahara rusun untuk disalurkan ke Kas Besar.
                       </p>
                     </div>
                   ) : (
@@ -686,9 +712,11 @@ export const WargaDashboard: React.FC<WargaDashboardProps> = ({
                     <div className="flex justify-between items-center">
                       <span className="font-bold text-slate-800 text-sm font-mono uppercase">{bill.month} {bill.year}</span>
                       <span className={`px-2.5 py-0.5 rounded-full text-[10px] font-extrabold uppercase ${
-                        bill.status === 'Lunas' ? 'bg-emerald-50 text-emerald-700 border border-emerald-200' : 'bg-rose-50 text-rose-700 border border-rose-200'
+                        bill.status === 'Lunas' ? 'bg-emerald-50 text-emerald-700 border border-emerald-200' :
+                        bill.status === 'Terbayar di Koordinator' ? 'bg-yellow-50 text-yellow-750 border border-yellow-200' :
+                        'bg-rose-50 text-rose-700 border border-rose-200'
                       }`}>
-                        {bill.status}
+                        {bill.status === 'Terbayar di Koordinator' ? 'Terbayar (Koor)' : bill.status}
                       </span>
                     </div>
                     
@@ -729,9 +757,11 @@ export const WargaDashboard: React.FC<WargaDashboardProps> = ({
                         <td className="px-4 py-3 font-mono font-bold text-slate-900">{formatRupiah(bill.totalBill)}</td>
                         <td className="px-4 py-3 text-right">
                           <span className={`px-2.5 py-1 rounded-lg text-xs font-bold uppercase ${
-                            bill.status === 'Lunas' ? 'bg-emerald-50 text-emerald-700 border border-emerald-100' : 'bg-rose-50 text-rose-700 border border-rose-100'
+                            bill.status === 'Lunas' ? 'bg-emerald-50 text-emerald-700 border border-emerald-100' :
+                            bill.status === 'Terbayar di Koordinator' ? 'bg-yellow-50 text-yellow-750 border border-yellow-250' :
+                            'bg-rose-50 text-rose-700 border border-rose-100'
                           }`}>
-                            {bill.status}
+                            {bill.status === 'Terbayar di Koordinator' ? 'Terbayar (Koor)' : bill.status}
                           </span>
                         </td>
                       </tr>

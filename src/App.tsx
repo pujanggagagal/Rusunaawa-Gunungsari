@@ -379,6 +379,44 @@ export default function App() {
     }
   };
 
+  const handleCoordinatorVerifyPayment = (billId: string) => {
+    setData((prev) => {
+      const targetBill = prev.billing.find((b) => b.id === billId);
+      if (!targetBill) return prev;
+
+      const updatedBilling = prev.billing.map((b) => {
+        if (b.id === billId) {
+          return {
+            ...b,
+            status: 'Terbayar di Koordinator' as const,
+            paymentDate: new Date().toISOString(),
+          };
+        }
+        return b;
+      });
+
+      const updatedResidents = prev.residents.map((r) => {
+        if (r.ktp === targetBill.residentKtp) {
+          return {
+            ...r,
+            electricityStatus: 'Menyala' as const,
+            lastStatusChange: new Date().toISOString(),
+          };
+        }
+        return r;
+      });
+
+      syncTable('Billing', updatedBilling);
+      syncTable('Residents', updatedResidents);
+
+      return {
+        ...prev,
+        billing: updatedBilling,
+        residents: updatedResidents,
+      };
+    });
+  };
+
   // koordinator records meter cubic usages
   const handleSaveMeter = (residentKtp: string, prevMeter: number, currentMeter: number) => {
     const resident = data.residents.find((r) => r.ktp === residentKtp);
@@ -817,6 +855,25 @@ export default function App() {
     });
   };
 
+  const handleReconcileFloorBills = (billIds: string[]) => {
+    setData((prev) => {
+      const updatedBilling = prev.billing.map((b) => {
+        if (billIds.includes(b.id)) {
+          return {
+            ...b,
+            status: 'Lunas' as const,
+          };
+        }
+        return b;
+      });
+      syncTable('Billing', updatedBilling);
+      return {
+        ...prev,
+        billing: updatedBilling,
+      };
+    });
+  };
+
   const handleEditBillingRecord = (billId: string, updatedFields: Partial<BillingRecord>) => {
     setData((prev) => {
       const updatedBilling = prev.billing.map((b) => {
@@ -914,6 +971,8 @@ export default function App() {
                 onSaveMeter={handleSaveMeter}
                 appSettings={appSettings}
                 onPayBill={handlePayBill}
+                onVerifyPayment={handleCoordinatorVerifyPayment}
+                onUpdateAprilMeter={handleUpdateAprilMeter}
               />
             )}
 
@@ -956,6 +1015,7 @@ export default function App() {
                 onDeleteBillingRecord={handleDeleteBillingRecord}
                 onEditFinanceLog={handleEditFinanceLog}
                 onDeleteFinanceLog={handleDeleteFinanceLog}
+                onReconcileFloorBills={handleReconcileFloorBills}
               />
             )}
           </>
