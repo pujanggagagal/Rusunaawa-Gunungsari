@@ -9,16 +9,24 @@ interface LoginProps {
 }
 
 export const Login: React.FC<LoginProps> = ({ residents, coordinators, onLoginSuccess }) => {
-  // Check for URL parameters to isolate login view to Citizens only (Warga Only)
-  const isWargaOnly = (() => {
+  // Check for URL parameters to isolate login view to Citizens only by default
+  const showStaffTabs = (() => {
     if (typeof window !== 'undefined') {
       const params = new URLSearchParams(window.location.search);
-      return params.get('role') === 'warga' || params.get('view') === 'warga' || params.get('warga') === 'true';
+      return (
+        params.get('role') === 'staff' ||
+        params.get('role') === 'admin' ||
+        params.get('role') === 'koordinator' ||
+        params.get('role') === 'security' ||
+        params.get('view') === 'staff' ||
+        params.get('staff') === 'true'
+      );
     }
     return false;
   })();
 
-  const [activeTab, setActiveTab] = useState<UserRole>('warga');
+  // If staff link is accessed, default active tab to coordinator (or admin). Otherwise, warga.
+  const [activeTab, setActiveTab] = useState<UserRole>(showStaffTabs ? 'koordinator' : 'warga');
   const [identifier, setIdentifier] = useState('');
   const [error, setError] = useState('');
 
@@ -122,14 +130,14 @@ export const Login: React.FC<LoginProps> = ({ residents, coordinators, onLoginSu
         <div className="bg-white py-8 px-4 shadow-xl shadow-slate-200/50 rounded-3xl border border-slate-100 sm:px-10">
           
           {/* Tabs */}
-          {isWargaOnly ? (
+          {!showStaffTabs ? (
             <div className="mb-6 bg-slate-100 p-2.5 rounded-2xl text-center border border-slate-200/60 flex items-center justify-center gap-2">
               <span className="h-1.5 w-1.5 rounded-full bg-emerald-500 animate-pulse" />
               <span className="text-[10px] font-black text-emerald-800 uppercase tracking-widest font-mono">PORTAL AKSES MANDIRI WARGA</span>
             </div>
           ) : (
-            <div className="grid grid-cols-4 gap-1 mb-6 bg-slate-100 p-1.5 rounded-xl text-center">
-              {(['warga', 'koordinator', 'security', 'admin'] as UserRole[]).map((tab) => (
+            <div className="grid grid-cols-3 gap-1 mb-6 bg-slate-100 p-1.5 rounded-xl text-center">
+              {(['koordinator', 'security', 'admin'] as UserRole[]).map((tab) => (
                 <button
                   key={tab}
                   id={`tab_${tab}`}
