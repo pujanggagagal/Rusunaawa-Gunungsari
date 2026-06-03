@@ -26,6 +26,9 @@ interface AdminDashboardProps {
   onSaveMeter: (ktp: string, prevMeter: number, currentMeter: number) => void;
   onPayBill: (billId: string, amount: number) => void;
   onUpdateAprilMeter: (ktp: string, newAprilMeter: number) => void;
+  onEditBillingRecord?: (billId: string, updatedFields: Partial<BillingRecord>) => void;
+  onAddBillingRecord?: (bill: Omit<BillingRecord, 'id'>) => void;
+  onDeleteBillingRecord?: (billId: string) => void;
 }
 
 export const AdminDashboard: React.FC<AdminDashboardProps> = ({
@@ -48,9 +51,39 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({
   onUpdateAppSettings,
   onSaveMeter,
   onPayBill,
-  onUpdateAprilMeter
+  onUpdateAprilMeter,
+  onEditBillingRecord,
+  onAddBillingRecord,
+  onDeleteBillingRecord
 }) => {
-  const [activeTab, setActiveTab] = useState<'finance' | 'residents' | 'coordinators' | 'reconciliation' | 'billing' | 'barcodes' | 'settings'>('finance');
+  const [activeTab, setActiveTab] = useState<'finance' | 'residents' | 'coordinators' | 'reconciliation' | 'billing' | 'pdam-all' | 'barcodes' | 'settings'>('finance');
+
+  // States for PDAM All Billing Management (Menu Baru)
+  const [editingBill, setEditingBill] = useState<BillingRecord | null>(null);
+  const [editBillPrevMeter, setEditBillPrevMeter] = useState<number>(0);
+  const [editBillCurrentMeter, setEditBillCurrentMeter] = useState<number>(0);
+  const [editBillMonth, setEditBillMonth] = useState<string>('Mei');
+  const [editBillYear, setEditBillYear] = useState<number>(2026);
+  const [editBillStatus, setEditBillStatus] = useState<'Lunas' | 'Belum Lunas'>('Belum Lunas');
+  const [editBillPaymentDate, setEditBillPaymentDate] = useState<string>('');
+  const [editBillTrashBill, setEditBillTrashBill] = useState<number>(10000);
+
+  const [showAddBillModal, setShowAddBillModal] = useState<boolean>(false);
+  const [addBillResidentKtp, setAddBillResidentKtp] = useState<string>('');
+  const [addBillPrevMeter, setAddBillPrevMeter] = useState<number>(0);
+  const [addBillCurrentMeter, setAddBillCurrentMeter] = useState<number>(0);
+  const [addBillMonth, setAddBillMonth] = useState<string>('Mei');
+  const [addBillYear, setAddBillYear] = useState<number>(2026);
+  const [addBillStatus, setAddBillStatus] = useState<'Lunas' | 'Belum Lunas'>('Belum Lunas');
+  const [addBillTrashBill, setAddBillTrashBill] = useState<number>(10000);
+
+  // Filters for All Billing List
+  const [pdamAllSearchQuery, setPdamAllSearchQuery] = useState<string>('');
+  const [pdamAllFloorFilter, setPdamAllFloorFilter] = useState<'all' | number>('all');
+  const [pdamAllBlockFilter, setPdamAllBlockFilter] = useState<'all' | string>('all');
+  const [pdamAllMonthFilter, setPdamAllMonthFilter] = useState<'all' | string>('all');
+  const [pdamAllYearFilter, setPdamAllYearFilter] = useState<'all' | number>('all');
+  const [pdamAllStatusFilter, setPdamAllStatusFilter] = useState<'all' | string>('all');
   
   // States for adding residents
   const [newResName, setNewResName] = useState('');
@@ -920,6 +953,16 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({
           }`}
         >
           🚰 Pembayaran &amp; Catat PDAM
+        </button>
+        <button
+          onClick={() => setActiveTab('pdam-all')}
+          className={`flex-shrink-0 pb-3 text-xs font-bold font-mono uppercase tracking-wider border-b-2 px-4 transition-all cursor-pointer ${
+            activeTab === 'pdam-all'
+              ? 'border-purple-600 text-purple-700'
+              : 'border-transparent text-slate-400 hover:text-slate-600'
+          }`}
+        >
+          💧 PDAM Seluruh Lantai
         </button>
         <button
           onClick={() => setActiveTab('barcodes')}
@@ -2786,6 +2829,576 @@ Siti Aminah	357802...	Blok B	B-202	085755..."
           );
         })()}
 
+        {/* ======================================================== */}
+        {/* PDAM ALL BILLING MANAGEMENT (MENU BARU) */}
+        {/* ======================================================== */}
+        {activeTab === 'pdam-all' && (
+          <div className="lg:col-span-3 space-y-6 animate-fade-in text-slate-900 w-full">
+            {/* Header Info */}
+            <div className="bg-gradient-to-r from-teal-900 to-emerald-900 p-6 rounded-3xl text-white shadow-xl flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
+              <div className="space-y-1">
+                <div className="flex items-center gap-2">
+                  <span className="px-3 py-1 bg-teal-500/20 text-teal-200 border border-teal-400/30 text-[10px] font-black uppercase rounded-full">
+                    KONTROL UTAMA METER AIR SELURUH BULAN
+                  </span>
+                </div>
+                <h2 className="text-xl font-black tracking-tight font-sans">KONTROL TAGIHAN &amp; METER AIR GLOBAL</h2>
+                <p className="text-xs text-slate-300 max-w-2xl font-medium">
+                  Akses langsung dan terpusat untuk memperbarui tagihan PDAM seluruh lantai, mengedit/koreksi kesalahan angka meteran dari koordinator untuk seluruh bulan (Januari-Desember), serta menambah/menghapus tagihan iuran.
+                </p>
+              </div>
+              <button
+                type="button"
+                onClick={() => {
+                  setAddBillResidentKtp(residents[0]?.ktp || '');
+                  setAddBillPrevMeter(0);
+                  setAddBillCurrentMeter(0);
+                  setAddBillMonth('Mei');
+                  setAddBillYear(2026);
+                  setAddBillStatus('Belum Lunas');
+                  setAddBillTrashBill(appSettings.trashBillCost);
+                  setShowAddBillModal(true);
+                }}
+                className="px-4 py-2.5 bg-white text-teal-900 hover:bg-teal-50 rounded-2xl text-xs font-black uppercase tracking-wider transition-all cursor-pointer flex items-center gap-1.5 shadow-md active:scale-95"
+              >
+                <Plus size={14} />
+                Tambah Tagihan Baru
+              </button>
+            </div>
+
+            {/* Filters Row */}
+            <div className="bg-white p-5 rounded-3xl border border-slate-100 shadow-xl grid grid-cols-2 md:grid-cols-6 gap-3 items-center">
+              <div className="col-span-2 relative">
+                <label className="block text-[9px] font-extrabold uppercase font-mono text-slate-400 mb-1">Cari Warga/Unit</label>
+                <div className="relative">
+                  <input
+                    type="text"
+                    placeholder="Cari nama, unit, KTP..."
+                    value={pdamAllSearchQuery}
+                    onChange={(e) => setPdamAllSearchQuery(e.target.value)}
+                    className="w-full pl-8 pr-3 py-2 bg-slate-50 border border-slate-200 rounded-xl text-xs font-bold focus:outline-none focus:ring-1 focus:ring-slate-400"
+                  />
+                  <Search size={12} className="absolute left-2.5 top-3 text-slate-400" />
+                </div>
+              </div>
+
+              <div>
+                <label className="block text-[9px] font-extrabold uppercase font-mono text-slate-400 mb-1">Lantai</label>
+                <select
+                  value={pdamAllFloorFilter}
+                  onChange={(e) => setPdamAllFloorFilter(e.target.value === 'all' ? 'all' : Number(e.target.value))}
+                  className="w-full px-2 py-2 bg-slate-50 border border-slate-200 rounded-xl text-xs font-bold focus:outline-none focus:ring-1 focus:ring-slate-400"
+                >
+                  <option value="all">Semua</option>
+                  <option value="1">Lantai 1</option>
+                  <option value="2">Lantai 2</option>
+                  <option value="3">Lantai 3</option>
+                  <option value="4">Lantai 4</option>
+                  <option value="5">Lantai 5</option>
+                </select>
+              </div>
+
+              <div>
+                <label className="block text-[9px] font-extrabold uppercase font-mono text-slate-400 mb-1">Blok</label>
+                <select
+                  value={pdamAllBlockFilter}
+                  onChange={(e) => setPdamAllBlockFilter(e.target.value)}
+                  className="w-full px-2 py-2 bg-slate-50 border border-slate-200 rounded-xl text-xs font-bold focus:outline-none focus:ring-1 focus:ring-slate-400"
+                >
+                  <option value="all">Semua</option>
+                  <option value="Blok A">Blok A</option>
+                  <option value="Blok B">Blok B</option>
+                  <option value="Blok C">Blok C</option>
+                </select>
+              </div>
+
+              <div>
+                <label className="block text-[9px] font-extrabold uppercase font-mono text-slate-400 mb-1">Bulan</label>
+                <select
+                  value={pdamAllMonthFilter}
+                  onChange={(e) => setPdamAllMonthFilter(e.target.value)}
+                  className="w-full px-2 py-2 bg-slate-50 border border-slate-200 rounded-xl text-xs font-bold focus:outline-none focus:ring-1 focus:ring-slate-400"
+                >
+                  <option value="all">Semua</option>
+                  <option value="Januari">Januari</option>
+                  <option value="Februari">Februari</option>
+                  <option value="Maret">Maret</option>
+                  <option value="April">April</option>
+                  <option value="Mei">Mei</option>
+                </select>
+              </div>
+
+              <div>
+                <label className="block text-[9px] font-extrabold uppercase font-mono text-slate-400 mb-1">Status</label>
+                <select
+                  value={pdamAllStatusFilter}
+                  onChange={(e) => setPdamAllStatusFilter(e.target.value)}
+                  className="w-full px-2 py-2 bg-slate-50 border border-slate-200 rounded-xl text-xs font-bold focus:outline-none focus:ring-1 focus:ring-slate-400"
+                >
+                  <option value="all">Semua</option>
+                  <option value="Lunas">Lunas</option>
+                  <option value="Belum Lunas">Belum Lunas</option>
+                </select>
+              </div>
+            </div>
+
+            {/* List Table */}
+            <div className="bg-white rounded-3xl border border-slate-100 shadow-xl overflow-hidden text-slate-900">
+              <div className="p-4 border-b border-slate-100 bg-slate-50/50 flex justify-between items-center">
+                <h3 className="text-xs font-black text-slate-800 uppercase tracking-widest font-mono">Daftar Tagihan Iuran Air &amp; Sampah Global</h3>
+                <span className="text-[10px] text-slate-405 font-bold font-mono">TOTAL REKAMAN: {billingRecords.length}</span>
+              </div>
+
+              <div className="overflow-x-auto max-h-[600px] scrollbar-thin">
+                <table className="w-full text-left text-xs divide-y divide-slate-150 border-collapse">
+                  <thead className="bg-slate-50 font-mono text-[10px] font-extrabold uppercase text-slate-450 border-b border-slate-200">
+                    <tr>
+                      <th className="py-3 px-4">Unit / Warga</th>
+                      <th className="py-3 px-2">Periode</th>
+                      <th className="py-3 px-2 text-right">Lalu</th>
+                      <th className="py-3 px-2 text-right">Baru</th>
+                      <th className="py-3 px-2 text-right">Pakai</th>
+                      <th className="py-3 px-2 text-right">Air PDAM</th>
+                      <th className="py-3 px-2 text-right">Sampah</th>
+                      <th className="py-3 px-2 text-right">Total</th>
+                      <th className="py-3 px-2 text-center">Status</th>
+                      <th className="py-3 px-4 text-center">Aksi</th>
+                    </tr>
+                  </thead>
+                  <tbody className="divide-y divide-slate-100 font-semibold text-slate-700 bg-white">
+                    {(() => {
+                      const filtered = billingRecords.filter((b) => {
+                        const resident = residents.find(r => r.ktp === b.residentKtp);
+                        if (!resident) return false;
+
+                        const query = pdamAllSearchQuery.toLowerCase();
+                        const matchesSearch = 
+                          resident.name.toLowerCase().includes(query) ||
+                          resident.unit.toLowerCase().includes(query) ||
+                          resident.ktp.includes(query);
+                        if (!matchesSearch) return false;
+
+                        const floor = resident.floor || getFloorFromUnit(resident.unit);
+                        if (pdamAllFloorFilter !== 'all' && floor !== Number(pdamAllFloorFilter)) return false;
+
+                        if (pdamAllBlockFilter !== 'all' && resident.block !== pdamAllBlockFilter) return false;
+
+                        if (pdamAllMonthFilter !== 'all' && b.month !== pdamAllMonthFilter) return false;
+
+                        if (pdamAllStatusFilter !== 'all' && b.status !== pdamAllStatusFilter) return false;
+
+                        return true;
+                      }).sort((a, b) => {
+                        if (a.year !== b.year) return b.year - a.year;
+                        const monthsMap: Record<string, number> = { 'Januari': 1, 'Februari': 2, 'Maret': 3, 'April': 4, 'Mei': 5 };
+                        const monthA = monthsMap[a.month] || 0;
+                        const monthB = monthsMap[b.month] || 0;
+                        if (monthA !== monthB) return monthB - monthA;
+                        
+                        const resA = residents.find(r => r.ktp === a.residentKtp);
+                        const resB = residents.find(r => r.ktp === b.residentKtp);
+                        return (resA?.unit || '').localeCompare(resB?.unit || '', undefined, { numeric: true });
+                      });
+
+                      if (filtered.length === 0) {
+                        return (
+                          <tr>
+                            <td colSpan={10} className="py-8 text-center text-slate-400 font-bold">
+                              Tidak ada tagihan yang cocok dengan filter pencarian.
+                            </td>
+                          </tr>
+                        );
+                      }
+
+                      return filtered.map((b) => {
+                        const resident = residents.find(r => r.ktp === b.residentKtp);
+                        const isVacant = resident?.isVacant || resident?.occupancyStatus === 'Kosong' || resident?.name?.toLowerCase()?.includes('kamar kosong');
+                        
+                        const finalPdam = isVacant ? 0 : b.pdamBill;
+                        const finalTrash = isVacant ? 0 : b.trashBill;
+                        const finalTotal = isVacant ? 0 : b.totalBill;
+                        const finalUsage = isVacant ? 0 : b.usage;
+
+                        return (
+                          <tr key={b.id} className="hover:bg-slate-50/50 transition-colors">
+                            <td className="py-3 px-4">
+                              <div className="font-extrabold text-slate-900 font-mono">{resident?.unit}</div>
+                              <div className="text-[10px] text-slate-500 truncate max-w-[150px] font-semibold">{resident?.name}</div>
+                            </td>
+                            <td className="py-3 px-2 font-bold text-slate-800 text-[11px]">
+                              {b.month} {b.year}
+                            </td>
+                            <td className="py-3 px-2 text-right font-mono text-slate-500">{b.prevMeter} m³</td>
+                            <td className="py-3 px-2 text-right font-mono text-slate-900">{b.currentMeter} m³</td>
+                            <td className="py-3 px-2 text-right font-mono font-bold text-teal-700 bg-teal-50/20">{finalUsage} m³</td>
+                            <td className="py-3 px-2 text-right font-mono">{formatRupiah(finalPdam)}</td>
+                            <td className="py-3 px-2 text-right font-mono">{formatRupiah(finalTrash)}</td>
+                            <td className="py-3 px-2 text-right font-mono font-black text-slate-900">{formatRupiah(finalTotal)}</td>
+                            <td className="py-3 px-2 text-center">
+                              {b.status === 'Lunas' ? (
+                                <span className="px-2 py-0.5 bg-emerald-50 text-emerald-700 border border-emerald-100 rounded text-[9px] font-bold uppercase font-mono">Lunas</span>
+                              ) : (
+                                <span className="px-2 py-0.5 bg-rose-50 text-rose-700 border border-rose-100 rounded text-[9px] font-bold uppercase font-mono animate-pulse">Belum Bayar</span>
+                              )}
+                            </td>
+                            <td className="py-3 px-4 text-center">
+                              <div className="flex gap-1.5 justify-center">
+                                <button
+                                  type="button"
+                                  onClick={() => {
+                                    setEditingBill(b);
+                                    setEditBillPrevMeter(b.prevMeter);
+                                    setEditBillCurrentMeter(b.currentMeter);
+                                    setEditBillMonth(b.month);
+                                    setEditBillYear(b.year);
+                                    setEditBillStatus(b.status);
+                                    setEditBillPaymentDate(b.paymentDate || '');
+                                    setEditBillTrashBill(b.trashBill);
+                                  }}
+                                  className="p-1 text-blue-600 hover:text-blue-800 hover:bg-slate-100 rounded transition cursor-pointer"
+                                  title="Edit Rekaman Iuran"
+                                >
+                                  <Edit2 size={13} />
+                                </button>
+                                <button
+                                  type="button"
+                                  onClick={() => {
+                                    if (window.confirm(`Apakah Anda yakin ingin menghapus tagihan ${b.month} ${b.year} untuk Unit ${resident?.unit}?`)) {
+                                      if (onDeleteBillingRecord) onDeleteBillingRecord(b.id);
+                                    }
+                                  }}
+                                  className="p-1 text-rose-600 hover:text-rose-800 hover:bg-slate-100 rounded transition cursor-pointer"
+                                  title="Hapus Rekaman Iuran"
+                                >
+                                  <Trash2 size={13} />
+                                </button>
+                              </div>
+                            </td>
+                          </tr>
+                        );
+                      });
+                    })()}
+                  </tbody>
+                </table>
+              </div>
+            </div>
+
+            {/* MODAL: EDIT BILLING RECORD */}
+            {editingBill && (() => {
+              const res = residents.find(r => r.ktp === editingBill.residentKtp);
+              const isVacant = res?.isVacant || res?.occupancyStatus === 'Kosong' || res?.name?.toLowerCase()?.includes('kamar kosong');
+              const finalUsage = isVacant ? 0 : Math.max(0, editBillCurrentMeter - editBillPrevMeter);
+              const finalPdam = isVacant ? 0 : calculatePdamBill(finalUsage, appSettings);
+              const finalTotal = finalPdam + editBillTrashBill;
+
+              return (
+                <div className="fixed inset-0 z-50 overflow-y-auto bg-slate-950/60 backdrop-blur-sm flex items-center justify-center p-4">
+                  <div className="bg-white rounded-3xl max-w-md w-full p-6 shadow-2xl border border-slate-150 relative space-y-5 animate-fade-in text-slate-800">
+                    <div>
+                      <span className="text-[10px] text-teal-600 font-extrabold uppercase tracking-widest font-mono">Pusat Koreksi Data</span>
+                      <h3 className="text-lg font-black text-slate-950">Edit Rekaman Iuran</h3>
+                      <p className="text-xs text-slate-450 font-mono mt-0.5">UNIT: {res?.unit} • {res?.name}</p>
+                    </div>
+
+                    <form
+                      onSubmit={(e) => {
+                        e.preventDefault();
+                        if (onEditBillingRecord) {
+                          onEditBillingRecord(editingBill.id, {
+                            prevMeter: editBillPrevMeter,
+                            currentMeter: editBillCurrentMeter,
+                            month: editBillMonth,
+                            year: editBillYear,
+                            status: editBillStatus,
+                            trashBill: editBillTrashBill,
+                            pdamBill: finalPdam,
+                            totalBill: finalTotal,
+                            usage: finalUsage,
+                            paymentDate: editBillStatus === 'Lunas' ? (editBillPaymentDate || new Date().toISOString()) : undefined
+                          });
+                        }
+                        setEditingBill(null);
+                      }}
+                      className="space-y-4 text-xs font-semibold text-slate-700"
+                    >
+                      <div className="grid grid-cols-2 gap-3">
+                        <div>
+                          <label className="block mb-1 font-bold text-[10px] uppercase font-mono text-slate-400">Bulan Periode</label>
+                          <select
+                            value={editBillMonth}
+                            onChange={(e) => setEditBillMonth(e.target.value)}
+                            className="w-full px-3 py-2 bg-slate-50 border border-slate-200 rounded-xl font-bold focus:outline-none"
+                          >
+                            <option value="Januari">Januari</option>
+                            <option value="Februari">Februari</option>
+                            <option value="Maret">Maret</option>
+                            <option value="April">April</option>
+                            <option value="Mei">Mei</option>
+                          </select>
+                        </div>
+                        <div>
+                          <label className="block mb-1 font-bold text-[10px] uppercase font-mono text-slate-400">Tahun Periode</label>
+                          <input
+                            type="number"
+                            value={editBillYear}
+                            onChange={(e) => setEditBillYear(Number(e.target.value))}
+                            className="w-full px-3 py-2 bg-slate-50 border border-slate-200 rounded-xl font-bold font-mono focus:outline-none"
+                          />
+                        </div>
+                      </div>
+
+                      <div className="grid grid-cols-2 gap-3">
+                        <div>
+                          <label className="block mb-1 font-bold text-[10px] uppercase font-mono text-slate-400">Meteran Lalu (m³)</label>
+                          <input
+                            type="number"
+                            value={editBillPrevMeter}
+                            onChange={(e) => setEditBillPrevMeter(Number(e.target.value))}
+                            className="w-full px-3 py-2 bg-slate-50 border border-slate-200 rounded-xl font-bold font-mono focus:outline-none"
+                          />
+                        </div>
+                        <div>
+                          <label className="block mb-1 font-bold text-[10px] uppercase font-mono text-slate-400">Meteran Baru (m³)</label>
+                          <input
+                            type="number"
+                            value={editBillCurrentMeter}
+                            onChange={(e) => setEditBillCurrentMeter(Number(e.target.value))}
+                            className="w-full px-3 py-2 bg-slate-50 border border-slate-200 rounded-xl font-bold font-mono focus:outline-none"
+                          />
+                        </div>
+                      </div>
+
+                      <div>
+                        <label className="block mb-1 font-bold text-[10px] uppercase font-mono text-slate-400">Iuran Sampah (Rp)</label>
+                        <input
+                          type="number"
+                          value={editBillTrashBill}
+                          onChange={(e) => setEditBillTrashBill(Number(e.target.value))}
+                          className="w-full px-3 py-2 bg-slate-50 border border-slate-200 rounded-xl font-bold font-mono focus:outline-none"
+                        />
+                      </div>
+
+                      <div className="grid grid-cols-2 gap-3">
+                        <div>
+                          <label className="block mb-1 font-bold text-[10px] uppercase font-mono text-slate-400">Status Pembayaran</label>
+                          <select
+                            value={editBillStatus}
+                            onChange={(e) => setEditBillStatus(e.target.value as any)}
+                            className="w-full px-3 py-2 bg-slate-50 border border-slate-200 rounded-xl font-bold focus:outline-none"
+                          >
+                            <option value="Belum Lunas">Belum Bayar</option>
+                            <option value="Lunas">Lunas</option>
+                          </select>
+                        </div>
+                        {editBillStatus === 'Lunas' && (
+                          <div>
+                            <label className="block mb-1 font-bold text-[10px] uppercase font-mono text-slate-400">Tanggal Bayar</label>
+                            <input
+                              type="text"
+                              placeholder="yyyy-mm-dd"
+                              value={editBillPaymentDate ? editBillPaymentDate.substring(0, 10) : ''}
+                              onChange={(e) => setEditBillPaymentDate(e.target.value)}
+                              className="w-full px-3 py-2 bg-slate-50 border border-slate-200 rounded-xl font-bold font-mono focus:outline-none"
+                            />
+                          </div>
+                        )}
+                      </div>
+
+                      {/* Calculations Preview */}
+                      <div className="p-3 bg-slate-50 border border-slate-150 rounded-xl font-mono text-[10px] space-y-1 text-slate-600">
+                        <div className="flex justify-between">
+                          <span>Volume Terpakai:</span>
+                          <span className="font-bold text-slate-900">{finalUsage} m³</span>
+                        </div>
+                        <div className="flex justify-between">
+                          <span>Estimasi PDAM:</span>
+                          <span className="font-bold text-slate-900">{formatRupiah(finalPdam)}</span>
+                        </div>
+                        <div className="flex justify-between border-t border-slate-200 pt-1.5 text-xs text-teal-800 font-extrabold">
+                          <span>TOTAL TAGIHAN:</span>
+                          <span>{formatRupiah(finalTotal)}</span>
+                        </div>
+                      </div>
+
+                      {/* Action buttons */}
+                      <div className="flex gap-3 pt-2">
+                        <button
+                          type="button"
+                          onClick={() => setEditingBill(null)}
+                          className="flex-1 py-2.5 bg-slate-100 hover:bg-slate-200 text-slate-700 font-bold rounded-xl text-center cursor-pointer transition"
+                        >
+                          Batalkan
+                        </button>
+                        <button
+                          type="submit"
+                          className="flex-1 py-2.5 bg-teal-600 hover:bg-teal-700 text-white font-bold rounded-xl text-center cursor-pointer shadow-md shadow-teal-705 transition animate-fade-in"
+                        >
+                          Simpan Pembaruan
+                        </button>
+                      </div>
+                    </form>
+                  </div>
+                </div>
+              );
+            })()}
+
+            {/* MODAL: ADD BILLING RECORD */}
+            {showAddBillModal && (
+              <div className="fixed inset-0 z-50 overflow-y-auto bg-slate-950/60 backdrop-blur-sm flex items-center justify-center p-4">
+                <div className="bg-white rounded-3xl max-w-md w-full p-6 shadow-2xl border border-slate-150 relative space-y-5 animate-fade-in text-slate-800">
+                  <div>
+                    <span className="text-[10px] text-teal-605 font-extrabold uppercase tracking-widest font-mono">Pencatatan Baru</span>
+                    <h3 className="text-lg font-black text-slate-955">Tambah Rekaman Iuran Baru</h3>
+                    <p className="text-xs text-slate-450 font-mono mt-0.5">Input data pemakaian air &amp; sampah warga rusunawa secara manual.</p>
+                  </div>
+
+                  <form
+                    onSubmit={(e) => {
+                      e.preventDefault();
+                      const targetRes = residents.find(r => r.ktp === addBillResidentKtp);
+                      if (!targetRes) {
+                        alert('Silakan pilih warga terlebih dahulu.');
+                        return;
+                      }
+
+                      const isVacant = targetRes.isVacant || targetRes.occupancyStatus === 'Kosong' || targetRes.name.toLowerCase().includes('kamar kosong');
+                      const finalUsage = isVacant ? 0 : Math.max(0, addBillCurrentMeter - addBillPrevMeter);
+                      const finalPdam = isVacant ? 0 : calculatePdamBill(finalUsage, appSettings);
+                      const finalTotal = finalPdam + addBillTrashBill;
+
+                      if (onAddBillingRecord) {
+                        onAddBillingRecord({
+                          residentKtp: addBillResidentKtp,
+                          prevMeter: addBillPrevMeter,
+                          currentMeter: addBillCurrentMeter,
+                          month: addBillMonth,
+                          year: addBillYear,
+                          status: addBillStatus,
+                          trashBill: addBillTrashBill,
+                          pdamBill: finalPdam,
+                          totalBill: finalTotal,
+                          usage: finalUsage,
+                          paymentDate: addBillStatus === 'Lunas' ? new Date().toISOString() : undefined
+                        });
+                      }
+                      setShowAddBillModal(false);
+                    }}
+                    className="space-y-4 text-xs font-semibold text-slate-700"
+                  >
+                    <div>
+                      <label className="block mb-1 font-bold text-[10px] uppercase font-mono text-slate-400">Pilih Warga / Unit</label>
+                      <select
+                        value={addBillResidentKtp}
+                        onChange={(e) => {
+                          const ktp = e.target.value;
+                          setAddBillResidentKtp(ktp);
+                          const latestRec = billingRecords.filter(b => b.residentKtp === ktp).sort((a, b) => b.year - a.year)[0];
+                          setAddBillPrevMeter(latestRec ? latestRec.currentMeter : 0);
+                          setAddBillCurrentMeter(latestRec ? latestRec.currentMeter : 0);
+                        }}
+                        className="w-full px-3 py-2.5 bg-slate-50 border border-slate-200 rounded-xl font-bold focus:outline-none"
+                      >
+                        <option value="">-- Pilih Unit Warga --</option>
+                        {residents.map((r) => (
+                          <option key={r.id} value={r.ktp}>
+                            [{r.unit}] - {r.name}
+                          </option>
+                        ))}
+                      </select>
+                    </div>
+
+                    <div className="grid grid-cols-2 gap-3">
+                      <div>
+                        <label className="block mb-1 font-bold text-[10px] uppercase font-mono text-slate-400">Bulan Periode</label>
+                        <select
+                          value={addBillMonth}
+                          onChange={(e) => setAddBillMonth(e.target.value)}
+                          className="w-full px-3 py-2 bg-slate-50 border border-slate-200 rounded-xl font-bold focus:outline-none"
+                        >
+                          <option value="Januari">Januari</option>
+                          <option value="Februari">Februari</option>
+                          <option value="Maret">Maret</option>
+                          <option value="April">April</option>
+                          <option value="Mei">Mei</option>
+                        </select>
+                      </div>
+                      <div>
+                        <label className="block mb-1 font-bold text-[10px] uppercase font-mono text-slate-400">Tahun Periode</label>
+                        <input
+                          type="number"
+                          value={addBillYear}
+                          onChange={(e) => setAddBillYear(Number(e.target.value))}
+                          className="w-full px-3 py-2 bg-slate-50 border border-slate-200 rounded-xl font-bold font-mono focus:outline-none"
+                        />
+                      </div>
+                    </div>
+
+                    <div className="grid grid-cols-2 gap-3">
+                      <div>
+                        <label className="block mb-1 font-bold text-[10px] uppercase font-mono text-slate-400">Meteran Lalu (m³)</label>
+                        <input
+                          type="number"
+                          value={addBillPrevMeter}
+                          onChange={(e) => setAddBillPrevMeter(Number(e.target.value))}
+                          className="w-full px-3 py-2 bg-slate-50 border border-slate-200 rounded-xl font-bold font-mono focus:outline-none"
+                        />
+                      </div>
+                      <div>
+                        <label className="block mb-1 font-bold text-[10px] uppercase font-mono text-slate-400">Meteran Baru (m³)</label>
+                        <input
+                          type="number"
+                          value={addBillCurrentMeter}
+                          onChange={(e) => setAddBillCurrentMeter(Number(e.target.value))}
+                          className="w-full px-3 py-2 bg-slate-50 border border-slate-200 rounded-xl font-bold font-mono focus:outline-none"
+                        />
+                      </div>
+                    </div>
+
+                    <div className="grid grid-cols-2 gap-3">
+                      <div>
+                        <label className="block mb-1 font-bold text-[10px] uppercase font-mono text-slate-400">Iuran Sampah (Rp)</label>
+                        <input
+                          type="number"
+                          value={addBillTrashBill}
+                          onChange={(e) => setAddBillTrashBill(Number(e.target.value))}
+                          className="w-full px-3 py-2 bg-slate-50 border border-slate-200 rounded-xl font-bold font-mono focus:outline-none"
+                        />
+                      </div>
+                      <div>
+                        <label className="block mb-1 font-bold text-[10px] uppercase font-mono text-slate-400">Status Awal</label>
+                        <select
+                          value={addBillStatus}
+                          onChange={(e) => setAddBillStatus(e.target.value as any)}
+                          className="w-full px-3 py-2 bg-slate-50 border border-slate-200 rounded-xl font-bold focus:outline-none"
+                        >
+                          <option value="Belum Lunas">Belum Bayar</option>
+                          <option value="Lunas">Lunas</option>
+                        </select>
+                      </div>
+                    </div>
+
+                    {/* Action buttons */}
+                    <div className="flex gap-3 pt-2">
+                      <button
+                        type="button"
+                        onClick={() => setShowAddBillModal(false)}
+                        className="flex-1 py-2.5 bg-slate-100 hover:bg-slate-200 text-slate-700 font-bold rounded-xl text-center cursor-pointer transition"
+                      >
+                        Batalkan
+                      </button>
+                      <button
+                        type="submit"
+                        className="flex-1 py-2.5 bg-teal-650 hover:bg-teal-700 text-white font-bold rounded-xl text-center cursor-pointer shadow-md shadow-teal-705 transition"
+                      >
+                        Catat Tagihan Warga
+                      </button>
+                    </div>
+                  </form>
+                </div>
+              </div>
+            )}
+          </div>
+        )}
 
         {/* ======================================================== */}
         {/* APP CONFIGURATION & SETTINGS TAB VIEW */}

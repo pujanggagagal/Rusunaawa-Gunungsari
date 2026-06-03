@@ -817,6 +817,47 @@ export default function App() {
     });
   };
 
+  const handleEditBillingRecord = (billId: string, updatedFields: Partial<BillingRecord>) => {
+    setData((prev) => {
+      const updatedBilling = prev.billing.map((b) => {
+        if (b.id === billId) {
+          const merged = { ...b, ...updatedFields };
+          if ('prevMeter' in updatedFields || 'currentMeter' in updatedFields) {
+            const resident = prev.residents.find(r => r.ktp === merged.residentKtp);
+            const isVacant = resident?.isVacant || resident?.occupancyStatus === 'Kosong' || resident?.occupancyStatus === 'kosong' || resident?.name === 'Kamar Kosong' || resident?.name?.toLowerCase()?.includes('kamar kosong');
+            merged.usage = isVacant ? 0 : Math.max(0, merged.currentMeter - merged.prevMeter);
+            merged.pdamBill = isVacant ? 0 : calculatePdamBill(merged.usage, appSettings);
+            merged.totalBill = merged.pdamBill + merged.trashBill;
+          }
+          return merged;
+        }
+        return b;
+      });
+      syncTable('Billing', updatedBilling);
+      return { ...prev, billing: updatedBilling };
+    });
+  };
+
+  const handleAddBillingRecord = (bill: Omit<BillingRecord, 'id'>) => {
+    setData((prev) => {
+      const newBill = {
+        ...bill,
+        id: `bill-${bill.residentKtp}-${bill.month.toLowerCase()}-${bill.year}`,
+      };
+      const updatedBilling = [newBill, ...prev.billing];
+      syncTable('Billing', updatedBilling);
+      return { ...prev, billing: updatedBilling };
+    });
+  };
+
+  const handleDeleteBillingRecord = (billId: string) => {
+    setData((prev) => {
+      const updatedBilling = prev.billing.filter(b => b.id !== billId);
+      syncTable('Billing', updatedBilling);
+      return { ...prev, billing: updatedBilling };
+    });
+  };
+
   return (
     <div className="min-h-screen bg-slate-50 flex flex-col justify-between">
       
@@ -889,6 +930,9 @@ export default function App() {
                 onSaveMeter={handleSaveMeter}
                 onPayBill={handlePayBill}
                 onUpdateAprilMeter={handleUpdateAprilMeter}
+                onEditBillingRecord={handleEditBillingRecord}
+                onAddBillingRecord={handleAddBillingRecord}
+                onDeleteBillingRecord={handleDeleteBillingRecord}
               />
             )}
           </>
