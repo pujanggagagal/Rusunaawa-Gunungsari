@@ -729,6 +729,7 @@ export default function App() {
   };
 
   const handleDeleteCoordinator = (id: string) => {
+    supabaseService.deleteCoordinator(id).catch(err => console.error(err));
     setData((prev) => {
       const updatedCoordinators = prev.coordinators.filter(c => c.id !== id);
       syncTable('Coordinators', updatedCoordinators);
@@ -815,6 +816,7 @@ export default function App() {
 
   // admin deletes/checks out residents
   const handleDeleteResident = (id: string) => {
+    supabaseService.deleteResident(id).catch(err => console.error(err));
     setData((prev) => {
       const updatedResidents = prev.residents.filter((r) => r.id !== id);
 
@@ -908,6 +910,7 @@ export default function App() {
   };
 
   const handleDeleteBillingRecord = (billId: string) => {
+    supabaseService.deleteBillingRecord(billId).catch(err => console.error(err));
     setData((prev) => {
       const updatedBilling = prev.billing.filter(b => b.id !== billId);
       syncTable('Billing', updatedBilling);
@@ -929,6 +932,7 @@ export default function App() {
   };
 
   const handleDeleteFinanceLog = (logId: string) => {
+    supabaseService.deleteFinancialLog(logId).catch(err => console.error(err));
     setData((prev) => {
       const updatedFinance = prev.finance.filter(log => log.id !== logId);
       syncTable('Finance', updatedFinance);

@@ -97,6 +97,11 @@ export const supabaseService = {
     if (error) console.error('Error bulk upserting coordinators:', error);
     return !error;
   },
+  async deleteCoordinator(id: string): Promise<boolean> {
+    const { error } = await supabase.from('coordinators').delete().eq('id', id);
+    if (error) console.error('Error deleting coordinator:', error);
+    return !error;
+  },
 
   // Billing Records
   async fetchBillingRecords(): Promise<BillingRecord[]> {
@@ -118,6 +123,11 @@ export const supabaseService = {
     if (error) console.error('Error bulk upserting billing records:', error);
     return !error;
   },
+  async deleteBillingRecord(id: string): Promise<boolean> {
+    const { error } = await supabase.from('billing').delete().eq('id', id);
+    if (error) console.error('Error deleting billing record:', error);
+    return !error;
+  },
 
   // Financial Logs
   async fetchFinancialLogs(): Promise<FinancialLog[]> {
@@ -137,6 +147,11 @@ export const supabaseService = {
     const mapped = logs.map(mapFinanceToDb);
     const { error } = await supabase.from('finance_logs').upsert(mapped);
     if (error) console.error('Error bulk upserting financial logs:', error);
+    return !error;
+  },
+  async deleteFinancialLog(id: string): Promise<boolean> {
+    const { error } = await supabase.from('finance_logs').delete().eq('id', id);
+    if (error) console.error('Error deleting financial log:', error);
     return !error;
   },
 };
