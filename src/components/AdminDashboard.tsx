@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { Resident, Coordinator, FinancialLog, BillingRecord, getFloorFromUnit, getBarcodeContent, AppSettings, getCleanPhone } from '../types';
-import { LogOut, LayoutGrid, Users, Coins, Plus, Trash2, Edit2, UserPlus, Sparkles, CheckCircle2, ChevronRight, Calculator, Landmark, ShieldAlert, ArrowDownUp, UploadCloud, AlertCircle, Check, RotateCcw, QrCode, Printer, Search, FileText, Download, Settings } from 'lucide-react';
+import { LogOut, LayoutGrid, Users, Coins, Plus, Trash2, Edit2, UserPlus, Sparkles, CheckCircle2, ChevronRight, Calculator, Landmark, ShieldAlert, ArrowDownUp, UploadCloud, AlertCircle, Check, RotateCcw, QrCode, Printer, Search, FileText, Download, Settings, Building2 } from 'lucide-react';
 import { calculatePdamBill } from '../data';
 import { BarcodeRenderer } from './BarcodeRenderer';
 import { QRCodeRenderer } from './QRCodeRenderer';
