@@ -2084,58 +2084,64 @@ Siti Aminah	357802...	Blok B	B-202	085755..."
               </div>
             </div>
 
-                  {(() => {
-              // 1. Calculate Kas Sementara ready for deposit (month: Mei)
-              const totalKasSementaraOverall = billingRecords
-                .filter(b => b.month === 'Mei' && b.year === 2026 && b.status === 'Terbayar di Koordinator')
+            {(() => {
+              // 1. Total Tagihan Bulan Ini (Mei 2026)
+              const totalMeiBillings = billingRecords
+                .filter(b => b.month === 'Mei' && b.year === 2026)
                 .reduce((sum, b) => sum + b.totalBill, 0);
-              const countKasSementara = billingRecords.filter(b => b.month === 'Mei' && b.year === 2026 && b.status === 'Terbayar di Koordinator').length;
+              const countMeiBillings = billingRecords.filter(b => b.month === 'Mei' && b.year === 2026).length;
 
-              // 2. Sum of Setoran Koordinator, Iuran Air, and Iuran Sampah in finance logs
+              // 2. Total Diterima Koordinator (Lunas untuk Mei 2026)
+              const totalMeiCollected = billingRecords
+                .filter(b => b.month === 'Mei' && b.year === 2026 && b.status === 'Lunas')
+                .reduce((sum, b) => sum + b.totalBill, 0);
+              const countMeiCollected = billingRecords.filter(b => b.month === 'Mei' && b.year === 2026 && b.status === 'Lunas').length;
+
+              // 3. Total Setoran yang Sudah Diverifikasi di Kas Ledger
               const totalVerifiedDeposits = financeLogs
-                .filter(log => log.type === 'Pemasukan' && (log.category === 'Setoran Koordinator' || log.category === 'Iuran Air' || log.category === 'Iuran Sampah'))
+                .filter(log => log.type === 'Pemasukan' && log.category === 'Setoran Koordinator')
                 .reduce((s, log) => s + log.amount, 0);
 
-              // 3. Calculate Outstanding (Belum Lunas) iuran
-              const totalOutstandingOverall = billingRecords
-                .filter(b => b.month === 'Mei' && b.year === 2026 && b.status === 'Belum Lunas')
-                .reduce((sum, b) => sum + b.totalBill, 0);
-              const countOutstanding = billingRecords.filter(b => b.month === 'Mei' && b.year === 2026 && b.status === 'Belum Lunas').length;
+              // 4. Sisa Setoran Wajib ke Bendahara (Uang tunai yang belum disetorkan/diverifikasi)
+              const remainderToDeposit = Math.max(0, totalMeiCollected - totalVerifiedDeposits);
 
               return (
                 <div className="grid grid-cols-1 md:grid-cols-3 gap-5 text-slate-900">
+                  {/* CARD 1: Total Tagihan Bulan Ini */}
                   <div className="bg-white p-5 rounded-2xl border border-slate-100 shadow-sm flex items-center justify-between">
                     <div>
-                      <p className="text-xxs font-extrabold uppercase text-slate-450 font-mono tracking-wider">Kas Sementara (Di Koordinator)</p>
-                      <h3 className="text-2xl font-black text-amber-605 mt-1">Rp {totalKasSementaraOverall.toLocaleString('id-ID')}</h3>
-                      <p className="text-[10px] text-slate-550 mt-1 font-semibold">Dari {countKasSementara} unit siap disetor.</p>
+                      <p className="text-xxs font-extrabold uppercase text-slate-450 font-mono tracking-wider">Total Tagihan Bulan Ini</p>
+                      <h3 className="text-2xl font-black text-slate-900 mt-1">Rp {totalMeiBillings.toLocaleString('id-ID')}</h3>
+                      <p className="text-[10px] text-slate-500 mt-1 font-semibold">Tercatat dari {countMeiBillings} unit hunian.</p>
                     </div>
-                    <div className="h-10 w-10 bg-amber-50 text-amber-600 rounded-xl flex items-center justify-center shrink-0">
-                      <Coins size={20} />
+                    <div className="h-10 w-10 bg-blue-50 text-blue-600 rounded-xl flex items-center justify-center shrink-0">
+                      <Building2 size={20} />
                     </div>
                   </div>
 
+                  {/* CARD 2: Total Diterima Koordinator */}
                   <div className="bg-white p-5 rounded-2xl border border-slate-100 shadow-sm flex items-center justify-between">
                     <div>
-                      <p className="text-xxs font-extrabold uppercase text-slate-450 font-mono tracking-wider">Diverifikasi &amp; Masuk Kas Utama</p>
-                      <h3 className="text-2xl font-black text-emerald-600 mt-1">Rp {totalVerifiedDeposits.toLocaleString('id-ID')}</h3>
-                      <p className="text-[10px] text-slate-600 mt-1 font-bold">Telah terekam di kas paguyuban.</p>
+                      <p className="text-xxs font-extrabold uppercase text-slate-450 font-mono tracking-wider">Total Diterima Koordinator</p>
+                      <h3 className="text-2xl font-black text-emerald-600 mt-1">Rp {totalMeiCollected.toLocaleString('id-ID')}</h3>
+                      <p className="text-[10px] text-slate-600 mt-1 font-bold">Terbayar oleh {countMeiCollected} warga.</p>
                     </div>
                     <div className="h-10 w-10 bg-emerald-50 text-emerald-600 rounded-xl flex items-center justify-center shrink-0">
                       <CheckCircle2 size={20} />
                     </div>
                   </div>
 
+                  {/* CARD 3: Sisa Setoran Wajib ke Bendahara */}
                   <div className="bg-white p-5 rounded-2xl border border-slate-100 shadow-sm flex items-center justify-between">
                     <div>
-                      <p className="text-xxs font-extrabold uppercase text-slate-450 font-mono tracking-wider">Belum Tertagih ke Warga</p>
-                      <h3 className="text-2xl font-black text-slate-500 mt-1">
-                        Rp {totalOutstandingOverall.toLocaleString('id-ID')}
+                      <p className="text-xxs font-extrabold uppercase text-slate-450 font-mono tracking-wider">Setoran Wajib ke Bendahara</p>
+                      <h3 className={`text-2xl font-black mt-1 ${remainderToDeposit > 0 ? 'text-amber-600 animate-pulse' : 'text-slate-500'}`}>
+                        Rp {remainderToDeposit.toLocaleString('id-ID')}
                       </h3>
-                      <p className="text-[10px] text-slate-500 mt-1 font-semibold">{countOutstanding} unit belum membayar.</p>
+                      <p className="text-[10px] text-slate-500 mt-1 font-semibold">Uang menunggu verifikasi bendahara.</p>
                     </div>
-                    <div className="h-10 w-10 bg-slate-50 text-slate-500 rounded-xl flex items-center justify-center shrink-0">
-                      <ShieldAlert size={20} />
+                    <div className="h-10 w-10 bg-amber-50 text-amber-600 rounded-xl flex items-center justify-center shrink-0">
+                      <Coins size={20} />
                     </div>
                   </div>
                 </div>
