@@ -35,9 +35,28 @@ self.addEventListener('activate', (event) => {
 });
 
 self.addEventListener('fetch', (event) => {
-  // Only intercept GET requests and local resources
+  // Only intercept GET requests
   if (event.request.method !== 'GET') return;
 
+  const url = new URL(event.request.url);
+
+  // Bypass cache for HTML documents and API requests to ensure real-time updates when online
+  const isHtml = url.pathname === '/' || url.pathname.endsWith('.html');
+  const isApi = url.hostname.includes('supabase') || url.hostname.includes('googleapis') || url.pathname.includes('/api/');
+
+  if (isHtml || isApi) {
+    event.respondWith(
+      fetch(event.request).catch(() => {
+        // Only return cached fallback for HTML if offline
+        if (isHtml) {
+          return caches.match('/index.html') || caches.match('/');
+        }
+      })
+    );
+    return;
+  }
+
+  // Standard Network-First, fallback to Cache for static assets (js, css, images)
   event.respondWith(
     fetch(event.request)
       .then((networkResponse) => {

@@ -505,6 +505,11 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({
       return;
     }
 
+    if (editResKtp.trim() !== editingResident.ktp && residents.some(r => r.id !== editingResident.id && r.ktp === editResKtp.trim())) {
+      alert('Galat: Nomor NIK/KTP sudah terdaftar pada warga/hunian lain!');
+      return;
+    }
+
     // Build the updated verification payload to serialize into the phone field
     const payload = {
       whatsapp: editResPhone.trim(),
