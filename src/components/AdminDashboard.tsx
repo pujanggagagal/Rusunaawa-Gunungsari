@@ -2091,19 +2091,16 @@ Siti Aminah	357802...	Blok B	B-202	085755..."
                 .reduce((sum, b) => sum + b.totalBill, 0);
               const countMeiBillings = billingRecords.filter(b => b.month === 'Mei' && b.year === 2026).length;
 
-              // 2. Total Diterima Koordinator (Lunas untuk Mei 2026)
+              // 2. Total Diterima Koordinator (Terbayar di Koordinator ATAU Lunas untuk Mei 2026)
               const totalMeiCollected = billingRecords
-                .filter(b => b.month === 'Mei' && b.year === 2026 && b.status === 'Lunas')
+                .filter(b => b.month === 'Mei' && b.year === 2026 && (b.status === 'Terbayar di Koordinator' || b.status === 'Lunas'))
                 .reduce((sum, b) => sum + b.totalBill, 0);
-              const countMeiCollected = billingRecords.filter(b => b.month === 'Mei' && b.year === 2026 && b.status === 'Lunas').length;
+              const countMeiCollected = billingRecords.filter(b => b.month === 'Mei' && b.year === 2026 && (b.status === 'Terbayar di Koordinator' || b.status === 'Lunas')).length;
 
-              // 3. Total Setoran yang Sudah Diverifikasi di Kas Ledger
-              const totalVerifiedDeposits = financeLogs
-                .filter(log => log.type === 'Pemasukan' && log.category === 'Setoran Koordinator')
-                .reduce((s, log) => s + log.amount, 0);
-
-              // 4. Sisa Setoran Wajib ke Bendahara (Uang tunai yang belum disetorkan/diverifikasi)
-              const remainderToDeposit = Math.max(0, totalMeiCollected - totalVerifiedDeposits);
+              // 3. Sisa Setoran Wajib ke Bendahara (Uang tunai di tangan koordinator yang berstatus 'Terbayar di Koordinator' dan belum diverifikasi)
+              const remainderToDeposit = billingRecords
+                .filter(b => b.month === 'Mei' && b.year === 2026 && b.status === 'Terbayar di Koordinator')
+                .reduce((sum, b) => sum + b.totalBill, 0);
 
               return (
                 <div className="grid grid-cols-1 md:grid-cols-3 gap-5 text-slate-900">
