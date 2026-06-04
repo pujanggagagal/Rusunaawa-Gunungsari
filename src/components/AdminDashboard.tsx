@@ -2159,7 +2159,10 @@ Siti Aminah	357802...	Blok B	B-202	085755..."
                       <th className="py-3 px-6">Lantai Rusun</th>
                       <th className="py-3 px-4">Petugas Koordinator</th>
                       <th className="py-3 px-4 text-center">Partisipasi Iuran</th>
-                      <th className="py-3 px-4 text-right">Uang Ditagih</th>
+                      <th className="py-3 px-4 text-right">Total Tagihan</th>
+                      <th className="py-3 px-4 text-right">Sudah Bayar (Warga)</th>
+                      <th className="py-3 px-4 text-right">Belum Bayar (Warga)</th>
+                      <th className="py-3 px-4 text-right">Uang Ditangan Koord</th>
                       <th className="py-3 px-4 text-right">Sudah Verifikasi Setoran</th>
                       <th className="py-3 px-6 text-right">Aksi</th>
                     </tr>
@@ -2172,9 +2175,9 @@ Siti Aminah	357802...	Blok B	B-202	085755..."
                       const floorRes = residents.filter(r => (r.floor || getFloorFromUnit(r.unit)) === floorNum);
                       const floorTotalResCount = floorRes.length;
 
-                      // Filter billing with status 'Terbayar di Koordinator'
-                      const floorMeiCollectedBills = billingRecords.filter(
-                        b => b.month === 'Mei' && b.year === 2026 && b.status === 'Terbayar di Koordinator' && floorRes.some(r => r.ktp === b.residentKtp)
+                      // Filter all billing records for Mei 2026 on this floor (handling vacant rooms)
+                      const floorMeiBills = billingRecords.filter(
+                        b => b.month === 'Mei' && b.year === 2026 && floorRes.some(r => r.ktp === b.residentKtp)
                       ).map(b => {
                         const res = floorRes.find(r => r.ktp === b.residentKtp);
                         const isVacant = res?.isVacant || res?.occupancyStatus === 'Kosong' || res?.occupancyStatus === 'kosong' || res?.name === 'Kamar Kosong' || res?.name?.toLowerCase()?.includes('kamar kosong');
@@ -2183,17 +2186,23 @@ Siti Aminah	357802...	Blok B	B-202	085755..."
                         }
                         return b;
                       });
-                      const floorCollectedCount = floorMeiCollectedBills.length;
+
+                      // 1. Total Tagihan (generated)
+                      const totalBillOnFloor = floorMeiBills.reduce((s, r) => s + r.totalBill, 0);
+
+                      // 2. Sudah Bayar (Terbayar di Koordinator + Lunas)
+                      const floorMeiPaidBills = floorMeiBills.filter(b => b.status === 'Terbayar di Koordinator' || b.status === 'Lunas');
+                      const totalPaidOnFloor = floorMeiPaidBills.reduce((s, r) => s + r.totalBill, 0);
+                      const totalPaidCount = floorMeiPaidBills.length;
+
+                      // 3. Belum Bayar (Belum Lunas)
+                      const floorMeiUnpaidBills = floorMeiBills.filter(b => b.status === 'Belum Lunas');
+                      const totalUnpaidOnFloor = floorMeiUnpaidBills.reduce((s, r) => s + r.totalBill, 0);
+
+                      // 4. Uang Ditangan Koord (Terbayar di Koordinator yang belum disetor ke bendahara)
+                      const floorMeiCollectedBills = floorMeiBills.filter(b => b.status === 'Terbayar di Koordinator');
                       const totalCollectedOnFloor = floorMeiCollectedBills.reduce((s, r) => s + r.totalBill, 0);
-
-                      // Filter billing with status 'Lunas'
-                      const floorMeiLunasBills = billingRecords.filter(
-                        b => b.month === 'Mei' && b.year === 2026 && b.status === 'Lunas' && floorRes.some(r => r.ktp === b.residentKtp)
-                      );
-                      const floorLunasCount = floorMeiLunasBills.length;
-
-                      // Total verified + temporary payments
-                      const totalPaidCount = floorCollectedCount + floorLunasCount;
+                      const floorLunasCount = floorMeiBills.filter(b => b.status === 'Lunas').length;
 
                       // Check if verify setoran exists in finance logs
                       const verifyRecord = financeLogs.find(
@@ -2221,11 +2230,20 @@ Siti Aminah	357802...	Blok B	B-202	085755..."
                               <span className="font-mono font-bold text-slate-900">{totalPaidCount} / {floorTotalResCount} Kamar</span>
                               <div className="w-20 bg-slate-100 h-1 rounded-full overflow-hidden mt-1">
                                 <div 
-                                  className="bg-emerald-555 h-full bg-emerald-500" 
+                                  className="bg-emerald-500 h-full" 
                                   style={{ width: `${floorTotalResCount > 0 ? (totalPaidCount / floorTotalResCount) * 100 : 0}%` }} 
                                 />
                               </div>
                             </div>
+                          </td>
+                          <td className="py-4 px-4 text-right font-mono font-bold text-slate-700">
+                            Rp {totalBillOnFloor.toLocaleString('id-ID')}
+                          </td>
+                          <td className="py-4 px-4 text-right font-mono font-bold text-emerald-600">
+                            Rp {totalPaidOnFloor.toLocaleString('id-ID')}
+                          </td>
+                          <td className="py-4 px-4 text-right font-mono font-bold text-rose-500">
+                            Rp {totalUnpaidOnFloor.toLocaleString('id-ID')}
                           </td>
                           <td className="py-4 px-4 text-right font-mono font-black text-slate-900">
                             Rp {totalCollectedOnFloor.toLocaleString('id-ID')}
@@ -2235,7 +2253,7 @@ Siti Aminah	357802...	Blok B	B-202	085755..."
                               <span className="text-amber-700 bg-amber-50 border border-amber-100 px-2 py-0.5 rounded font-extrabold text-[10px] animate-pulse">
                                 MENUNGGU SETORAN ⚠️
                               </span>
-                            ) : floorLunasCount > 0 ? (
+                            ) : totalPaidOnFloor > 0 ? (
                               <div className="inline-flex flex-col items-end">
                                 <span className="text-emerald-700 bg-emerald-50 border border-emerald-150 px-2 py-0.5 rounded font-extrabold text-[10px]">
                                   SUDAH MASUK KAS ✓
