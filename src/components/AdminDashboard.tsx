@@ -82,6 +82,7 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({
   const [addBillYear, setAddBillYear] = useState<number>(2026);
   const [addBillStatus, setAddBillStatus] = useState<'Lunas' | 'Belum Lunas'>('Belum Lunas');
   const [addBillTrashBill, setAddBillTrashBill] = useState<number>(10000);
+  const [addBillSearch, setAddBillSearch] = useState<string>('');
 
   // Filters for All Billing List
   const [pdamAllSearchQuery, setPdamAllSearchQuery] = useState<string>('');
@@ -2923,6 +2924,7 @@ Siti Aminah	357802...	Blok B	B-202	085755..."
                   setAddBillYear(2026);
                   setAddBillStatus('Belum Lunas');
                   setAddBillTrashBill(appSettings.trashBillCost);
+                  setAddBillSearch('');
                   setShowAddBillModal(true);
                 }}
                 className="px-4 py-2.5 bg-white text-teal-900 hover:bg-teal-50 rounded-2xl text-xs font-black uppercase tracking-wider transition-all cursor-pointer flex items-center gap-1.5 shadow-md active:scale-95"
@@ -3353,24 +3355,40 @@ Siti Aminah	357802...	Blok B	B-202	085755..."
                   >
                     <div>
                       <label className="block mb-1 font-bold text-[10px] uppercase font-mono text-slate-400">Pilih Warga / Unit</label>
-                      <select
-                        value={addBillResidentKtp}
-                        onChange={(e) => {
-                          const ktp = e.target.value;
-                          setAddBillResidentKtp(ktp);
-                          const latestRec = billingRecords.filter(b => b.residentKtp === ktp).sort((a, b) => b.year - a.year)[0];
-                          setAddBillPrevMeter(latestRec ? latestRec.currentMeter : 0);
-                          setAddBillCurrentMeter(latestRec ? latestRec.currentMeter : 0);
-                        }}
-                        className="w-full px-3 py-2.5 bg-slate-50 border border-slate-200 rounded-xl font-bold focus:outline-none"
-                      >
-                        <option value="">-- Pilih Unit Warga --</option>
-                        {residents.map((r) => (
-                          <option key={r.id} value={r.ktp}>
-                            [{r.unit}] - {r.name}
-                          </option>
-                        ))}
-                      </select>
+                      <input
+                        type="text"
+                        placeholder="Cari unit (misal: C-404) atau nama..."
+                        value={addBillSearch}
+                        onChange={(e) => setAddBillSearch(e.target.value)}
+                        className="w-full px-3 py-2 bg-slate-50 border border-slate-200 rounded-xl font-medium focus:outline-none mb-2"
+                      />
+                      {(() => {
+                        const filtered = residents.filter(r => {
+                          const q = addBillSearch.toLowerCase().trim();
+                          if (!q) return true;
+                          return r.unit.toLowerCase().includes(q) || r.name.toLowerCase().includes(q) || r.ktp.includes(q);
+                        });
+                        return (
+                          <select
+                            value={addBillResidentKtp}
+                            onChange={(e) => {
+                              const ktp = e.target.value;
+                              setAddBillResidentKtp(ktp);
+                              const latestRec = billingRecords.filter(b => b.residentKtp === ktp).sort((a, b) => b.year - a.year)[0];
+                              setAddBillPrevMeter(latestRec ? latestRec.currentMeter : 0);
+                              setAddBillCurrentMeter(latestRec ? latestRec.currentMeter : 0);
+                            }}
+                            className="w-full px-3 py-2.5 bg-slate-50 border border-slate-200 rounded-xl font-bold focus:outline-none"
+                          >
+                            <option value="">-- Pilih Unit Warga ({filtered.length} ditemukan) --</option>
+                            {filtered.map((r) => (
+                              <option key={r.id} value={r.ktp}>
+                                [{r.unit}] - {r.name}
+                              </option>
+                            ))}
+                          </select>
+                        );
+                      })()}
                     </div>
 
                     <div className="grid grid-cols-2 gap-3">
