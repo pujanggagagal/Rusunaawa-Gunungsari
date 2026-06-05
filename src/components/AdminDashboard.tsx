@@ -725,7 +725,7 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({
                   return (
                     <div 
                       key={res.id} 
-                      className="bg-white flex flex-row items-center justify-between p-[1.5mm] select-none relative overflow-hidden border border-slate-100 md:border-dashed print:border-0 print:p-[1mm] print-page-break"
+                      className="bg-white flex flex-col justify-between p-[1.5mm] select-none relative overflow-hidden border border-slate-100 md:border-dashed print:border-0 print:p-[1mm] print-page-break"
                       style={{ 
                         width: '50mm', 
                         height: '30mm', 
@@ -736,25 +736,28 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({
                         boxSizing: 'border-box'
                       }}
                     >
-                      {/* Kolom Kiri: QR Code (2.8 x 2.8 cm) */}
-                      <div className="flex items-center justify-center w-[25mm] h-[25mm] shrink-0 border border-slate-50 print:border-0">
-                        <QRCodeRenderer value={barcodeVal} size={90} className="w-full h-full object-contain" />
+                      {/* Header Resmi Wajib */}
+                      <div className="text-[7px] font-black uppercase text-slate-900 border-b border-black pb-0.5 tracking-wider font-mono text-center w-full block shrink-0">
+                        RUSUNAWA GUNUNGSARI - {res.id.substring(0, 4).toUpperCase()}
                       </div>
 
-                      {/* Kolom Kanan: Teks Identitas Premium */}
-                      <div className="flex flex-col justify-between items-start pl-2 h-full text-left font-sans text-black grow">
-                        <div className="space-y-0.5">
-                          <span className="text-[7.5px] font-extrabold uppercase text-slate-500 tracking-wider block font-mono">PDAM RUSUN</span>
-                          <span className="text-[10px] font-black uppercase text-black leading-none block tracking-tight">GUNUNGSARI</span>
-                        </div>
-                        
-                        <div className="space-y-0.5 py-1">
-                          <span className="text-[8px] font-bold text-slate-700 block">LANTAI {floorVal}</span>
-                          <span className="text-[8px] font-bold text-slate-700 block">BLOK {blockLetter}</span>
+                      {/* Content Area: QR Code di kiri, Info di kanan */}
+                      <div className="flex flex-row items-center justify-between grow w-full mt-1 overflow-hidden h-full">
+                        {/* Kolom Kiri: QR Code (2.3 x 2.3 cm) */}
+                        <div className="flex items-center justify-center w-[23mm] h-[23mm] shrink-0 border border-slate-50 print:border-0">
+                          <QRCodeRenderer value={barcodeVal} size={80} className="w-full h-full object-contain" />
                         </div>
 
-                        <div className="text-[12.5px] font-black uppercase text-black leading-none shrink-0 font-sans border-2 border-black px-1.5 py-1 rounded mt-1.5 w-full text-center">
-                          UNIT {res.unit}
+                        {/* Kolom Kanan: Detail & Unit Besar */}
+                        <div className="flex flex-col justify-between items-start pl-2 h-full text-left text-black grow">
+                          <div className="space-y-0.5 mt-0.5">
+                            <span className="text-[7.5px] font-bold text-slate-800 block">Lantai : {floorVal}</span>
+                            <span className="text-[7.5px] font-bold text-slate-800 block">Blok &nbsp; : {blockLetter}</span>
+                          </div>
+
+                          <div className="text-[15px] font-black uppercase text-black leading-none shrink-0 font-mono mt-1 text-center w-full">
+                            ({res.unit.replace(/^[A-Ea-e]-/, '').trim()})
+                          </div>
                         </div>
                       </div>
                     </div>
@@ -2503,12 +2506,28 @@ Siti Aminah	357802...	Blok B	B-202	085755..."
                           <p className="text-[9px] text-slate-400 font-semibold text-slate-500 mt-1">Kontak: {getCleanPhone(res.phone)}</p>
                         </div>
 
-                        {/* Visual QR Code pattern */}
-                        <div className="mt-5 border border-slate-150 p-3 bg-white rounded-xl flex flex-col items-center gap-2 shadow-inner">
-                          <QRCodeRenderer value={getBarcodeContent(res)} size={70} className="mx-auto" />
-                          <span className="text-[8px] font-mono tracking-widest text-slate-500 font-bold uppercase mt-1">
-                            {getBarcodeContent(res)}
-                          </span>
+                        {/* Mini Sticker Preview Replica */}
+                        <div className="mt-4 border-2 border-slate-300 p-2 bg-white rounded-xl flex flex-col justify-between shadow-inner w-full text-black font-sans select-none" style={{ aspectRatio: '5/3' }}>
+                          <div className="text-[7px] font-black uppercase text-slate-900 border-b border-slate-300 pb-0.5 tracking-wider font-mono text-center w-full block">
+                            RUSUNAWA GUNUNGSARI - {res.id.substring(0, 4).toUpperCase()}
+                          </div>
+                          
+                          <div className="flex flex-row items-center justify-between grow w-full mt-1.5 overflow-hidden">
+                            <div className="flex items-center justify-center w-[40%] shrink-0 border border-slate-100">
+                              <QRCodeRenderer value={getBarcodeContent(res)} size={55} className="w-full h-full object-contain" />
+                            </div>
+                            
+                            <div className="flex flex-col justify-between items-start pl-2 h-full text-left grow">
+                              <div className="space-y-0.5">
+                                <span className="text-[7px] font-bold text-slate-700 block">Lantai : {floorNum}</span>
+                                <span className="text-[7px] font-bold text-slate-700 block">Blok &nbsp; : {res.block.replace('Blok ', '').trim()}</span>
+                              </div>
+                              
+                              <div className="text-[12px] font-black uppercase text-black leading-none font-mono text-center w-full mt-0.5">
+                                ({res.unit.replace(/^[A-Ea-e]-/, '').trim()})
+                              </div>
+                            </div>
+                          </div>
                         </div>
 
                         {/* Control panel for single card actions */}

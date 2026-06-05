@@ -27,11 +27,12 @@ export const getFloorFromUnit = (unit: string): number => {
   return 1;
 };
 
-export const getBarcodeContent = (res: { floor?: number; unit: string; block: string }): string => {
+export const getBarcodeContent = (res: { id?: string; floor?: number; unit: string; block: string }): string => {
+  const idSingkat = res.id ? res.id.substring(0, 4).toUpperCase() : 'TEMP';
   const floorVal = res.floor || getFloorFromUnit(res.unit);
   const blockClean = (res.block || '').trim().replace(/Blok\s+/i, '').trim();
-  const unitClean = (res.unit || '').trim();
-  return `${floorVal}-${blockClean}-${unitClean}`;
+  const unitClean = (res.unit || '').trim().replace(/^[A-Ea-e]-/, '').trim();
+  return `RGS-${idSingkat}-${floorVal}-${blockClean}-${unitClean}`;
 };
 
 export const getCleanPhone = (phoneStr: string): string => {

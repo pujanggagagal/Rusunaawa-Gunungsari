@@ -107,12 +107,13 @@ export const BarcodeRenderer: React.FC<BarcodeRendererProps> = ({
   return (
     <div className={`flex justify-center items-center overflow-hidden ${className}`}>
       <svg 
-        width="100%" 
+        width={Math.ceil(totalWidth)} 
         height={height}
         viewBox={`0 0 ${Math.ceil(totalWidth)} ${height}`}
-        preserveAspectRatio="none"
-        className="w-full h-full select-none"
+        className="select-none"
       >
+        {/* Background white to ensure readability on any background */}
+        <rect width="100%" height="100%" fill="#FFFFFF" />
         {renderElements.map((el, index) => {
           if (!el.isBar) return null; // space is just white background (rendered by default empty space)
           return (

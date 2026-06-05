@@ -221,44 +221,50 @@ export const KoordinatorDashboard: React.FC<KoordinatorDashboardProps> = ({
       const nameClean = r.name.toLowerCase();
       const unitClean = cleanStr(r.unit);
       
-      // 1. Direct/Sub-string matches
-      if (barcodeClean === tokenClean || ktpClean === tokenClean || nameClean.includes(t.toLowerCase()) || unitClean === tokenClean) {
+      // 1. Direct/Sub-string matches with current barcode format
+      if (barcodeClean === tClean || ktpClean === tokenClean || nameClean.includes(t.toLowerCase()) || unitClean === tokenClean) {
         return true;
       }
       
-      // 2. Unit alphanumeric clean match (e.g. r.unit is "B-101" -> "b101", token is "b101")
-      if (tClean.includes(unitClean) || unitClean.includes(tClean)) {
-        return true;
-      }
-      
-      // 3. Common Code39 / camera character misread equivalents (e.g., '1' <-> 'B' <-> 'A', '0' <-> 'O' <-> 'D')
-      const isFuzzyMatch = (s1: string, s2: string): boolean => {
-        if (s1.length !== s2.length) return false;
-        
-        const isEquivalent = (c1: string, c2: string): boolean => {
-          if (c1 === c2) return true;
-          const equivalents = [
-            ['1', 'b', 'i', 'l', 'a'],
-            ['0', 'o', 'd', 'q', 'u'],
-            ['2', 'z'],
-            ['5', 's'],
-            ['8', 'b']
-          ];
-          return equivalents.some(group => group.includes(c1) && group.includes(c2));
-        };
-        
-        for (let i = 0; i < s1.length; i++) {
-          if (!isEquivalent(s1[i], s2[i])) return false;
+      // 2. Strict check by ID singkat if token has new format RGS-XXXX-floor-block-unit
+      if (t.toUpperCase().startsWith('RGS-')) {
+        const parts = t.toUpperCase().split('-');
+        if (parts.length >= 5) {
+          const scannedShortId = parts[1];
+          const residentShortId = r.id ? r.id.substring(0, 4).toUpperCase() : '';
+          if (residentShortId && residentShortId === scannedShortId) {
+            return true;
+          }
         }
+      }
+
+      // 3. Backward Compatibility: Legacy printed codes (e.g., "1-A-A-102" or just unit "A-102")
+      if (tClean === unitClean) {
         return true;
-      };
+      }
+
+      // Parse legacy formatted barcode (e.g. "1-A-A-102" -> ['1', 'A', 'A', '102'])
+      const parts = t.toUpperCase().split('-');
+      if (parts.length === 4) {
+        const floorVal = parseInt(parts[0], 10);
+        const blockLetter = parts[1];
+        const unitNum = parts[3];
+        
+        const rFloor = r.floor || getFloorFromUnit(r.unit);
+        const rBlockClean = r.block.toUpperCase().replace(/Blok\s+/i, '').trim();
+        const rUnitClean = r.unit.toUpperCase().replace(/^[A-Ea-e]-/, '').trim();
+        
+        if (rFloor === floorVal && rBlockClean === blockLetter && rUnitClean === unitNum) {
+          return true;
+        }
+      }
       
-      if (isFuzzyMatch(barcodeClean, tClean) || isFuzzyMatch(unitClean, tClean)) {
+      // 4. Backward Compatibility: Strict matching
+      if (barcodeClean === tClean || unitClean === tClean) {
         return true;
       }
       
-      // 4. Custom parts parsing for tokens like "1-1-10B" -> matches Floor 1, Block B, Unit B-101 or Floor 1, Block A, Unit A-110
-      const parts = t.toLowerCase().split('-');
+      // 5. Custom parts parsing for tokens like "1-1-10B" -> matches Floor 1, Block B, Unit B-101 or Floor 1, Block A, Unit A-110
       if (parts.length === 3) {
         const floorPart = parseInt(parts[0], 10);
         const middlePart = parts[1]; // e.g. "1" or "a" or "b"
@@ -270,7 +276,7 @@ export const KoordinatorDashboard: React.FC<KoordinatorDashboardProps> = ({
           const rUnitNoClean = r.unit.toLowerCase().replace(/[^a-z0-9]/g, ''); // "a110", "b101"
           
           const combinedTokenClean = cleanStr(middlePart + lastPart); // "110b" or "110"
-          if (isFuzzyMatch(rUnitNoClean, combinedTokenClean)) {
+          if (rUnitNoClean === combinedTokenClean) {
             return true;
           }
           
@@ -292,8 +298,8 @@ export const KoordinatorDashboard: React.FC<KoordinatorDashboardProps> = ({
     // First search in this floor
     let found = floorResidents.find((r) => matchResidentWithToken(r, token));
     
-    // If not found, look at the similarity score to find the best match on this floor
-    if (!found) {
+    // If not found, look at the similarity score to find the best match on this floor (only for legacy formats to prevent false positives)
+    if (!found && !token.toUpperCase().startsWith('RGS-')) {
       const getSimilarityScore = (s1: string, s2: string): number => {
         const chars1 = s1.split('');
         const chars2 = s2.split('');
