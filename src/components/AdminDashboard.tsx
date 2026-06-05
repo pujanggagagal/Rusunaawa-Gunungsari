@@ -737,22 +737,25 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({
                       }}
                     >
                       {/* Header Resmi Wajib */}
-                      <div className="text-[7px] font-black uppercase text-slate-900 border-b border-black pb-0.5 tracking-wider font-mono text-center w-full block shrink-0">
-                        RUSUNAWA GUNUNGSARI - {res.id.substring(0, 4).toUpperCase()}
+                      <div className="text-[7.5px] font-black uppercase text-slate-900 border-b border-black pb-0.5 tracking-wider font-mono text-center w-full block shrink-0">
+                        PDAM RUSUN GUNUNGSARI - {res.id.substring(0, 4).toUpperCase()}
                       </div>
 
                       {/* Content Area: QR Code di kiri, Info di kanan */}
-                      <div className="flex flex-row items-center justify-between grow w-full mt-1 overflow-hidden h-full">
+                      <div className="flex flex-row items-center justify-between grow w-full mt-0.5 overflow-hidden h-full">
                         {/* Kolom Kiri: QR Code (2.3 x 2.3 cm) */}
                         <div className="flex items-center justify-center w-[23mm] h-[23mm] shrink-0 border border-slate-50 print:border-0">
                           <QRCodeRenderer value={barcodeVal} size={80} className="w-full h-full object-contain" />
                         </div>
 
                         {/* Kolom Kanan: Detail & Unit Besar */}
-                        <div className="flex flex-col justify-center items-start pl-2 h-full text-left text-black grow">
-                          <span className="text-[7.5px] font-bold text-slate-800 block">Lantai {floorVal}</span>
-                          <span className="text-[15px] font-black uppercase text-black leading-none mt-1.5 font-mono">
-                            {blockLetter} - {res.unit.replace(/^[A-Ea-e]-/, '').trim()}
+                        <div className="flex flex-col justify-center items-center h-full text-center text-black grow font-sans">
+                          <span className="text-[7.5px] font-bold text-slate-800 uppercase block tracking-tight leading-none">LANTAI {floorVal}</span>
+                          <span className="text-[18px] font-black uppercase text-black leading-none mt-1 block">
+                            -{blockLetter}-
+                          </span>
+                          <span className="text-[18px] font-black uppercase text-black leading-none mt-0.5 block">
+                            {res.unit.replace(/^[A-Ea-e]-/, '').trim()}
                           </span>
                         </div>
                       </div>
@@ -2504,8 +2507,8 @@ Siti Aminah	357802...	Blok B	B-202	085755..."
 
                         {/* Mini Sticker Preview Replica */}
                         <div className="mt-4 border-2 border-slate-300 p-2 bg-white rounded-xl flex flex-col justify-between shadow-inner w-full text-black font-sans select-none" style={{ aspectRatio: '5/3' }}>
-                          <div className="text-[7px] font-black uppercase text-slate-900 border-b border-slate-300 pb-0.5 tracking-wider font-mono text-center w-full block">
-                            RUSUNAWA GUNUNGSARI - {res.id.substring(0, 4).toUpperCase()}
+                          <div className="text-[7.5px] font-black uppercase text-slate-900 border-b border-slate-300 pb-0.5 tracking-wider font-mono text-center w-full block">
+                            PDAM RUSUN GUNUNGSARI - {res.id.substring(0, 4).toUpperCase()}
                           </div>
                           
                           <div className="flex flex-row items-center justify-between grow w-full mt-1.5 overflow-hidden">
@@ -2513,10 +2516,13 @@ Siti Aminah	357802...	Blok B	B-202	085755..."
                               <QRCodeRenderer value={getBarcodeContent(res)} size={55} className="w-full h-full object-contain" />
                             </div>
                             
-                            <div className="flex flex-col justify-center items-start pl-2 h-full text-left grow">
-                              <span className="text-[7px] font-bold text-slate-700 block">Lantai {floorNum}</span>
-                              <span className="text-[12px] font-black uppercase text-black leading-none mt-1 font-mono">
-                                {res.block.replace('Blok ', '').trim()} - {res.unit.replace(/^[A-Ea-e]-/, '').trim()}
+                            <div className="flex flex-col justify-center items-center h-full text-center grow">
+                              <span className="text-[7px] font-bold text-slate-700 uppercase block tracking-tight leading-none">LANTAI {floorNum}</span>
+                              <span className="text-[14px] font-black uppercase text-black leading-none mt-1">
+                                -{res.block.replace('Blok ', '').trim()}-
+                              </span>
+                              <span className="text-[14px] font-black uppercase text-black leading-none mt-0.5">
+                                {res.unit.replace(/^[A-Ea-e]-/, '').trim()}
                               </span>
                             </div>
                           </div>
