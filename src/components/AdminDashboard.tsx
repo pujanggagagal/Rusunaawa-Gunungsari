@@ -749,15 +749,11 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({
                         </div>
 
                         {/* Kolom Kanan: Detail & Unit Besar */}
-                        <div className="flex flex-col justify-between items-start pl-2 h-full text-left text-black grow">
-                          <div className="space-y-0.5 mt-0.5">
-                            <span className="text-[7.5px] font-bold text-slate-800 block">Lantai : {floorVal}</span>
-                            <span className="text-[7.5px] font-bold text-slate-800 block">Blok &nbsp; : {blockLetter}</span>
-                          </div>
-
-                          <div className="text-[15px] font-black uppercase text-black leading-none shrink-0 font-mono mt-1 text-center w-full">
-                            ({res.unit.replace(/^[A-Ea-e]-/, '').trim()})
-                          </div>
+                        <div className="flex flex-col justify-center items-start pl-2 h-full text-left text-black grow">
+                          <span className="text-[7.5px] font-bold text-slate-800 block">Lantai {floorVal}</span>
+                          <span className="text-[15px] font-black uppercase text-black leading-none mt-1.5 font-mono">
+                            {blockLetter} - {res.unit.replace(/^[A-Ea-e]-/, '').trim()}
+                          </span>
                         </div>
                       </div>
                     </div>
@@ -2517,15 +2513,11 @@ Siti Aminah	357802...	Blok B	B-202	085755..."
                               <QRCodeRenderer value={getBarcodeContent(res)} size={55} className="w-full h-full object-contain" />
                             </div>
                             
-                            <div className="flex flex-col justify-between items-start pl-2 h-full text-left grow">
-                              <div className="space-y-0.5">
-                                <span className="text-[7px] font-bold text-slate-700 block">Lantai : {floorNum}</span>
-                                <span className="text-[7px] font-bold text-slate-700 block">Blok &nbsp; : {res.block.replace('Blok ', '').trim()}</span>
-                              </div>
-                              
-                              <div className="text-[12px] font-black uppercase text-black leading-none font-mono text-center w-full mt-0.5">
-                                ({res.unit.replace(/^[A-Ea-e]-/, '').trim()})
-                              </div>
+                            <div className="flex flex-col justify-center items-start pl-2 h-full text-left grow">
+                              <span className="text-[7px] font-bold text-slate-700 block">Lantai {floorNum}</span>
+                              <span className="text-[12px] font-black uppercase text-black leading-none mt-1 font-mono">
+                                {res.block.replace('Blok ', '').trim()} - {res.unit.replace(/^[A-Ea-e]-/, '').trim()}
+                              </span>
                             </div>
                           </div>
                         </div>
