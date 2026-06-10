@@ -141,6 +141,8 @@ STATUS         : ${bill.status.toUpperCase()}
     printWindow.document.write(`
       <html>
         <head>
+          <meta charset="utf-8">
+          <meta name="viewport" content="width=device-width, initial-scale=1.0">
           <title>Cetak Nota ${res.unit}</title>
           <style>
             @page {
@@ -149,31 +151,42 @@ STATUS         : ${bill.status.toUpperCase()}
             }
             body {
               font-family: 'Courier New', Courier, monospace;
-              font-size: 10px;
-              line-height: 1.2;
-              width: 58mm;
-              margin: 0;
-              padding: 5px;
+              font-size: 14px;
+              line-height: 1.3;
+              width: 100%;
+              max-width: 320px;
+              margin: 0 auto;
+              padding: 12px;
               box-sizing: border-box;
+              background-color: #fff;
             }
             pre {
               margin: 0;
               white-space: pre-wrap;
               word-break: break-all;
+              font-family: inherit;
             }
             .official-footer {
-              font-size: 8px;
+              font-size: 11px;
               font-family: 'Courier New', Courier, monospace;
               text-align: center;
-              margin-top: 10px;
+              margin-top: 12px;
               border-top: 1px dashed #000;
-              padding-top: 6px;
+              padding-top: 8px;
               font-weight: bold;
               line-height: 1.3;
             }
             @media print {
               html, body {
-                width: 58mm;
+                width: 58mm !important;
+                max-width: 58mm !important;
+                padding: 4px !important;
+                font-size: 9px !important;
+              }
+              .official-footer {
+                font-size: 7px !important;
+                margin-top: 8px !important;
+                padding-top: 4px !important;
               }
               .no-print {
                 display: none !important;
@@ -181,14 +194,14 @@ STATUS         : ${bill.status.toUpperCase()}
             }
             .no-print-btn {
               display: inline-block;
-              padding: 6px 12px;
-              margin: 5px;
+              padding: 10px 16px;
+              margin: 6px;
               font-family: Arial, sans-serif;
-              font-size: 10px;
+              font-size: 12px;
               font-weight: bold;
               color: white;
               border: none;
-              border-radius: 4px;
+              border-radius: 6px;
               cursor: pointer;
               text-decoration: none;
             }
