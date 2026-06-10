@@ -72,20 +72,10 @@ export const KoordinatorDashboard: React.FC<KoordinatorDashboardProps> = ({
   };
 
   const handlePrintReceipt = (res: Resident, bill: BillingRecord) => {
-    // Generate QR Code containing the digital receipt URL
-    const verifyUrl = `${window.location.origin}/?verifyBill=${bill.id}`;
-    
-    QRCode.toDataURL(verifyUrl, { margin: 1, width: 100 }, (err, qrDataUrl) => {
-      if (err) {
-        console.error("Gagal generate QR Code", err);
-        runPrint(res, bill, '');
-      } else {
-        runPrint(res, bill, qrDataUrl);
-      }
-    });
+    runPrint(res, bill);
   };
 
-  const runPrint = (res: Resident, bill: BillingRecord, qrDataUrl: string) => {
+  const runPrint = (res: Resident, bill: BillingRecord) => {
     const printWindow = window.open('', '_blank', 'width=350,height=650');
     if (!printWindow) {
       alert('Gagal membuka jendela cetak. Pastikan pop-up blocker dimatikan.');
@@ -131,13 +121,6 @@ STATUS         : ${bill.status.toUpperCase()}
 
     const headerLines = receiptHeader.split('\n');
     const bodyLines = receiptBody.split('\n');
-
-    const qrHtml = qrDataUrl 
-      ? `<div style="text-align: center; margin: 8px 0;">
-           <img src="${qrDataUrl}" width="80" height="80" style="display: block; margin: 0 auto;" />
-           <div style="font-size: 7px; color: #555; margin-top: 2px; font-family: monospace; font-weight: bold; text-transform: uppercase;">Scan QR Verifikasi Nota Digital</div>
-         </div>`
-      : '';
 
     printWindow.document.write(`
       <html>
@@ -213,7 +196,6 @@ STATUS         : ${bill.status.toUpperCase()}
         </head>
         <body>
           <pre>${receiptHeader}</pre>
-          ${qrHtml}
           <pre>${receiptBody}</pre>
           <div class="official-footer">
             Nota ini adalah bukti pembayaran resmi Rusun Gunungsari.
@@ -245,7 +227,6 @@ STATUS         : ${bill.status.toUpperCase()}
                     const headerLines = ${JSON.stringify(headerLines)};
                     const bodyLines = ${JSON.stringify(bodyLines)};
                     const footerText = 'Nota ini adalah bukti pembayaran resmi Rusun Gunungsari.';
-                    const qrDataUrl = ${JSON.stringify(qrDataUrl)};
 
                     // Wrap text helper
                     const wrapText = function(text, maxWidth) {
@@ -272,9 +253,8 @@ STATUS         : ${bill.status.toUpperCase()}
                     const headerLineHeight = 18;
                     const bodyLineHeight = 18;
                     const footerLineHeight = 16;
-                    const qrHeight = qrDataUrl ? 150 : 0;
                     
-                    const totalHeight = 25 + (headerLines.length * headerLineHeight) + 15 + qrHeight + 15 + (bodyLines.length * bodyLineHeight) + 15 + (wrappedFooter.length * footerLineHeight) + 30;
+                    const totalHeight = 25 + (headerLines.length * headerLineHeight) + 15 + (bodyLines.length * bodyLineHeight) + 15 + (wrappedFooter.length * footerLineHeight) + 30;
                     canvas.height = totalHeight;
 
                     // Background white
@@ -295,84 +275,58 @@ STATUS         : ${bill.status.toUpperCase()}
 
                     currentY += 10;
 
-                    const drawBodyAndFooter = function() {
-                      // Draw Body
-                      ctx.font = '14px "Courier New", Courier, monospace';
-                      bodyLines.forEach(function(line) {
-                        ctx.fillText(line, 12, currentY);
-                        currentY += bodyLineHeight;
+                    // Draw Body
+                    ctx.font = '14px "Courier New", Courier, monospace';
+                    bodyLines.forEach(function(line) {
+                      ctx.fillText(line, 12, currentY);
+                      currentY += bodyLineHeight;
+                    });
+
+                    currentY += 10;
+
+                    // Draw Divider
+                    ctx.strokeStyle = '#000000';
+                    ctx.lineWidth = 1;
+                    ctx.setLineDash([4, 4]);
+                    ctx.beginPath();
+                    ctx.moveTo(12, currentY);
+                    ctx.lineTo(372, currentY);
+                    ctx.stroke();
+                    ctx.setLineDash([]);
+
+                    currentY += 12;
+
+                    // Draw Footer
+                    ctx.font = 'bold 12px "Courier New", Courier, monospace';
+                    wrappedFooter.forEach(function(line) {
+                      const textWidth = ctx.measureText(line).width;
+                      const xOffset = (canvas.width - textWidth) / 2;
+                      ctx.fillText(line, xOffset, currentY);
+                      currentY += footerLineHeight;
+                    });
+
+                    // Share canvas as image
+                    canvas.toBlob(function(blob) {
+                      if (!blob) {
+                        alert('Gagal membuat gambar struk');
+                        shareBtn.disabled = false;
+                        shareBtn.innerText = 'Bagikan Struk';
+                        return;
+                      }
+                      const file = new File([blob], 'nota-${res.unit}.png', { type: 'image/png' });
+                      navigator.share({
+                        files: [file],
+                        title: 'Cetak Struk ${res.unit}',
+                        text: 'Kirim struk gambar ke printer thermal Bluetooth via RawBT'
+                      }).then(function() {
+                        shareBtn.disabled = false;
+                        shareBtn.innerText = 'Bagikan Struk';
+                      }).catch(function(err) {
+                        console.log('Share cancelled/failed:', err);
+                        shareBtn.disabled = false;
+                        shareBtn.innerText = 'Bagikan Struk';
                       });
-
-                      currentY += 10;
-
-                      // Draw Divider
-                      ctx.strokeStyle = '#000000';
-                      ctx.lineWidth = 1;
-                      ctx.setLineDash([4, 4]);
-                      ctx.beginPath();
-                      ctx.moveTo(12, currentY);
-                      ctx.lineTo(372, currentY);
-                      ctx.stroke();
-                      ctx.setLineDash([]);
-
-                      currentY += 12;
-
-                      // Draw Footer
-                      ctx.font = 'bold 12px "Courier New", Courier, monospace';
-                      wrappedFooter.forEach(function(line) {
-                        const textWidth = ctx.measureText(line).width;
-                        const xOffset = (canvas.width - textWidth) / 2;
-                        ctx.fillText(line, xOffset, currentY);
-                        currentY += footerLineHeight;
-                      });
-
-                      // Share canvas as image
-                      canvas.toBlob(function(blob) {
-                        if (!blob) {
-                          alert('Gagal membuat gambar struk');
-                          shareBtn.disabled = false;
-                          shareBtn.innerText = 'Bagikan Struk';
-                          return;
-                        }
-                        const file = new File([blob], 'nota-${res.unit}.png', { type: 'image/png' });
-                        navigator.share({
-                          files: [file],
-                          title: 'Cetak Struk ${res.unit}',
-                          text: 'Kirim struk gambar ke printer thermal Bluetooth via RawBT'
-                        }).then(function() {
-                          shareBtn.disabled = false;
-                          shareBtn.innerText = 'Bagikan Struk';
-                        }).catch(function(err) {
-                          console.log('Share cancelled/failed:', err);
-                          shareBtn.disabled = false;
-                          shareBtn.innerText = 'Bagikan Struk';
-                        });
-                      }, 'image/png');
-                    };
-
-                    if (qrDataUrl) {
-                      const img = new Image();
-                      img.onload = function() {
-                        const qrSize = 110;
-                        const xOffset = (canvas.width - qrSize) / 2;
-                        ctx.drawImage(img, xOffset, currentY, qrSize, qrSize);
-                        currentY += qrSize + 5;
-
-                        ctx.font = 'bold 10px "Courier New", Courier, monospace';
-                        const label = "SCAN QR VERIFIKASI NOTA DIGITAL";
-                        const labelWidth = ctx.measureText(label).width;
-                        ctx.fillText(label, (canvas.width - labelWidth) / 2, currentY);
-                        currentY += 18;
-
-                        drawBodyAndFooter();
-                      };
-                      img.onerror = function() {
-                        drawBodyAndFooter();
-                      };
-                      img.src = qrDataUrl;
-                    } else {
-                      drawBodyAndFooter();
-                    }
+                    }, 'image/png');
                   } catch (e) {
                     alert('Error sharing: ' + e.message);
                     shareBtn.disabled = false;
