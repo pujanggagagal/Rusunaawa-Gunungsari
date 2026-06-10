@@ -9,7 +9,8 @@
     "preview": "vite preview",
     "clean": "rm -rf dist server.js",
     "lint": "tsc --noEmit",
-    "import-revisions": "node importRevisions.js"
+    "import-revisions": "node importRevisions.js",
+    "backup": "node backup_supabase.js"
   },
   "dependencies": {
     "@google/genai": "^1.29.0",
