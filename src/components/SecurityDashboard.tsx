@@ -22,6 +22,8 @@ export const SecurityDashboard: React.FC<SecurityDashboardProps> = ({
   appSettings
 }) => {
   const [filterBlock, setFilterBlock] = useState('Semua');
+  const [filterStatus, setFilterStatus] = useState<'Semua' | 'Lunas' | 'Belum Lunas' | 'Diputus'>('Semua');
+  const [filterFloor, setFilterFloor] = useState<string>('Semua');
 
   const { month: activeMonth, year: activeYear } = getMonthYearFromDateString(simulatedDate);
 
@@ -43,10 +45,24 @@ export const SecurityDashboard: React.FC<SecurityDashboardProps> = ({
     };
   });
 
-  // Filter based on selected block
+  // Filter based on selected block, status, and floor
   const filteredCompliance = complianceData.filter((r) => {
-    if (filterBlock === 'Semua') return true;
-    return r.block === filterBlock;
+    if (filterBlock !== 'Semua' && r.block !== filterBlock) return false;
+    
+    if (filterStatus === 'Lunas') {
+      if (r.paymentStatus !== 'Lunas') return false;
+    } else if (filterStatus === 'Belum Lunas') {
+      if (r.paymentStatus !== 'Belum Lunas') return false;
+    } else if (filterStatus === 'Diputus') {
+      if (r.electricityStatus !== 'Diputus') return false;
+    }
+    
+    if (filterFloor !== 'Semua') {
+      const resFloor = (r.floor || getFloorFromUnit(r.unit)).toString();
+      if (resFloor !== filterFloor) return false;
+    }
+    
+    return true;
   });
 
   // Highlight rules
@@ -149,24 +165,62 @@ export const SecurityDashboard: React.FC<SecurityDashboardProps> = ({
       {/* Main Grid: Delinquency control list */}
       <div className="bg-white rounded-3xl border border-slate-100 shadow-xl shadow-slate-100/50 p-6">
                {/* Table Filter block selection header */}
-        <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 mb-6">
+        <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4 mb-6">
           <div>
             <h2 className="text-lg font-bold text-slate-900">Rencana Penertiban &amp; Kontrol Saklar MCB Listrik</h2>
             <p className="text-xs text-slate-500 font-mono mt-0.5">Daftar tindakan pemutusan aliran meteran warga per tanggal 10 {activeMonth}</p>
           </div>
- 
-          <div className="flex bg-slate-100 p-1 rounded-xl overflow-x-auto scrollbar-none w-full sm:w-auto max-w-full gap-1">
-            {['Semua', 'Blok A', 'Blok B', 'Blok C', 'Blok D', 'Blok E'].map((block) => (
-              <button
-                key={block}
-                onClick={() => setFilterBlock(block)}
-                className={`flex-shrink-0 px-3 py-1.5 text-xs font-semibold rounded-lg capitalize transition-all cursor-pointer ${
-                  filterBlock === block ? 'bg-white text-slate-800 shadow-sm' : 'text-slate-500 hover:text-slate-900'
-                }`}
-              >
-                {block}
-              </button>
-            ))}
+        </div>
+
+        {/* Filter Controls Grid */}
+        <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 mb-8 bg-slate-50 p-4 rounded-2xl border border-slate-100/85 shadow-sm">
+          {/* Block Filter */}
+          <div>
+            <label className="block text-[10px] font-bold uppercase tracking-wider text-slate-400 mb-1">Blok Hunian</label>
+            <select
+              value={filterBlock}
+              onChange={(e) => setFilterBlock(e.target.value)}
+              className="block w-full px-3 py-2.5 bg-white border border-slate-200 rounded-xl text-xs font-semibold focus:outline-none focus:ring-2 focus:ring-rose-500 focus:border-transparent transition-all cursor-pointer font-sans text-slate-800"
+            >
+              <option value="Semua">Semua Blok</option>
+              <option value="Blok A">Blok A</option>
+              <option value="Blok B">Blok B</option>
+              <option value="Blok C">Blok C</option>
+              <option value="Blok D">Blok D</option>
+              <option value="Blok E">Blok E</option>
+            </select>
+          </div>
+
+          {/* Status Filter */}
+          <div>
+            <label className="block text-[10px] font-bold uppercase tracking-wider text-slate-400 mb-1">Status Keuangan / Aliran</label>
+            <select
+              value={filterStatus}
+              onChange={(e) => setFilterStatus(e.target.value as any)}
+              className="block w-full px-3 py-2.5 bg-white border border-slate-200 rounded-xl text-xs font-semibold focus:outline-none focus:ring-2 focus:ring-rose-500 focus:border-transparent transition-all cursor-pointer font-sans text-slate-800"
+            >
+              <option value="Semua">Semua Status</option>
+              <option value="Lunas">Lunas</option>
+              <option value="Belum Lunas">Belum Lunas</option>
+              <option value="Diputus">Putus Aliran Listrik</option>
+            </select>
+          </div>
+
+          {/* Floor Filter */}
+          <div>
+            <label className="block text-[10px] font-bold uppercase tracking-wider text-slate-400 mb-1">Lantai</label>
+            <select
+              value={filterFloor}
+              onChange={(e) => setFilterFloor(e.target.value)}
+              className="block w-full px-3 py-2.5 bg-white border border-slate-200 rounded-xl text-xs font-semibold focus:outline-none focus:ring-2 focus:ring-rose-500 focus:border-transparent transition-all cursor-pointer font-sans text-slate-800"
+            >
+              <option value="Semua">Semua Lantai</option>
+              <option value="1">Lantai 1</option>
+              <option value="2">Lantai 2</option>
+              <option value="3">Lantai 3</option>
+              <option value="4">Lantai 4</option>
+              <option value="5">Lantai 5</option>
+            </select>
           </div>
         </div>
 
