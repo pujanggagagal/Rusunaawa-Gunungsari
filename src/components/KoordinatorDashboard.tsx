@@ -99,11 +99,14 @@ export const KoordinatorDashboard: React.FC<KoordinatorDashboardProps> = ({
       year: 'numeric'
     });
 
-    const receiptText = `
+    const receiptHeader = `
 ================================
        RUSUN GUNUNGSARI
    PAGUYUBAN WARGA MANDIRI
 ================================
+`.trim();
+
+    const receiptBody = `
 Tanggal  : ${today}
 Nota No  : ${bill.id}
 Petugas  : ${coordinator.name}
@@ -124,7 +127,7 @@ STATUS         : ${bill.status.toUpperCase()}
           TERIMA KASIH
      Sistem Informasi Rusun
 ================================
-`;
+`.trim();
 
     const qrHtml = qrDataUrl 
       ? `<div style="text-align: center; margin: 8px 0;">
@@ -174,8 +177,9 @@ STATUS         : ${bill.status.toUpperCase()}
           </style>
         </head>
         <body>
-          <pre>${receiptText.trim()}</pre>
+          <pre>${receiptHeader}</pre>
           ${qrHtml}
+          <pre>${receiptBody}</pre>
           <div class="official-footer">
             Nota ini adalah bukti pembayaran resmi Rusun Gunungsari.
           </div>
