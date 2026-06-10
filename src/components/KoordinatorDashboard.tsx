@@ -1788,6 +1788,15 @@ STATUS         : ${bill.status.toUpperCase()}
         });
 
         const filteredResForReceipt = floorResidents.filter(res => {
+          // Block filter
+          if (filterBlock !== 'all') {
+            const filterVal = filterBlock.toLowerCase().replace(/\s+/g, '').trim();
+            const resVal = (res.block || '').toLowerCase().replace(/\s+/g, '').trim();
+            if (resVal !== filterVal && !resVal.includes(filterVal) && !filterVal.includes(resVal)) {
+              return false;
+            }
+          }
+
           const query = searchQuery.toLowerCase();
           const matchesSearch = res.name.toLowerCase().includes(query) || 
                                 res.unit.toLowerCase().includes(query) ||
@@ -1810,6 +1819,20 @@ STATUS         : ${bill.status.toUpperCase()}
                 </div>
 
                 <div className="flex flex-col sm:flex-row gap-2.5 w-full sm:w-auto items-stretch sm:items-center">
+                  {/* Select Block */}
+                  <select
+                    value={filterBlock}
+                    onChange={(e) => setFilterBlock(e.target.value)}
+                    className="px-3 py-1.5 bg-slate-50 border border-slate-200 rounded-xl text-xs font-bold text-slate-700 focus:outline-none focus:border-cyan-500"
+                  >
+                    <option value="all">Semua Blok</option>
+                    <option value="Blok A">Blok A</option>
+                    <option value="Blok B">Blok B</option>
+                    <option value="Blok C">Blok C</option>
+                    <option value="Blok D">Blok D</option>
+                    <option value="Blok E">Blok E</option>
+                  </select>
+
                   <div className="relative flex-1 sm:w-48">
                     <input
                       type="text"
