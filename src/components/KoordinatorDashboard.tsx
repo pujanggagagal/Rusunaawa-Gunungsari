@@ -208,14 +208,15 @@ STATUS         : ${bill.status.toUpperCase()}
           </div>
           
           <script>
-            window.onload = function() {
+            setTimeout(function() {
               window.print();
-            };
+            }, 250);
           </script>
         </body>
       </html>
     `);
     printWindow.document.close();
+    printWindow.focus();
   };
 
   // 2. State management
