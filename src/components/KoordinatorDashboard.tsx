@@ -136,6 +136,8 @@ STATUS         : ${bill.status.toUpperCase()}
          </div>`
       : '';
 
+    const textToShare = `${receiptHeader}\n\n${receiptBody}\n\nNota ini adalah bukti pembayaran resmi Rusun Gunungsari.`;
+
     printWindow.document.write(`
       <html>
         <head>
@@ -192,6 +194,7 @@ STATUS         : ${bill.status.toUpperCase()}
             }
             .btn-cyan { background-color: #0891b2; }
             .btn-rose { background-color: #e11d48; }
+            .btn-green { background-color: #16a34a; }
           </style>
         </head>
         <body>
@@ -203,6 +206,7 @@ STATUS         : ${bill.status.toUpperCase()}
           </div>
           
           <div class="no-print" style="text-align: center; margin-top: 15px; border-top: 1px solid #ccc; padding-top: 10px;">
+            <button class="no-print-btn btn-green" id="shareBtn">Bagikan Struk</button>
             <button class="no-print-btn btn-cyan" onclick="window.print()">Cetak Ulang</button>
             <button class="no-print-btn btn-rose" onclick="window.close()">Tutup Halaman</button>
           </div>
@@ -211,6 +215,27 @@ STATUS         : ${bill.status.toUpperCase()}
             setTimeout(function() {
               window.print();
             }, 250);
+
+            const shareBtn = document.getElementById('shareBtn');
+            if (shareBtn) {
+              if (navigator.share) {
+                shareBtn.addEventListener('click', function() {
+                  try {
+                    const text = ${JSON.stringify(textToShare)};
+                    const file = new File([text], 'struk.txt', { type: 'text/plain' });
+                    navigator.share({
+                      files: [file],
+                      title: 'Cetak Struk',
+                      text: 'Kirim struk ke printer thermal Bluetooth'
+                    });
+                  } catch (e) {
+                    alert('Gagal membagikan: ' + e.message);
+                  }
+                });
+              } else {
+                shareBtn.style.display = 'none';
+              }
+            }
           </script>
         </body>
       </html>
