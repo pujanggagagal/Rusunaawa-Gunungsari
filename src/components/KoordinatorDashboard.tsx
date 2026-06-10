@@ -1,4 +1,5 @@
 import React, { useState, useEffect, useRef } from 'react';
+import QRCode from 'qrcode';
 import { Resident, BillingRecord, Coordinator, getFloorFromUnit, getBarcodeContent, AppSettings, getMonthYearFromDateString, getPrevMonthYear } from '../types';
 import { 
   LogOut, 
@@ -71,7 +72,21 @@ export const KoordinatorDashboard: React.FC<KoordinatorDashboardProps> = ({
   };
 
   const handlePrintReceipt = (res: Resident, bill: BillingRecord) => {
-    const printWindow = window.open('', '_blank', 'width=350,height=600');
+    // Generate QR Code containing the digital receipt URL
+    const verifyUrl = `${window.location.origin}/?verifyBill=${bill.id}`;
+    
+    QRCode.toDataURL(verifyUrl, { margin: 1, width: 100 }, (err, qrDataUrl) => {
+      if (err) {
+        console.error("Gagal generate QR Code", err);
+        runPrint(res, bill, '');
+      } else {
+        runPrint(res, bill, qrDataUrl);
+      }
+    });
+  };
+
+  const runPrint = (res: Resident, bill: BillingRecord, qrDataUrl: string) => {
+    const printWindow = window.open('', '_blank', 'width=350,height=650');
     if (!printWindow) {
       alert('Gagal membuka jendela cetak. Pastikan pop-up blocker dimatikan.');
       return;
@@ -106,10 +121,17 @@ Biaya Sampah   : Rp ${bill.trashBill.toLocaleString('id-ID')}
 TOTAL TAGIHAN  : Rp ${bill.totalBill.toLocaleString('id-ID')}
 STATUS         : ${bill.status.toUpperCase()}
 --------------------------------
-         TERIMA KASIH
-    Sistem Informasi Rusun
+          TERIMA KASIH
+     Sistem Informasi Rusun
 ================================
 `;
+
+    const qrHtml = qrDataUrl 
+      ? `<div style="text-align: center; margin: 8px 0;">
+           <img src="${qrDataUrl}" width="80" height="80" style="display: block; margin: 0 auto;" />
+           <div style="font-size: 7px; color: #555; margin-top: 2px; font-family: monospace; font-weight: bold; text-transform: uppercase;">Scan QR Verifikasi Nota Digital</div>
+         </div>`
+      : '';
 
     printWindow.document.write(`
       <html>
@@ -134,6 +156,16 @@ STATUS         : ${bill.status.toUpperCase()}
               white-space: pre-wrap;
               word-break: break-all;
             }
+            .official-footer {
+              font-size: 8px;
+              font-family: 'Courier New', Courier, monospace;
+              text-align: center;
+              margin-top: 10px;
+              border-top: 1px dashed #000;
+              padding-top: 6px;
+              font-weight: bold;
+              line-height: 1.3;
+            }
             @media print {
               html, body {
                 width: 58mm;
@@ -143,6 +175,10 @@ STATUS         : ${bill.status.toUpperCase()}
         </head>
         <body>
           <pre>${receiptText.trim()}</pre>
+          ${qrHtml}
+          <div class="official-footer">
+            Nota ini adalah bukti pembayaran resmi Rusun Gunungsari.
+          </div>
           <script>
             window.onload = function() {
               window.print();
