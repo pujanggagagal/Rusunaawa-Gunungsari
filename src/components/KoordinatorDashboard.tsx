@@ -74,21 +74,23 @@ export const KoordinatorDashboard: React.FC<KoordinatorDashboardProps> = ({
   const handlePrintReceipt = (res: Resident, bill: BillingRecord) => {
     // Generate QR Code containing the digital receipt URL
     const verifyUrl = `${window.location.origin}/?verifyBill=${bill.id}`;
-    const today = new Date().toLocaleDateString('id-ID', {
-      day: 'numeric',
-      month: 'long',
-      year: 'numeric'
-    });
-    const usage = bill.usage;
     
-    const receiptHeader = `
+    QRCode.toDataURL(verifyUrl, { margin: 1, width: 100 }, (err, qrDataUrl) => {
+      const today = new Date().toLocaleDateString('id-ID', {
+        day: 'numeric',
+        month: 'long',
+        year: 'numeric'
+      });
+      const usage = bill.usage;
+      
+      const receiptHeader = `
 ================================
        RUSUN GUNUNGSARI
    PAGUYUBAN WARGA MANDIRI
 ================================
 `.trim();
 
-    const receiptBody = `
+      const receiptBody = `
 Tanggal  : ${today}
 Nota No  : ${bill.id}
 Petugas  : ${coordinator.name}
@@ -111,38 +113,76 @@ STATUS         : ${bill.status.toUpperCase()}
 ================================
 `.trim();
 
-    const textToShare = `${receiptHeader}\n\nLink Verifikasi Nota Digital:\n${verifyUrl}\n\n${receiptBody}\n\nNota ini adalah bukti pembayaran resmi Rusun Gunungsari.`;
-    
-    try {
-      const shareFile = new File([textToShare], `nota-${res.unit}.txt`, { type: 'text/plain' });
-      
-      // Try sharing directly if supported by browser (mostly on mobile)
-      if (navigator.share && navigator.canShare && navigator.canShare({ files: [shareFile] })) {
-        navigator.share({
-          files: [shareFile],
-          title: `Cetak Nota ${res.unit}`,
-          text: 'Kirim struk ke printer thermal Bluetooth via RawBT'
-        }).catch(err => {
-          // If sharing is cancelled or fails, fallback to window.print popup
-          console.warn("Direct sharing failed or cancelled, falling back to popup print:", err);
-          triggerFallbackPrint(res, bill, verifyUrl);
-        });
-      } else {
-        triggerFallbackPrint(res, bill, verifyUrl);
-      }
-    } catch (e) {
-      console.warn("Web Share API files not supported, falling back to popup print:", e);
-      triggerFallbackPrint(res, bill, verifyUrl);
-    }
-  };
+      const qrHtml = qrDataUrl 
+        ? `<div style="text-align: center; margin: 8px 0;">
+             <img src="${qrDataUrl}" width="80" height="80" style="display: block; margin: 0 auto;" />
+             <div style="font-size: 7px; color: #555; margin-top: 2px; font-family: monospace; font-weight: bold; text-transform: uppercase;">Scan QR Verifikasi Nota Digital</div>
+           </div>`
+        : '';
 
-  const triggerFallbackPrint = (res: Resident, bill: BillingRecord, verifyUrl: string) => {
-    QRCode.toDataURL(verifyUrl, { margin: 1, width: 100 }, (err, qrDataUrl) => {
-      if (err) {
-        console.error("Gagal generate QR Code", err);
-        runPrint(res, bill, '');
-      } else {
-        runPrint(res, bill, qrDataUrl);
+      const htmlContent = `
+        <html>
+          <head>
+            <meta charset="utf-8">
+            <style>
+              body {
+                font-family: 'Courier New', Courier, monospace;
+                font-size: 9px;
+                line-height: 1.2;
+                width: 58mm;
+                margin: 0;
+                padding: 4px;
+                box-sizing: border-box;
+                background-color: #fff;
+              }
+              pre {
+                margin: 0;
+                white-space: pre-wrap;
+                word-break: break-all;
+                font-family: inherit;
+              }
+              .official-footer {
+                font-size: 7px;
+                font-family: 'Courier New', Courier, monospace;
+                text-align: center;
+                margin-top: 8px;
+                border-top: 1px dashed #000;
+                padding-top: 4px;
+                font-weight: bold;
+                line-height: 1.3;
+              }
+            </style>
+          </head>
+          <body>
+            <pre>${receiptHeader}</pre>
+            ${qrHtml}
+            <pre>${receiptBody}</pre>
+            <div class="official-footer">
+              Nota ini adalah bukti pembayaran resmi Rusun Gunungsari.
+            </div>
+          </body>
+        </html>
+      `;
+
+      try {
+        const shareFile = new File([htmlContent], `nota-${res.unit}.html`, { type: 'text/html' });
+        
+        // Try sharing directly if supported by browser (mostly on mobile)
+        if (navigator.share && navigator.canShare && navigator.canShare({ files: [shareFile] })) {
+          navigator.share({
+            files: [shareFile],
+            title: `Cetak Nota ${res.unit}`,
+            text: 'Kirim struk ke printer thermal Bluetooth via RawBT'
+          }).catch(shareErr => {
+            console.warn("Direct sharing failed or cancelled, falling back to popup print:", shareErr);
+            runPrint(res, bill, qrDataUrl || '');
+          });
+        } else {
+          runPrint(res, bill, qrDataUrl || '');
+        }
+      } catch (e) {
+        console.warn("Web Share API files not supported, falling back to popup print:", e);
+        runPrint(res, bill, qrDataUrl || '');
       }
     });
   };
