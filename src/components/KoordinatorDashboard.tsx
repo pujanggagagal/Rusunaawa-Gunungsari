@@ -129,14 +129,15 @@ STATUS         : ${bill.status.toUpperCase()}
 ================================
 `.trim();
 
+    const headerLines = receiptHeader.split('\n');
+    const bodyLines = receiptBody.split('\n');
+
     const qrHtml = qrDataUrl 
       ? `<div style="text-align: center; margin: 8px 0;">
            <img src="${qrDataUrl}" width="80" height="80" style="display: block; margin: 0 auto;" />
            <div style="font-size: 7px; color: #555; margin-top: 2px; font-family: monospace; font-weight: bold; text-transform: uppercase;">Scan QR Verifikasi Nota Digital</div>
          </div>`
       : '';
-
-    const textToShare = `${receiptHeader}\n\n${receiptBody}\n\nNota ini adalah bukti pembayaran resmi Rusun Gunungsari.`;
 
     printWindow.document.write(`
       <html>
@@ -233,16 +234,149 @@ STATUS         : ${bill.status.toUpperCase()}
             if (shareBtn) {
               if (navigator.share) {
                 shareBtn.addEventListener('click', function() {
+                  shareBtn.disabled = true;
+                  shareBtn.innerText = 'Memproses...';
                   try {
-                    const text = ${JSON.stringify(textToShare)};
-                    const file = new File([text], 'struk.txt', { type: 'text/plain' });
-                    navigator.share({
-                      files: [file],
-                      title: 'Cetak Struk',
-                      text: 'Kirim struk ke printer thermal Bluetooth'
+                    const canvas = document.createElement('canvas');
+                    canvas.width = 384;
+                    const ctx = canvas.getContext('2d');
+                    if (!ctx) throw new Error('Cannot get canvas context');
+
+                    const headerLines = ${JSON.stringify(headerLines)};
+                    const bodyLines = ${JSON.stringify(bodyLines)};
+                    const footerText = 'Nota ini adalah bukti pembayaran resmi Rusun Gunungsari.';
+                    const qrDataUrl = ${JSON.stringify(qrDataUrl)};
+
+                    // Wrap text helper
+                    const wrapText = function(text, maxWidth) {
+                      const words = text.split(' ');
+                      const lines = [];
+                      let currentLine = words[0];
+                      for (let i = 1; i < words.length; i++) {
+                        const word = words[i];
+                        const width = ctx.measureText(currentLine + " " + word).width;
+                        if (width < maxWidth) {
+                          currentLine += " " + word;
+                        } else {
+                          lines.push(currentLine);
+                          currentLine = word;
+                        }
+                      }
+                      lines.push(currentLine);
+                      return lines;
+                    };
+
+                    ctx.font = '14px "Courier New", Courier, monospace';
+                    const wrappedFooter = wrapText(footerText, 360);
+
+                    const headerLineHeight = 18;
+                    const bodyLineHeight = 18;
+                    const footerLineHeight = 16;
+                    const qrHeight = qrDataUrl ? 150 : 0;
+                    
+                    const totalHeight = 25 + (headerLines.length * headerLineHeight) + 15 + qrHeight + 15 + (bodyLines.length * bodyLineHeight) + 15 + (wrappedFooter.length * footerLineHeight) + 30;
+                    canvas.height = totalHeight;
+
+                    // Background white
+                    ctx.fillStyle = '#ffffff';
+                    ctx.fillRect(0, 0, canvas.width, canvas.height);
+
+                    ctx.fillStyle = '#000000';
+                    ctx.textBaseline = 'top';
+
+                    let currentY = 15;
+
+                    // Draw Header
+                    ctx.font = 'bold 14px "Courier New", Courier, monospace';
+                    headerLines.forEach(function(line) {
+                      ctx.fillText(line, 12, currentY);
+                      currentY += headerLineHeight;
                     });
+
+                    currentY += 10;
+
+                    const drawBodyAndFooter = function() {
+                      // Draw Body
+                      ctx.font = '14px "Courier New", Courier, monospace';
+                      bodyLines.forEach(function(line) {
+                        ctx.fillText(line, 12, currentY);
+                        currentY += bodyLineHeight;
+                      });
+
+                      currentY += 10;
+
+                      // Draw Divider
+                      ctx.strokeStyle = '#000000';
+                      ctx.lineWidth = 1;
+                      ctx.setLineDash([4, 4]);
+                      ctx.beginPath();
+                      ctx.moveTo(12, currentY);
+                      ctx.lineTo(372, currentY);
+                      ctx.stroke();
+                      ctx.setLineDash([]);
+
+                      currentY += 12;
+
+                      // Draw Footer
+                      ctx.font = 'bold 12px "Courier New", Courier, monospace';
+                      wrappedFooter.forEach(function(line) {
+                        const textWidth = ctx.measureText(line).width;
+                        const xOffset = (canvas.width - textWidth) / 2;
+                        ctx.fillText(line, xOffset, currentY);
+                        currentY += footerLineHeight;
+                      });
+
+                      // Share canvas as image
+                      canvas.toBlob(function(blob) {
+                        if (!blob) {
+                          alert('Gagal membuat gambar struk');
+                          shareBtn.disabled = false;
+                          shareBtn.innerText = 'Bagikan Struk';
+                          return;
+                        }
+                        const file = new File([blob], 'nota-${res.unit}.png', { type: 'image/png' });
+                        navigator.share({
+                          files: [file],
+                          title: 'Cetak Struk ${res.unit}',
+                          text: 'Kirim struk gambar ke printer thermal Bluetooth via RawBT'
+                        }).then(function() {
+                          shareBtn.disabled = false;
+                          shareBtn.innerText = 'Bagikan Struk';
+                        }).catch(function(err) {
+                          console.log('Share cancelled/failed:', err);
+                          shareBtn.disabled = false;
+                          shareBtn.innerText = 'Bagikan Struk';
+                        });
+                      }, 'image/png');
+                    };
+
+                    if (qrDataUrl) {
+                      const img = new Image();
+                      img.onload = function() {
+                        const qrSize = 110;
+                        const xOffset = (canvas.width - qrSize) / 2;
+                        ctx.drawImage(img, xOffset, currentY, qrSize, qrSize);
+                        currentY += qrSize + 5;
+
+                        ctx.font = 'bold 10px "Courier New", Courier, monospace';
+                        const label = "SCAN QR VERIFIKASI NOTA DIGITAL";
+                        const labelWidth = ctx.measureText(label).width;
+                        ctx.fillText(label, (canvas.width - labelWidth) / 2, currentY);
+                        currentY += 18;
+
+                        drawBodyAndFooter();
+                      };
+                      img.onerror = function() {
+                        drawBodyAndFooter();
+                      };
+                      img.src = qrDataUrl;
+                    } else {
+                      drawBodyAndFooter();
+                    }
                   } catch (e) {
-                    alert('Gagal membagikan: ' + e.message);
+                    alert('Error sharing: ' + e.message);
+                    shareBtn.disabled = false;
+                    shareBtn.innerText = 'Bagikan Struk';
                   }
                 });
               } else {
