@@ -173,7 +173,25 @@ STATUS         : ${bill.status.toUpperCase()}
               html, body {
                 width: 58mm;
               }
+              .no-print {
+                display: none !important;
+              }
             }
+            .no-print-btn {
+              display: inline-block;
+              padding: 6px 12px;
+              margin: 5px;
+              font-family: Arial, sans-serif;
+              font-size: 10px;
+              font-weight: bold;
+              color: white;
+              border: none;
+              border-radius: 4px;
+              cursor: pointer;
+              text-decoration: none;
+            }
+            .btn-cyan { background-color: #0891b2; }
+            .btn-rose { background-color: #e11d48; }
           </style>
         </head>
         <body>
@@ -183,10 +201,15 @@ STATUS         : ${bill.status.toUpperCase()}
           <div class="official-footer">
             Nota ini adalah bukti pembayaran resmi Rusun Gunungsari.
           </div>
+          
+          <div class="no-print" style="text-align: center; margin-top: 15px; border-top: 1px solid #ccc; padding-top: 10px;">
+            <button class="no-print-btn btn-cyan" onclick="window.print()">Cetak Ulang</button>
+            <button class="no-print-btn btn-rose" onclick="window.close()">Tutup Halaman</button>
+          </div>
+          
           <script>
             window.onload = function() {
               window.print();
-              setTimeout(function() { window.close(); }, 500);
             };
           </script>
         </body>
