@@ -30,6 +30,13 @@ export default function App() {
   const [isLoading, setIsLoading] = useState(true);
   const [currentRole, setCurrentRole] = useState<UserRole | null>(null);
   const [currentUser, setCurrentUser] = useState<any>(null);
+  const [verifyBillId, setVerifyBillId] = useState<string | null>(() => {
+    if (typeof window !== 'undefined') {
+      const params = new URLSearchParams(window.location.search);
+      return params.get('verifyBill');
+    }
+    return null;
+  });
 
   const [appSettings, setAppSettings] = useState<AppSettings>(() => {
     if (typeof window === 'undefined') return DEFAULT_APP_SETTINGS;
@@ -963,7 +970,99 @@ export default function App() {
       
       {/* Main Container Workspace Area */}
       <main className="flex-grow">
-        {!currentRole ? (
+        {verifyBillId ? (
+          <div className="max-w-md mx-auto my-12 px-4 py-8 bg-white border border-slate-100 shadow-2xl rounded-3xl text-center space-y-6">
+            {(() => {
+              const bill = data.billing.find(b => b.id === verifyBillId);
+              if (!bill) {
+                return (
+                  <div className="space-y-4">
+                    <div className="h-16 w-16 bg-rose-100 text-rose-600 rounded-full flex items-center justify-center mx-auto text-3xl">⚠️</div>
+                    <h2 className="text-lg font-black text-slate-900">Nota Tidak Ditemukan</h2>
+                    <p className="text-xs text-slate-500">ID nota ini tidak valid atau belum sinkron di database sistem.</p>
+                    <button
+                      onClick={() => {
+                        window.history.replaceState({}, document.title, window.location.pathname);
+                        setVerifyBillId(null);
+                      }}
+                      className="px-6 py-2 bg-slate-800 text-white text-xs font-bold rounded-xl"
+                    >
+                      Kembali Ke Login
+                    </button>
+                  </div>
+                );
+              }
+
+              const resident = data.residents.find(r => r.ktp === bill.residentKtp);
+              const isPaid = bill.status === 'Lunas' || bill.status === 'Terbayar di Koordinator';
+
+              return (
+                <div className="space-y-5">
+                  <div className={`h-16 w-16 rounded-full flex items-center justify-center mx-auto text-3xl shadow-inner ${
+                    isPaid ? 'bg-emerald-100 text-emerald-600' : 'bg-amber-100 text-amber-600'
+                  }`}>
+                    {isPaid ? '✓' : 'ℹ'}
+                  </div>
+                  
+                  <div>
+                    <span className={`text-[10px] font-extrabold px-2.5 py-0.5 rounded-full uppercase tracking-wider ${
+                      isPaid ? 'bg-emerald-100 text-emerald-800' : 'bg-amber-100 text-amber-800'
+                    }`}>
+                      {isPaid ? 'PEMBAYARAN SAH & TERVERIFIKASI' : 'TAGIHAN AKTIF'}
+                    </span>
+                    <h2 className="text-xl font-black text-slate-900 mt-2">Nota Pembayaran Rusun</h2>
+                    <p className="text-xxs text-slate-400 font-mono mt-0.5">ID: {bill.id}</p>
+                  </div>
+
+                  <div className="border-t border-b border-slate-100 py-4 text-left text-xs font-semibold text-slate-705 space-y-2">
+                    <div className="flex justify-between">
+                      <span className="text-slate-450">Unit Hunian:</span>
+                      <span className="font-mono text-slate-900 font-black">{resident?.unit || '-'}</span>
+                    </div>
+                    <div className="flex justify-between">
+                      <span className="text-slate-455">Nama Warga:</span>
+                      <span className="text-slate-900 font-bold">{resident?.name || '-'}</span>
+                    </div>
+                    <div className="flex justify-between">
+                      <span className="text-slate-455">Periode Tagihan:</span>
+                      <span className="text-slate-900 font-bold">{bill.month} {bill.year}</span>
+                    </div>
+                    <div className="flex justify-between border-t border-slate-100 pt-2">
+                      <span className="text-slate-455">Meteran Air:</span>
+                      <span className="font-mono text-slate-900">{bill.prevMeter} m³ s.d {bill.currentMeter} m³ ({bill.usage} m³)</span>
+                    </div>
+                    <div className="flex justify-between">
+                      <span className="text-slate-455">Total Iuran:</span>
+                      <span className="font-mono text-emerald-600 font-black text-sm">Rp {bill.totalBill.toLocaleString('id-ID')}</span>
+                    </div>
+                    <div className="flex justify-between">
+                      <span className="text-slate-455">Status Tagihan:</span>
+                      <span className={`font-black uppercase ${isPaid ? 'text-emerald-600' : 'text-rose-600'}`}>
+                        {bill.status}
+                      </span>
+                    </div>
+                    {bill.paymentDate && (
+                      <div className="flex justify-between">
+                        <span className="text-slate-455">Tanggal Bayar:</span>
+                        <span className="text-slate-900 font-mono">{new Date(bill.paymentDate).toLocaleDateString('id-ID', { day: 'numeric', month: 'long', year: 'numeric', hour: '2-digit', minute: '2-digit' })}</span>
+                      </div>
+                    )}
+                  </div>
+
+                  <button
+                    onClick={() => {
+                      window.history.replaceState({}, document.title, window.location.pathname);
+                      setVerifyBillId(null);
+                    }}
+                    className="w-full py-3 bg-slate-800 hover:bg-slate-900 text-white text-xs font-black uppercase tracking-wider rounded-xl transition-all border-0 cursor-pointer shadow-md"
+                  >
+                    Tutup &amp; Masuk Ke Aplikasi
+                  </button>
+                </div>
+              );
+            })()}
+          </div>
+        ) : !currentRole ? (
           <Login
             residents={data.residents}
             coordinators={data.coordinators}
