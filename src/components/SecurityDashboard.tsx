@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { Resident, BillingRecord, getFloorFromUnit, AppSettings } from '../types';
+import { Resident, BillingRecord, getFloorFromUnit, AppSettings, getMonthYearFromDateString } from '../types';
 import { LogOut, ShieldCheck, Zap, ZapOff, CheckCircle2, AlertTriangle, Calendar, Info, RefreshCw, Badge } from 'lucide-react';
 
 interface SecurityDashboardProps {
@@ -23,14 +23,16 @@ export const SecurityDashboard: React.FC<SecurityDashboardProps> = ({
 }) => {
   const [filterBlock, setFilterBlock] = useState('Semua');
 
+  const { month: activeMonth, year: activeYear } = getMonthYearFromDateString(simulatedDate);
+
   // Convert simulated date string to get day of month
   const simDay = parseInt(simulatedDate.split('-')[2] || '12', 10);
   const isPastDue = simDay > 10;
 
-  // Find unpaid billing records for May 2026
-  const meiBills = billingRecords.filter((b) => b.month === 'Mei' && b.year === 2026);
+  // Find unpaid billing records for active period
+  const meiBills = billingRecords.filter((b) => b.month === activeMonth && b.year === activeYear);
   
-  // Map residents with their payment status for May
+  // Map residents with their payment status for active period
   const complianceData = residents.map((resident) => {
     const bill = meiBills.find((b) => b.residentKtp === resident.ktp);
     return {
@@ -112,17 +114,12 @@ export const SecurityDashboard: React.FC<SecurityDashboardProps> = ({
               </span>
             </div>
 
-            <select
+            <input
+              type="date"
               value={simulatedDate}
               onChange={(e) => onUpdateSimulatedDate(e.target.value)}
-              className="block w-full px-3 py-2 bg-white border border-slate-200 rounded-lg text-xs font-semibold focus:outline-none focus:ring-2 focus:ring-emerald-500 focus:border-transparent transition-all"
-            >
-              <option value="2026-05-05">5 Mei 2026 (Masa Pembayaran / Aman)</option>
-              <option value="2026-05-10">10 Mei 2026 (Hari Jatuh Tempo Terakhir)</option>
-              <option value="2026-05-11">11 Mei 2026 (Lewat Jatuh Tempo 1 Hari - PUTUS!)</option>
-              <option value="2026-05-15">15 Mei 2026 (Lewat Jatuh Tempo / Penindakan berjalan)</option>
-              <option value="2026-05-20">20 Mei 2026 (Lewat Jatuh Tempo / Listrik Dinonaktifkan)</option>
-            </select>
+              className="block w-full px-3 py-2 bg-white border border-slate-250 rounded-lg text-xs font-semibold focus:outline-none focus:ring-2 focus:ring-emerald-500 focus:border-transparent transition-all font-mono"
+            />
           </div>
         </div>
 
@@ -135,7 +132,7 @@ export const SecurityDashboard: React.FC<SecurityDashboardProps> = ({
           </div>
 
           <div className="bg-amber-50/60 p-4 rounded-2xl border border-amber-100 flex flex-col justify-between text-amber-900">
-            <span className="text-xxs uppercase tracking-wider text-amber-500 font-mono font-bold">Menunggak Mei</span>
+            <span className="text-xxs uppercase tracking-wider text-amber-500 font-mono font-bold">Menunggak {activeMonth}</span>
             <span className="text-3xl font-bold font-mono text-amber-700 mt-2">{threatCount}</span>
             <span className="text-[10px] text-amber-500 font-semibold leading-tight mt-1">Belum Lunas</span>
           </div>
@@ -143,7 +140,7 @@ export const SecurityDashboard: React.FC<SecurityDashboardProps> = ({
           <div className="bg-rose-50 p-4 rounded-2xl border border-rose-100 flex flex-col justify-between text-rose-900">
             <span className="text-xxs uppercase tracking-wider text-rose-500 font-mono font-bold">Listrik Berstatus Putus</span>
             <span className="text-3xl font-bold font-mono text-rose-700 mt-2">{disconnectedCount}</span>
-            <span className="text-[10px] text-rose-500 font-semibold leading-tight mt-1">Kabel isolasi sekat</span>
+            <span className="text-[10px] text-rose-500 font-semibold leading-tight mt-1">MCB Tersegel</span>
           </div>
         </div>
 
@@ -155,7 +152,7 @@ export const SecurityDashboard: React.FC<SecurityDashboardProps> = ({
         <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 mb-6">
           <div>
             <h2 className="text-lg font-bold text-slate-900">Rencana Penertiban &amp; Kontrol Saklar MCB Listrik</h2>
-            <p className="text-xs text-slate-500 font-mono mt-0.5">Daftar tindakan pemutusan aliran meteran warga per tanggal 10 Mei</p>
+            <p className="text-xs text-slate-500 font-mono mt-0.5">Daftar tindakan pemutusan aliran meteran warga per tanggal 10 {activeMonth}</p>
           </div>
  
           <div className="flex bg-slate-100 p-1 rounded-xl overflow-x-auto scrollbar-none w-full sm:w-auto max-w-full gap-1">
@@ -210,7 +207,7 @@ export const SecurityDashboard: React.FC<SecurityDashboardProps> = ({
                     <span className="font-bold text-slate-800 line-clamp-1">{res.name}</span>
                   </div>
                   <div>
-                    <span className="block text-[9px] text-slate-400 uppercase font-mono">Tagihan Mei</span>
+                    <span className="block text-[9px] text-slate-400 uppercase font-mono">Tagihan {activeMonth}</span>
                     <span className="font-mono font-bold text-slate-900">
                       {res.billInputted ? formatRupiah(res.totalBill) : '-'}
                     </span>
@@ -273,7 +270,7 @@ export const SecurityDashboard: React.FC<SecurityDashboardProps> = ({
                 <th className="pb-3 text-left">Hunian</th>
                 <th className="pb-3">Nama Penghuni</th>
                 <th className="pb-3">Tagihan Air + Sampah</th>
-                <th className="pb-3 text-center">Status Pembayaran (Mei)</th>
+                <th className="pb-3 text-center">Status Pembayaran ({activeMonth})</th>
                 <th className="pb-3 text-center">Sanksi Pemutusan Listrik</th>
                 <th className="pb-3 text-center">Saklar MCB Listrik (Security)</th>
                 <th className="pb-3 text-right">Aksi Manual</th>

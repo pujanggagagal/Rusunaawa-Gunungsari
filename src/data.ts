@@ -8570,7 +8570,7 @@ export const getStoredData = () => {
     coordinators: coordinators ? JSON.parse(coordinators) : INITIAL_COORDINATORS,
     billing: billing ? JSON.parse(billing) : INITIAL_BILLING_RECORDS,
     finance: finance ? JSON.parse(finance) : INITIAL_FINANCE_LOGS,
-    simulatedDate: simulatedDate || '2026-05-12'
+    simulatedDate: simulatedDate || new Date().toISOString().split('T')[0]
   };
 };
 

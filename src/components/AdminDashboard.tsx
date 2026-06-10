@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { Resident, Coordinator, FinancialLog, BillingRecord, getFloorFromUnit, getBarcodeContent, AppSettings, getCleanPhone } from '../types';
+import { Resident, Coordinator, FinancialLog, BillingRecord, getFloorFromUnit, getBarcodeContent, AppSettings, getCleanPhone, getMonthYearFromDateString, getPrevMonthYear } from '../types';
 import { LogOut, LayoutGrid, Users, Coins, Plus, Trash2, Edit2, UserPlus, Sparkles, CheckCircle2, ChevronRight, Calculator, Landmark, ShieldAlert, ArrowDownUp, UploadCloud, AlertCircle, Check, RotateCcw, QrCode, Printer, Search, FileText, Download, Settings, Building2 } from 'lucide-react';
 import { calculatePdamBill } from '../data';
 import { BarcodeRenderer } from './BarcodeRenderer';
@@ -10,6 +10,7 @@ interface AdminDashboardProps {
   coordinators: Coordinator[];
   financeLogs: FinancialLog[];
   billingRecords: BillingRecord[];
+  simulatedDate: string;
   onLogout: () => void;
   onAddResident: (res: Omit<Resident, 'id'>) => void;
   onDeleteResident: (id: string) => void;
@@ -39,6 +40,7 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({
   coordinators,
   financeLogs,
   billingRecords,
+  simulatedDate,
   onLogout,
   onAddResident,
   onDeleteResident,
@@ -64,12 +66,15 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({
 }) => {
   const [activeTab, setActiveTab] = useState<'finance' | 'residents' | 'coordinators' | 'reconciliation' | 'billing' | 'pdam-all' | 'barcodes' | 'settings'>('finance');
 
+  const { month: activeMonth, year: activeYear } = getMonthYearFromDateString(simulatedDate);
+  const { month: prevMonth, year: prevYear } = getPrevMonthYear(activeMonth, activeYear);
+
   // States for PDAM All Billing Management (Menu Baru)
   const [editingBill, setEditingBill] = useState<BillingRecord | null>(null);
   const [editBillPrevMeter, setEditBillPrevMeter] = useState<number>(0);
   const [editBillCurrentMeter, setEditBillCurrentMeter] = useState<number>(0);
-  const [editBillMonth, setEditBillMonth] = useState<string>('Mei');
-  const [editBillYear, setEditBillYear] = useState<number>(2026);
+  const [editBillMonth, setEditBillMonth] = useState<string>(activeMonth);
+  const [editBillYear, setEditBillYear] = useState<number>(activeYear);
   const [editBillStatus, setEditBillStatus] = useState<'Lunas' | 'Belum Lunas'>('Belum Lunas');
   const [editBillPaymentDate, setEditBillPaymentDate] = useState<string>('');
   const [editBillTrashBill, setEditBillTrashBill] = useState<number>(10000);
@@ -78,8 +83,8 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({
   const [addBillResidentKtp, setAddBillResidentKtp] = useState<string>('');
   const [addBillPrevMeter, setAddBillPrevMeter] = useState<number>(0);
   const [addBillCurrentMeter, setAddBillCurrentMeter] = useState<number>(0);
-  const [addBillMonth, setAddBillMonth] = useState<string>('Mei');
-  const [addBillYear, setAddBillYear] = useState<number>(2026);
+  const [addBillMonth, setAddBillMonth] = useState<string>(activeMonth);
+  const [addBillYear, setAddBillYear] = useState<number>(activeYear);
   const [addBillStatus, setAddBillStatus] = useState<'Lunas' | 'Belum Lunas'>('Belum Lunas');
   const [addBillTrashBill, setAddBillTrashBill] = useState<number>(10000);
   const [addBillSearch, setAddBillSearch] = useState<string>('');
@@ -1600,7 +1605,11 @@ Siti Aminah	357802...	Blok B	B-202	085755..."
                             <Edit2 size={14} />
                           </button>
                           <button
-                            onClick={() => onDeleteResident(res.id)}
+                            onClick={() => {
+                              if (window.confirm(`Apakah Anda yakin ingin mengosongkan hunian unit ${res.unit}? Data penghuni (${res.name}) akan dibersihkan dan status unit diatur ke 'Kosong'.`)) {
+                                onDeleteResident(res.id);
+                              }
+                            }}
                             className="text-rose-500 hover:text-rose-700 hover:bg-rose-50 p-2 rounded-lg transition-all"
                             title="Hapus / Check-out Warga"
                           >
@@ -1841,7 +1850,11 @@ Siti Aminah	357802...	Blok B	B-202	085755..."
                             <Edit2 size={13} />
                           </button>
                           <button
-                            onClick={() => onDeleteResident(res.id)}
+                            onClick={() => {
+                              if (window.confirm(`Apakah Anda yakin ingin mengosongkan hunian unit ${res.unit}? Data penghuni (${res.name}) akan dibersihkan dan status unit diatur ke 'Kosong'.`)) {
+                                onDeleteResident(res.id);
+                              }
+                            }}
                             id={`delete_citizen_${res.id}`}
                             className="text-rose-500 hover:text-rose-700 hover:bg-rose-50 p-1.5 rounded-lg transition-all cursor-pointer"
                             title="Hapus / Check-out Warga"
@@ -2092,21 +2105,21 @@ Siti Aminah	357802...	Blok B	B-202	085755..."
             </div>
 
             {(() => {
-              // 1. Total Tagihan Bulan Ini (Mei 2026)
+              // 1. Total Tagihan Bulan Ini (Dinamis)
               const totalMeiBillings = billingRecords
-                .filter(b => b.month === 'Mei' && b.year === 2026)
+                .filter(b => b.month === activeMonth && b.year === activeYear)
                 .reduce((sum, b) => sum + b.totalBill, 0);
-              const countMeiBillings = billingRecords.filter(b => b.month === 'Mei' && b.year === 2026).length;
+              const countMeiBillings = billingRecords.filter(b => b.month === activeMonth && b.year === activeYear).length;
 
-              // 2. Total Diterima Koordinator (Terbayar di Koordinator ATAU Lunas untuk Mei 2026)
+              // 2. Total Diterima Koordinator (Terbayar di Koordinator ATAU Lunas untuk bulan ini)
               const totalMeiCollected = billingRecords
-                .filter(b => b.month === 'Mei' && b.year === 2026 && (b.status === 'Terbayar di Koordinator' || b.status === 'Lunas'))
+                .filter(b => b.month === activeMonth && b.year === activeYear && (b.status === 'Terbayar di Koordinator' || b.status === 'Lunas'))
                 .reduce((sum, b) => sum + b.totalBill, 0);
-              const countMeiCollected = billingRecords.filter(b => b.month === 'Mei' && b.year === 2026 && (b.status === 'Terbayar di Koordinator' || b.status === 'Lunas')).length;
+              const countMeiCollected = billingRecords.filter(b => b.month === activeMonth && b.year === activeYear && (b.status === 'Terbayar di Koordinator' || b.status === 'Lunas')).length;
 
-              // 3. Sisa Setoran Wajib ke Bendahara (Uang tunai di tangan koordinator yang berstatus 'Terbayar di Koordinator' dan belum diverifikasi)
+              // 3. Sisa Setoran Wajib ke Bendahara
               const remainderToDeposit = billingRecords
-                .filter(b => b.month === 'Mei' && b.year === 2026 && b.status === 'Terbayar di Koordinator')
+                .filter(b => b.month === activeMonth && b.year === activeYear && b.status === 'Terbayar di Koordinator')
                 .reduce((sum, b) => sum + b.totalBill, 0);
 
               return (
@@ -2156,12 +2169,12 @@ Siti Aminah	357802...	Blok B	B-202	085755..."
             <div className="bg-white rounded-3xl border border-slate-100 shadow-lg overflow-hidden text-slate-900">
               <div className="p-5 border-b border-slate-100 bg-slate-50/50 flex justify-between items-center">
                 <h3 className="text-xs font-black text-slate-900 uppercase tracking-widest font-mono">Status Kas &amp; Iuran Terkumpul Per Lantai</h3>
-                <span className="text-[10px] bg-purple-50 font-bold font-mono text-purple-700 border border-purple-100 px-2 py-0.5 rounded-lg">BULAN INI: MEI 2026</span>
+                <span className="text-[10px] bg-purple-50 font-bold font-mono text-purple-700 border border-purple-100 px-2 py-0.5 rounded-lg">BULAN INI: {activeMonth.toUpperCase()} {activeYear}</span>
               </div>
 
               <div className="overflow-x-auto">
                 <table className="w-full text-left text-xs">
-                  <thead className="bg-slate-50 font-mono text-[10px] font-extrabold uppercase text-slate-405 border-b border-slate-100">
+                  <thead className="bg-slate-50 font-mono text-[10px] font-extrabold uppercase text-slate-450 border-b border-slate-100">
                     <tr>
                       <th className="py-3 px-6">Lantai Rusun</th>
                       <th className="py-3 px-4">Petugas Koordinator</th>
@@ -2182,9 +2195,9 @@ Siti Aminah	357802...	Blok B	B-202	085755..."
                       const floorRes = residents.filter(r => (r.floor || getFloorFromUnit(r.unit)) === floorNum);
                       const floorTotalResCount = floorRes.length;
 
-                      // Filter all billing records for Mei 2026 on this floor (handling vacant rooms)
+                      // Filter all billing records for active period on this floor (handling vacant rooms)
                       const floorMeiBills = billingRecords.filter(
-                        b => b.month === 'Mei' && b.year === 2026 && floorRes.some(r => r.ktp === b.residentKtp)
+                        b => b.month === activeMonth && b.year === activeYear && floorRes.some(r => r.ktp === b.residentKtp)
                       ).map(b => {
                         const res = floorRes.find(r => r.ktp === b.residentKtp);
                         const isVacant = res?.isVacant || res?.occupancyStatus === 'Kosong' || res?.occupancyStatus === 'kosong' || res?.name === 'Kamar Kosong' || res?.name?.toLowerCase()?.includes('kamar kosong');
@@ -2578,8 +2591,8 @@ Siti Aminah	357802...	Blok B	B-202	085755..."
           const activeRes = residents.find(r => r.ktp === selectedResidentKtp);
           
           // Get April record and May record for selected resident
-          const aprRecord = activeRes ? billingRecords.find(b => b.residentKtp === activeRes.ktp && b.month === 'April' && b.year === 2026) : null;
-          const meiRecord = activeRes ? billingRecords.find(b => b.residentKtp === activeRes.ktp && b.month === 'Mei' && b.year === 2026) : null;
+          const aprRecord = activeRes ? billingRecords.find(b => b.residentKtp === activeRes.ktp && b.month === prevMonth && b.year === prevYear) : null;
+          const meiRecord = activeRes ? billingRecords.find(b => b.residentKtp === activeRes.ktp && b.month === activeMonth && b.year === activeYear) : null;
 
           // Previous meter fallback: April record's currentMeter, or initialMeter, or 100
           const prevMeterVal = activeRes
@@ -2623,7 +2636,7 @@ Siti Aminah	357802...	Blok B	B-202	085755..."
               return;
             }
             onSaveMeter(activeRes.ktp, prevMeterVal, newMeterVal);
-            setBillingSuccess(`Sukses menyimpan meteran Mei (${newMeterVal} m³) untuk Unit ${activeRes.unit}!`);
+            setBillingSuccess(`Sukses menyimpan meteran ${activeMonth} (${newMeterVal} m³) untuk Unit ${activeRes.unit}!`);
             setBillingError('');
             setInputMayMeter('');
             setTimeout(() => setBillingSuccess(''), 4000);
@@ -2634,11 +2647,11 @@ Siti Aminah	357802...	Blok B	B-202	085755..."
             if (!activeRes) return;
             const newMeterVal = Number(inputAprilMeter);
             if (isNaN(newMeterVal) || inputAprilMeter === '') {
-              setBillingError('Silakan masukkan angka meteran April yang valid.');
+              setBillingError(`Silakan masukkan angka meteran ${prevMonth} yang valid.`);
               return;
             }
             onUpdateAprilMeter(activeRes.ktp, newMeterVal);
-            setBillingSuccess(`Sukses mengoreksi meteran April (${newMeterVal} m³) untuk Unit ${activeRes.unit}!`);
+            setBillingSuccess(`Sukses mengoreksi meteran ${prevMonth} (${newMeterVal} m³) untuk Unit ${activeRes.unit}!`);
             setBillingError('');
             setInputAprilMeter('');
             setTimeout(() => setBillingSuccess(''), 4000);
@@ -2741,7 +2754,7 @@ Siti Aminah	357802...	Blok B	B-202	085755..."
                             {prevMeterVal} <span className="text-xs">m³</span>
                           </span>
                           <span className="text-[8px] font-mono text-slate-500 block bg-slate-100 px-1.5 py-0.5 rounded-md mt-1 border border-slate-200">
-                            Terakhir: April 2026
+                            Terakhir: {prevMonth} {prevYear}
                           </span>
                         </div>
                       </div>
@@ -2751,19 +2764,19 @@ Siti Aminah	357802...	Blok B	B-202	085755..."
                         <div className="flex items-center justify-between border-b border-amber-100 pb-1.5">
                           <h4 className="text-xs font-black text-amber-800 uppercase tracking-wide flex items-center gap-1.5">
                             <Edit2 size={13} />
-                            Koreksi Meteran April (Bulan Lalu)
+                            Koreksi Meteran {prevMonth} (Bulan Lalu)
                           </h4>
                           <span className="text-[8px] font-black uppercase px-2 py-0.5 bg-amber-100 text-amber-800 rounded font-mono">
-                            April 2026
+                            {prevMonth} {prevYear}
                           </span>
                         </div>
                         <p className="text-[10px] text-amber-700 leading-tight">
-                          Gunakan kolom ini untuk mengedit angka meteran akhir April jika terjadi kesalahan koordinator di lapangan. Sistem akan mengalirkan nilai perbaikan ini sebagai angka dasar pencatatan Mei.
+                          Gunakan kolom ini untuk mengedit angka meteran akhir {prevMonth} jika terjadi kesalahan koordinator di lapangan. Sistem akan mengalirkan nilai perbaikan ini sebagai angka dasar pencatatan {activeMonth}.
                         </p>
                         <div className="flex gap-2">
                           <input
                             type="number"
-                            placeholder={`Koreksi April (Semula ${prevMeterVal} m³)`}
+                            placeholder={`Koreksi ${prevMonth} (Semula ${prevMeterVal} m³)`}
                             value={inputAprilMeter}
                             onChange={(e) => setInputAprilMeter(e.target.value)}
                             className="flex-1 px-3 py-2 bg-white border border-amber-200 rounded-xl text-xs font-mono font-bold text-slate-800 focus:outline-none focus:border-amber-500"
@@ -2782,15 +2795,15 @@ Siti Aminah	357802...	Blok B	B-202	085755..."
                         <div className="flex items-center justify-between border-b border-blue-100 pb-1.5">
                           <h4 className="text-xs font-black text-blue-800 uppercase tracking-wide flex items-center gap-1.5">
                             <Plus size={13} />
-                            Catat Meteran Mei (Backup)
+                            Catat Meteran {activeMonth} (Backup)
                           </h4>
                           <span className="text-[8px] font-black uppercase px-2 py-0.5 bg-blue-100 text-blue-800 rounded font-mono">
-                            Mei 2026
+                            {activeMonth} {activeYear}
                           </span>
                         </div>
 
                         <div className="space-y-2">
-                          <label className="block text-[10px] font-extrabold text-slate-700 uppercase tracking-wider">Angka Baru Meteran Mei</label>
+                          <label className="block text-[10px] font-extrabold text-slate-700 uppercase tracking-wider">Angka Baru Meteran {activeMonth}</label>
                           <input
                             type="number"
                             placeholder={`Minimal angka ${prevMeterVal}`}
@@ -2858,8 +2871,8 @@ Siti Aminah	357802...	Blok B	B-202	085755..."
                         <tr className="text-[10px] uppercase font-extrabold text-slate-450 tracking-wider font-mono">
                           <th className="py-2.5 px-2">Unit</th>
                           <th className="py-2.5 px-2">Nama</th>
-                          <th className="py-2.5 px-2 text-right">Lalu (Apr)</th>
-                          <th className="py-2.5 px-2 text-right">Baru (Mei)</th>
+                          <th className="py-2.5 px-2 text-right">Lalu ({prevMonth.substring(0, 3)})</th>
+                          <th className="py-2.5 px-2 text-right">Baru ({activeMonth.substring(0, 3)})</th>
                           <th className="py-2.5 px-2 text-right">Tagihan</th>
                           <th className="py-2.5 px-2 text-center">Status</th>
                           <th className="py-2.5 px-2 text-center">Aksi</th>
@@ -2868,9 +2881,9 @@ Siti Aminah	357802...	Blok B	B-202	085755..."
                       <tbody className="divide-y divide-slate-100 font-bold text-slate-750">
                         {sortedResList.map((res) => {
                           const isVacant = res.isVacant || res.occupancyStatus === 'Kosong' || res.occupancyStatus === 'kosong' || res.name === 'Kamar Kosong' || res.name.toLowerCase().includes('kamar kosong');
-                          const rawMeiRec = billingRecords.find(b => b.residentKtp === res.ktp && b.month === 'Mei' && b.year === 2026);
+                          const rawMeiRec = billingRecords.find(b => b.residentKtp === res.ktp && b.month === activeMonth && b.year === activeYear);
                           const meiRec = rawMeiRec ? (isVacant ? { ...rawMeiRec, pdamBill: 0, trashBill: 0, totalBill: 0 } : rawMeiRec) : null;
-                          const rawAprRec = billingRecords.find(b => b.residentKtp === res.ktp && b.month === 'April' && b.year === 2026);
+                          const rawAprRec = billingRecords.find(b => b.residentKtp === res.ktp && b.month === prevMonth && b.year === prevYear);
                           const aprRec = rawAprRec ? (isVacant ? { ...rawAprRec, pdamBill: 0, trashBill: 0, totalBill: 0 } : rawAprRec) : null;
                           
                           const lastMeterVal = meiRec 
@@ -2963,8 +2976,8 @@ Siti Aminah	357802...	Blok B	B-202	085755..."
                   setAddBillResidentKtp(residents[0]?.ktp || '');
                   setAddBillPrevMeter(0);
                   setAddBillCurrentMeter(0);
-                  setAddBillMonth('Mei');
-                  setAddBillYear(2026);
+                  setAddBillMonth(activeMonth);
+                  setAddBillYear(activeYear);
                   setAddBillStatus('Belum Lunas');
                   setAddBillTrashBill(appSettings.trashBillCost);
                   setAddBillSearch('');
@@ -3036,6 +3049,13 @@ Siti Aminah	357802...	Blok B	B-202	085755..."
                   <option value="Maret">Maret</option>
                   <option value="April">April</option>
                   <option value="Mei">Mei</option>
+                  <option value="Juni">Juni</option>
+                  <option value="Juli">Juli</option>
+                  <option value="Agustus">Agustus</option>
+                  <option value="September">September</option>
+                  <option value="Oktober">Oktober</option>
+                  <option value="November">November</option>
+                  <option value="Desember">Desember</option>
                 </select>
               </div>
 
@@ -3101,7 +3121,10 @@ Siti Aminah	357802...	Blok B	B-202	085755..."
                         return true;
                       }).sort((a, b) => {
                         if (a.year !== b.year) return b.year - a.year;
-                        const monthsMap: Record<string, number> = { 'Januari': 1, 'Februari': 2, 'Maret': 3, 'April': 4, 'Mei': 5 };
+                        const monthsMap: Record<string, number> = { 
+                          'Januari': 1, 'Februari': 2, 'Maret': 3, 'April': 4, 'Mei': 5, 'Juni': 6,
+                          'Juli': 7, 'Agustus': 8, 'September': 9, 'Oktober': 10, 'November': 11, 'Desember': 12
+                        };
                         const monthA = monthsMap[a.month] || 0;
                         const monthB = monthsMap[b.month] || 0;
                         if (monthA !== monthB) return monthB - monthA;
@@ -3245,6 +3268,13 @@ Siti Aminah	357802...	Blok B	B-202	085755..."
                             <option value="Maret">Maret</option>
                             <option value="April">April</option>
                             <option value="Mei">Mei</option>
+                            <option value="Juni">Juni</option>
+                            <option value="Juli">Juli</option>
+                            <option value="Agustus">Agustus</option>
+                            <option value="September">September</option>
+                            <option value="Oktober">Oktober</option>
+                            <option value="November">November</option>
+                            <option value="Desember">Desember</option>
                           </select>
                         </div>
                         <div>
@@ -3447,6 +3477,13 @@ Siti Aminah	357802...	Blok B	B-202	085755..."
                           <option value="Maret">Maret</option>
                           <option value="April">April</option>
                           <option value="Mei">Mei</option>
+                          <option value="Juni">Juni</option>
+                          <option value="Juli">Juli</option>
+                          <option value="Agustus">Agustus</option>
+                          <option value="September">September</option>
+                          <option value="Oktober">Oktober</option>
+                          <option value="November">November</option>
+                          <option value="Desember">Desember</option>
                         </select>
                       </div>
                       <div>
@@ -4179,7 +4216,7 @@ Siti Aminah	357802...	Blok B	B-202	085755..."
         
         // Target bills that are currently ready to be verified (status 'Terbayar di Koordinator')
         const floorMeiCollectedBills = billingRecords.filter(
-          b => b.month === 'Mei' && b.year === 2026 && b.status === 'Terbayar di Koordinator' && floorRes.some(r => r.ktp === b.residentKtp)
+          b => b.month === activeMonth && b.year === activeYear && b.status === 'Terbayar di Koordinator' && floorRes.some(r => r.ktp === b.residentKtp)
         );
         const totalCollectedOnFloor = floorMeiCollectedBills.reduce((s, r) => s + r.totalBill, 0);
 
@@ -4191,7 +4228,7 @@ Siti Aminah	357802...	Blok B	B-202	085755..."
           if (pdamBillAmount > 0) {
             onAddExpense(
               pdamBillAmount, 
-              `Setoran Iuran Air PDAM Lantai ${floorNum} (${coord.name}) - Mei 2026`, 
+              `Setoran Iuran Air PDAM Lantai ${floorNum} (${coord.name}) - ${activeMonth} ${activeYear}`, 
               "Iuran Air", 
               coord.name, 
               "Pemasukan"
@@ -4201,7 +4238,7 @@ Siti Aminah	357802...	Blok B	B-202	085755..."
           if (trashBillAmount > 0) {
             onAddExpense(
               trashBillAmount, 
-              `Setoran Iuran Sampah Lantai ${floorNum} (${coord.name}) - Mei 2026`, 
+              `Setoran Iuran Sampah Lantai ${floorNum} (${coord.name}) - ${activeMonth} ${activeYear}`, 
               "Iuran Sampah", 
               coord.name, 
               "Pemasukan"
@@ -4255,7 +4292,7 @@ Siti Aminah	357802...	Blok B	B-202	085755..."
                       <span className="text-slate-850">Lantai {floorNum}</span>
                     </div>
                     <div className="flex justify-between text-[10px] font-bold">
-                      <span className="text-slate-400">STATUS BILLS MEI 2026:</span>
+                      <span className="text-slate-400">STATUS BILLS {activeMonth.toUpperCase()} {activeYear}:</span>
                       <span className="text-emerald-600">{floorMeiCollectedBills.length} Warga Lunas</span>
                     </div>
                   </div>

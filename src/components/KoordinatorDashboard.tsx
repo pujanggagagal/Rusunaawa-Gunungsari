@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useRef } from 'react';
-import { Resident, BillingRecord, Coordinator, getFloorFromUnit, getBarcodeContent, AppSettings } from '../types';
+import { Resident, BillingRecord, Coordinator, getFloorFromUnit, getBarcodeContent, AppSettings, getMonthYearFromDateString, getPrevMonthYear } from '../types';
 import { 
   LogOut, 
   UserCheck, 
@@ -24,7 +24,8 @@ import {
   Volume2,
   RefreshCw,
   Coins,
-  ShieldAlert
+  ShieldAlert,
+  Printer
 } from 'lucide-react';
 import { calculatePdamBill } from '../data';
 
@@ -32,6 +33,7 @@ interface KoordinatorDashboardProps {
   coordinator: Coordinator;
   residents: Resident[];
   billingRecords: BillingRecord[];
+  simulatedDate: string;
   onLogout: () => void;
   onSaveMeter: (ktp: string, prevMeter: number, currentMeter: number) => void;
   appSettings: AppSettings;
@@ -44,6 +46,7 @@ export const KoordinatorDashboard: React.FC<KoordinatorDashboardProps> = ({
   coordinator,
   residents,
   billingRecords,
+  simulatedDate,
   onLogout,
   onSaveMeter,
   appSettings,
@@ -51,6 +54,8 @@ export const KoordinatorDashboard: React.FC<KoordinatorDashboardProps> = ({
   onVerifyPayment,
   onUpdateAprilMeter
 }) => {
+  const { month: activeMonth, year: activeYear } = getMonthYearFromDateString(simulatedDate);
+  const { month: prevMonth, year: prevYear } = getPrevMonthYear(activeMonth, activeYear);
   // Extract assignedFloor. If not defined to avoid type issues, fetch from ID or default to 1.
   const targetFloor = coordinator.assignedFloor || (coordinator.id === 'coord-1' ? 1 : coordinator.id === 'coord-2' ? 2 : coordinator.id === 'coord-3' ? 3 : coordinator.id === 'coord-4' ? 4 : coordinator.id === 'coord-5' ? 5 : 1);
 
@@ -65,9 +70,94 @@ export const KoordinatorDashboard: React.FC<KoordinatorDashboardProps> = ({
     return res.floor || getFloorFromUnit(res.unit);
   };
 
+  const handlePrintReceipt = (res: Resident, bill: BillingRecord) => {
+    const printWindow = window.open('', '_blank', 'width=350,height=600');
+    if (!printWindow) {
+      alert('Gagal membuka jendela cetak. Pastikan pop-up blocker dimatikan.');
+      return;
+    }
+
+    const usage = bill.usage;
+    const today = new Date().toLocaleDateString('id-ID', {
+      day: 'numeric',
+      month: 'long',
+      year: 'numeric'
+    });
+
+    const receiptText = `
+================================
+       RUSUN GUNUNGSARI
+   PAGUYUBAN WARGA MANDIRI
+================================
+Tanggal  : ${today}
+Nota No  : ${bill.id}
+Petugas  : ${coordinator.name}
+Unit     : ${res.unit} (Lantai ${res.floor || getFloorFromUnit(res.unit)})
+Penghuni : ${res.name.toUpperCase()}
+Periode  : ${bill.month} ${bill.year}
+--------------------------------
+Meter Lalu     : ${bill.prevMeter} m³
+Meter Baru     : ${bill.currentMeter} m³
+Pemakaian Air  : ${usage} m³
+--------------------------------
+Biaya PDAM     : Rp ${bill.pdamBill.toLocaleString('id-ID')}
+Biaya Sampah   : Rp ${bill.trashBill.toLocaleString('id-ID')}
+--------------------------------
+TOTAL TAGIHAN  : Rp ${bill.totalBill.toLocaleString('id-ID')}
+STATUS         : ${bill.status.toUpperCase()}
+--------------------------------
+         TERIMA KASIH
+    Sistem Informasi Rusun
+================================
+`;
+
+    printWindow.document.write(`
+      <html>
+        <head>
+          <title>Cetak Nota ${res.unit}</title>
+          <style>
+            @page {
+              size: 58mm auto;
+              margin: 0;
+            }
+            body {
+              font-family: 'Courier New', Courier, monospace;
+              font-size: 10px;
+              line-height: 1.2;
+              width: 58mm;
+              margin: 0;
+              padding: 5px;
+              box-sizing: border-box;
+            }
+            pre {
+              margin: 0;
+              white-space: pre-wrap;
+              word-break: break-all;
+            }
+            @media print {
+              html, body {
+                width: 58mm;
+              }
+            }
+          </style>
+        </head>
+        <body>
+          <pre>${receiptText.trim()}</pre>
+          <script>
+            window.onload = function() {
+              window.print();
+              setTimeout(function() { window.close(); }, 500);
+            };
+          </script>
+        </body>
+      </html>
+    `);
+    printWindow.document.close();
+  };
+
   // 2. State management
   const [selectedFloor, setSelectedFloor] = useState<number | 'all'>(targetFloor);
-  const [coordTab, setCoordTab] = useState<'recording' | 'payment'>('recording');
+  const [coordTab, setCoordTab] = useState<'recording' | 'payment' | 'receipt'>('recording');
   const [paymentFilter, setPaymentFilter] = useState<'all' | 'unpaid' | 'paid'>('all');
   const [recordFilter, setRecordFilter] = useState<'all' | 'pending' | 'completed'>('all');
   const [filterBlock, setFilterBlock] = useState<string>('all');
@@ -148,7 +238,7 @@ export const KoordinatorDashboard: React.FC<KoordinatorDashboardProps> = ({
 
     // Recording status filter (Mei 2026)
     const hasMei = (billingRecords || []).some(
-      (b) => b.residentKtp?.trim() === res.ktp?.trim() && b.month === 'Mei' && b.year === 2026
+      (b) => b.residentKtp?.trim() === res.ktp?.trim() && b.month === activeMonth && b.year === activeYear
     );
     if (recordFilter === 'pending' && hasMei) return false;
     if (recordFilter === 'completed' && !hasMei) return false;
@@ -177,7 +267,7 @@ export const KoordinatorDashboard: React.FC<KoordinatorDashboardProps> = ({
       setSuccess('');
       
       const matchMei = billingRecords.find(
-        (b) => b.residentKtp === activeResident.ktp && b.month === 'Mei' && b.year === 2026
+        (b) => b.residentKtp === activeResident.ktp && b.month === activeMonth && b.year === activeYear
       );
       if (matchMei) {
         setCurrentMeterInput(matchMei.currentMeter);
@@ -187,7 +277,7 @@ export const KoordinatorDashboard: React.FC<KoordinatorDashboardProps> = ({
 
       // Pre-populate April meter input
       const matchApril = billingRecords.find(
-        (b) => b.residentKtp === activeResident.ktp && b.month === 'April' && b.year === 2026
+        (b) => b.residentKtp === activeResident.ktp && b.month === prevMonth && b.year === prevYear
       );
       if (matchApril) {
         setInputAprilMeter(matchApril.currentMeter);
@@ -359,7 +449,7 @@ export const KoordinatorDashboard: React.FC<KoordinatorDashboardProps> = ({
       setScannedResident(found);
       
       const matchMei = billingRecords.find(
-        (b) => b.residentKtp === found.ktp && b.month === 'Mei' && b.year === 2026
+        (b) => b.residentKtp === found.ktp && b.month === activeMonth && b.year === activeYear
       );
       setScannedMeterInput(matchMei ? String(matchMei.currentMeter) : '');
       setScannedError('');
@@ -437,22 +527,22 @@ export const KoordinatorDashboard: React.FC<KoordinatorDashboardProps> = ({
     };
   }, [isScannerOpen, useRealCamera]);
 
-  // Determine previous meter and May status
+  // Determine previous meter and active month status
   const getPrevMeterAndCurrentMei = () => {
     if (!activeResident) return { prev: 0, currentMeiRecord: null };
     
-    // Check if Mei already recorded
+    // Check if active month already recorded
     const currentMeiRecord = billingRecords.find(
-      (b) => b.residentKtp === activeResident.ktp && b.month === 'Mei' && b.year === 2026
+      (b) => b.residentKtp === activeResident.ktp && b.month === activeMonth && b.year === activeYear
     );
 
     if (currentMeiRecord) {
       return { prev: currentMeiRecord.prevMeter, currentMeiRecord };
     }
 
-    // Get latest meter reading before May (April)
+    // Get latest meter reading before active month
     const pastRecords = billingRecords.filter(
-      (b) => b.residentKtp === activeResident.ktp && !(b.month === 'Mei' && b.year === 2026)
+      (b) => b.residentKtp === activeResident.ktp && !(b.month === activeMonth && b.year === activeYear)
     );
 
     // Sort past records descending, prioritizing our imported CSV revision IDs (start with 'bill-')
@@ -546,7 +636,7 @@ export const KoordinatorDashboard: React.FC<KoordinatorDashboardProps> = ({
       for (let i = activeIdx + 1; i < filteredResidents.length; i++) {
         const r = filteredResidents[i];
         const matchMei = billingRecords.some(
-          (b) => b.residentKtp === r.ktp && b.month === 'Mei' && b.year === 2026
+          (b) => b.residentKtp === r.ktp && b.month === activeMonth && b.year === activeYear
         );
         if (!matchMei) {
           nextRes = r;
@@ -559,7 +649,7 @@ export const KoordinatorDashboard: React.FC<KoordinatorDashboardProps> = ({
         for (let i = 0; i < activeIdx; i++) {
           const r = filteredResidents[i];
           const matchMei = billingRecords.some(
-            (b) => b.residentKtp === r.ktp && b.month === 'Mei' && b.year === 2026
+            (b) => b.residentKtp === r.ktp && b.month === activeMonth && b.year === activeYear
           );
           if (!matchMei) {
             nextRes = r;
@@ -615,9 +705,9 @@ export const KoordinatorDashboard: React.FC<KoordinatorDashboardProps> = ({
   const iuranSampah = isActiveResVacant ? 0 : 10000;
   const totalInvoiceCalc = pdamBillCalc > 0 ? pdamBillCalc + iuranSampah : 0;
 
-  // May progress percentages
+  // Progress percentages
   const totalMeiRecorded = floorResidents.filter((r) =>
-    billingRecords.some((b) => b.residentKtp === r.ktp && b.month === 'Mei' && b.year === 2026)
+    billingRecords.some((b) => b.residentKtp === r.ktp && b.month === activeMonth && b.year === activeYear)
   ).length;
   const progressPercent = floorResidents.length > 0 
     ? Math.round((totalMeiRecorded / floorResidents.length) * 100) 
@@ -691,6 +781,17 @@ export const KoordinatorDashboard: React.FC<KoordinatorDashboardProps> = ({
         >
           <Coins size={14} />
           Pembayaran Iuran Warga (💰)
+        </button>
+        <button
+          onClick={() => setCoordTab('receipt')}
+          className={`flex-shrink-0 pb-3 text-xs font-black font-mono uppercase tracking-wider border-b-2 px-6 transition-all cursor-pointer flex items-center gap-2 ${
+            coordTab === 'receipt'
+              ? 'border-cyan-600 text-cyan-700'
+              : 'border-transparent text-slate-400 hover:text-slate-600'
+          }`}
+        >
+          <Printer size={14} />
+          Cetak Nota Pembayaran (🖨️)
         </button>
       </div>
 
@@ -826,7 +927,7 @@ export const KoordinatorDashboard: React.FC<KoordinatorDashboardProps> = ({
                     {prevMeterValue} <span className="text-xs">m³</span>
                   </span>
                   <span className="text-[9px] font-mono text-slate-400 block bg-slate-100 px-1.5 py-0.5 rounded-md mt-1 border border-slate-250">
-                    April 2026
+                    {prevMonth} {prevYear}
                   </span>
                 </div>
               </div>
@@ -834,7 +935,7 @@ export const KoordinatorDashboard: React.FC<KoordinatorDashboardProps> = ({
               {/* GIANT METER INPUT SECTION */}
               <div className="space-y-2">
                 <label htmlFor="current_meter" className="block text-xs font-bold text-slate-800 uppercase tracking-wide">
-                  Angka Meteran Baru (Mei 2026)
+                  Angka Meteran Baru ({activeMonth} {activeYear})
                 </label>
                 
                 <div className="flex gap-2">
@@ -921,7 +1022,7 @@ export const KoordinatorDashboard: React.FC<KoordinatorDashboardProps> = ({
                 <div className="p-4 bg-sky-50/70 border border-sky-100 rounded-2xl text-xs space-y-2 text-slate-700 transition-all">
                   <p className="font-extrabold text-sky-900 flex justify-between uppercase tracking-wider text-[10px]">
                     <span>Kalkulasi Volume Air Masuk:</span>
-                    <span className="bg-sky-100 text-sky-800 font-mono px-1.5 py-0.5 rounded leading-none">Mei 2026</span>
+                    <span className="bg-sky-100 text-sky-800 font-mono px-1.5 py-0.5 rounded leading-none">{activeMonth} {activeYear}</span>
                   </p>
                   
                   <div className="flex justify-between items-center bg-white p-3.5 rounded-xl border border-sky-100/50 shadow-sm">
@@ -969,10 +1070,10 @@ export const KoordinatorDashboard: React.FC<KoordinatorDashboardProps> = ({
               </button>
             </form>
             
-            {/* Form Koreksi Meteran Bulan Lalu (April) */}
+            {/* Form Koreksi Meteran Bulan Lalu */}
             <div className="border-t border-slate-150 pt-4 mt-2.5 space-y-3">
               <span className="text-[10px] text-cyan-750 font-extrabold uppercase tracking-widest font-mono block">
-                ⚙️ Koreksi Data Meteran Bulan Lalu (April 2026)
+                ⚙️ Koreksi Data Meteran Bulan Lalu ({prevMonth} {prevYear})
               </span>
               <form onSubmit={handleSaveAprilMeter} className="space-y-3">
                 <div className="flex gap-2">
@@ -1087,11 +1188,11 @@ export const KoordinatorDashboard: React.FC<KoordinatorDashboardProps> = ({
                   {filteredResidents.map((res) => {
                     const isVacant = res.isVacant || res.occupancyStatus === 'Kosong' || res.occupancyStatus === 'kosong' || res.name === 'Kamar Kosong' || res.name.toLowerCase().includes('kamar kosong');
                     const rawMeiRecord = billingRecords.find(
-                      (b) => b.residentKtp === res.ktp && b.month === 'Mei' && b.year === 2026
+                      (b) => b.residentKtp === res.ktp && b.month === activeMonth && b.year === activeYear
                     );
                     const meiRecord = rawMeiRecord ? (isVacant ? { ...rawMeiRecord, pdamBill: 0, trashBill: 0, totalBill: 0 } : rawMeiRecord) : null;
                     const rawAprRecord = billingRecords.find(
-                      (b) => b.residentKtp === res.ktp && b.month === 'April' && b.year === 2026
+                      (b) => b.residentKtp === res.ktp && b.month === prevMonth && b.year === prevYear
                     );
                     const aprRecord = rawAprRecord ? (isVacant ? { ...rawAprRecord, pdamBill: 0, trashBill: 0, totalBill: 0 } : rawAprRecord) : null;
                     const isSelected = selectedResidentKtp === res.ktp;
@@ -1163,24 +1264,25 @@ export const KoordinatorDashboard: React.FC<KoordinatorDashboardProps> = ({
                         </div>
 
                         {/* Meter and usage inline status details */}
-                        <div className="grid grid-cols-3 gap-2 pt-2.5 mt-2.5 border-t border-slate-200/60 text-[10px] font-mono text-slate-600">
+                        <div className="grid grid-cols-3 gap-2 pt-2.5 mt-2.5 border-t border-slate-200/60 text-[10px] font-mono text-slate-650 font-bold">
                           <div>
-                            <span className="block text-[8px] text-slate-400 uppercase">Meter Lalu</span>
+                            <span className="block text-[8px] text-slate-400 uppercase font-medium">Meter Lalu</span>
                             <span className="font-bold text-slate-700">{prevMeter} m³</span>
                           </div>
                           <div>
-                            <span className="block text-[8px] text-slate-400 uppercase">Meter Baru</span>
+                            <span className="block text-[8px] text-slate-400 uppercase font-medium">Meter Baru</span>
                             <span className="font-black text-slate-900">
                               {meiRecord ? `${meiRecord.currentMeter} m³` : '-'}
                             </span>
                           </div>
                           <div>
-                            <span className="block text-[8px] text-slate-400 uppercase">Volume Masuk</span>
-                            <span className="font-extrabold text-sky-700">
+                            <span className="block text-[8px] text-slate-400 uppercase font-medium">Volume Masuk</span>
+                            <span className="font-extrabold text-sky-750">
                               {meiRecord ? `+${meiRecord.usage} m³` : '-'}
                             </span>
                           </div>
                         </div>
+
                       </div>
                     );
                   })}
@@ -1205,11 +1307,11 @@ export const KoordinatorDashboard: React.FC<KoordinatorDashboardProps> = ({
                       {filteredResidents.map((res) => {
                         const isVacant = res.isVacant || res.occupancyStatus === 'Kosong' || res.occupancyStatus === 'kosong' || res.name === 'Kamar Kosong' || res.name.toLowerCase().includes('kamar kosong');
                         const rawMeiRecord = billingRecords.find(
-                          (b) => b.residentKtp === res.ktp && b.month === 'Mei' && b.year === 2026
+                          (b) => b.residentKtp === res.ktp && b.month === activeMonth && b.year === activeYear
                         );
                         const meiRecord = rawMeiRecord ? (isVacant ? { ...rawMeiRecord, pdamBill: 0, trashBill: 0, totalBill: 0 } : rawMeiRecord) : null;
                         const rawAprRecord = billingRecords.find(
-                          (b) => b.residentKtp === res.ktp && b.month === 'April' && b.year === 2026
+                          (b) => b.residentKtp === res.ktp && b.month === prevMonth && b.year === prevYear
                         );
                         const aprRecord = rawAprRecord ? (isVacant ? { ...rawAprRecord, pdamBill: 0, trashBill: 0, totalBill: 0 } : rawAprRecord) : null;
                         const isSelected = selectedResidentKtp === res.ktp;
@@ -1275,34 +1377,36 @@ export const KoordinatorDashboard: React.FC<KoordinatorDashboardProps> = ({
                                   <span className="px-2 py-0.5 bg-emerald-50 text-emerald-750 border border-emerald-100 rounded font-bold text-[9px]">
                                     Sudah Catat ✓
                                   </span>
-                                  {meiRecord.status === 'Lunas' ? (
-                                    <span className="px-2 py-0.5 bg-emerald-100 text-emerald-800 border border-emerald-200 rounded font-extrabold text-[9px]">
-                                      Lunas ✓
-                                    </span>
-                                  ) : meiRecord.status === 'Terbayar di Koordinator' ? (
-                                    <span className="px-2 py-0.5 bg-amber-50 text-amber-750 border border-amber-100 rounded font-bold text-[9px]">
-                                      Terbayar (Koor)
-                                    </span>
-                                  ) : (
-                                    <div className="flex items-center gap-1.5 mt-0.5">
-                                      <span className="px-2 py-0.5 bg-rose-50 text-rose-600 border border-rose-100 rounded font-bold text-[9px]">
-                                        Belum Bayar
+                                  <div className="flex items-center gap-1.5 mt-0.5">
+                                    {meiRecord.status === 'Lunas' ? (
+                                      <span className="px-2 py-0.5 bg-emerald-100 text-emerald-800 border border-emerald-200 rounded font-extrabold text-[9px]">
+                                        Lunas ✓
                                       </span>
-                                      {onVerifyPayment && (
-                                        <button
-                                          type="button"
-                                          onClick={() => {
-                                            if (window.confirm(`Verifikasi pembayaran tunai Unit ${res.unit} sebesar Rp ${meiRecord.totalBill.toLocaleString('id-ID')}?`)) {
-                                              onVerifyPayment(meiRecord.id);
-                                            }
-                                          }}
-                                          className="px-2 py-0.5 bg-cyan-600 hover:bg-cyan-700 text-white rounded text-[9px] font-black uppercase tracking-wider transition cursor-pointer select-none active:scale-[0.97]"
-                                        >
-                                          Verifikasi Bayar ✓
-                                        </button>
-                                      )}
-                                    </div>
-                                  )}
+                                    ) : meiRecord.status === 'Terbayar di Koordinator' ? (
+                                      <span className="px-2 py-0.5 bg-amber-50 text-amber-750 border border-amber-100 rounded font-bold text-[9px]">
+                                        Terbayar (Koor)
+                                      </span>
+                                    ) : (
+                                      <div className="flex items-center gap-1.5">
+                                        <span className="px-2 py-0.5 bg-rose-50 text-rose-600 border border-rose-100 rounded font-bold text-[9px]">
+                                          Belum Bayar
+                                        </span>
+                                        {onVerifyPayment && (
+                                          <button
+                                            type="button"
+                                            onClick={() => {
+                                              if (window.confirm(`Verifikasi pembayaran tunai Unit ${res.unit} sebesar Rp ${meiRecord.totalBill.toLocaleString('id-ID')}?`)) {
+                                                onVerifyPayment(meiRecord.id);
+                                              }
+                                            }}
+                                            className="px-2 py-0.5 bg-cyan-600 hover:bg-cyan-700 text-white rounded text-[9px] font-black uppercase tracking-wider transition cursor-pointer select-none active:scale-[0.97]"
+                                          >
+                                            Verifikasi Bayar ✓
+                                          </button>
+                                        )}
+                                      </div>
+                                    )}
+                                  </div>
                                 </div>
                               ) : (
                                 <span className="px-2.5 py-1 bg-rose-50 text-rose-600 border border-rose-100 rounded-full font-bold animate-pulse">
@@ -1333,10 +1437,10 @@ export const KoordinatorDashboard: React.FC<KoordinatorDashboardProps> = ({
 
       {/* COORD TAB 2: PENAGIHAN & PEMBAYARAN IURAN */}
       {coordTab === 'payment' && (() => {
-        // Calculate total Mei collected and total outstanding
+        // Calculate total collected and total outstanding dynamically
         const meiBills = billingRecords.filter(b => 
-          b.month === 'Mei' && 
-          b.year === 2026 && 
+          b.month === activeMonth && 
+          b.year === activeYear && 
           floorResidents.some(r => r.ktp === b.residentKtp)
         ).map(b => {
           const res = floorResidents.find(r => r.ktp === b.residentKtp);
@@ -1363,7 +1467,7 @@ export const KoordinatorDashboard: React.FC<KoordinatorDashboardProps> = ({
                                 res.block.toLowerCase().includes(query);
           
           const meiRecord = billingRecords.find(
-            (b) => b.residentKtp === res.ktp && b.month === 'Mei' && b.year === 2026
+            (b) => b.residentKtp === res.ktp && b.month === activeMonth && b.year === activeYear
           );
 
           if (paymentFilter === 'unpaid') {
@@ -1462,9 +1566,9 @@ export const KoordinatorDashboard: React.FC<KoordinatorDashboardProps> = ({
                   <div className="grid grid-cols-1 gap-3.5 md:hidden w-full">
                     {filteredResForPayment.map(res => {
                       const isVacant = res.isVacant || res.occupancyStatus === 'Kosong' || res.occupancyStatus === 'kosong' || res.name === 'Kamar Kosong' || res.name.toLowerCase().includes('kamar kosong');
-                      const rawMeiRec = billingRecords.find(b => b.residentKtp === res.ktp && b.month === 'Mei' && b.year === 2026);
+                      const rawMeiRec = billingRecords.find(b => b.residentKtp === res.ktp && b.month === activeMonth && b.year === activeYear);
                       const meiRec = rawMeiRec ? (isVacant ? { ...rawMeiRec, pdamBill: 0, trashBill: 0, totalBill: 0 } : rawMeiRec) : null;
-                      const rawAprRec = billingRecords.find(b => b.residentKtp === res.ktp && b.month === 'April' && b.year === 2026);
+                      const rawAprRec = billingRecords.find(b => b.residentKtp === res.ktp && b.month === prevMonth && b.year === prevYear);
                       const aprRec = rawAprRec ? (isVacant ? { ...rawAprRec, pdamBill: 0, trashBill: 0, totalBill: 0 } : rawAprRec) : null;
                       
                       const lastMeter = meiRec 
@@ -1543,8 +1647,8 @@ export const KoordinatorDashboard: React.FC<KoordinatorDashboardProps> = ({
                         <tr className="text-[10px] uppercase font-mono font-extrabold text-slate-450 tracking-wider">
                           <th className="pb-3 px-2">Unit</th>
                           <th className="pb-3 px-2">Nama Warga</th>
-                          <th className="pb-3 px-2 text-right">Lalu (Apr)</th>
-                          <th className="pb-3 px-2 text-right">Baru (Mei)</th>
+                          <th className="pb-3 px-2 text-right">Lalu ({prevMonth.substring(0, 3)})</th>
+                          <th className="pb-3 px-2 text-right">Baru ({activeMonth.substring(0, 3)})</th>
                           <th className="pb-3 px-2 text-right">Vol (m³)</th>
                           <th className="pb-3 px-2 text-right">Tagihan PDAM + Sampah</th>
                           <th className="pb-3 px-2 text-center">Status</th>
@@ -1554,9 +1658,9 @@ export const KoordinatorDashboard: React.FC<KoordinatorDashboardProps> = ({
                       <tbody className="divide-y divide-slate-100 font-bold text-slate-700">
                         {filteredResForPayment.map(res => {
                           const isVacant = res.isVacant || res.occupancyStatus === 'Kosong' || res.occupancyStatus === 'kosong' || res.name === 'Kamar Kosong' || res.name.toLowerCase().includes('kamar kosong');
-                          const rawMeiRec = billingRecords.find(b => b.residentKtp === res.ktp && b.month === 'Mei' && b.year === 2026);
+                          const rawMeiRec = billingRecords.find(b => b.residentKtp === res.ktp && b.month === activeMonth && b.year === activeYear);
                           const meiRec = rawMeiRec ? (isVacant ? { ...rawMeiRec, pdamBill: 0, trashBill: 0, totalBill: 0 } : rawMeiRec) : null;
-                          const rawAprRec = billingRecords.find(b => b.residentKtp === res.ktp && b.month === 'April' && b.year === 2026);
+                          const rawAprRec = billingRecords.find(b => b.residentKtp === res.ktp && b.month === prevMonth && b.year === prevYear);
                           const aprRec = rawAprRec ? (isVacant ? { ...rawAprRec, pdamBill: 0, trashBill: 0, totalBill: 0 } : rawAprRec) : null;
                           
                           const lastMeter = meiRec 
@@ -1596,21 +1700,178 @@ export const KoordinatorDashboard: React.FC<KoordinatorDashboardProps> = ({
                                 )}
                               </td>
                               <td className="py-3 px-2 text-center">
-                                {meiRec && meiRec.status === 'Belum Lunas' && onVerifyPayment ? (
-                                  <button
-                                    type="button"
-                                    onClick={() => {
-                                      if (window.confirm(`Konfirmasi pembayaran air & sampah Unit ${res.unit} sebesar Rp ${meiRec.totalBill.toLocaleString('id-ID')} secara TUNAI?`)) {
-                                        onVerifyPayment(meiRec.id);
-                                      }
-                                    }}
-                                    className="px-3.5 py-1 bg-cyan-600 hover:bg-cyan-700 text-white rounded-xl text-[9px] font-black uppercase tracking-wider transition cursor-pointer select-none active:scale-[0.97] shadow-sm shadow-cyan-500/10 border-0"
-                                  >
-                                    Verifikasi Bayar ✓
-                                  </button>
-                                ) : (
-                                  <span className="text-[10px] text-slate-355">-</span>
-                                )}
+                                <div className="flex justify-center items-center gap-1.5">
+                                  {meiRec && meiRec.status === 'Belum Lunas' && onVerifyPayment && (
+                                    <button
+                                      type="button"
+                                      onClick={() => {
+                                        if (window.confirm(`Konfirmasi pembayaran air & sampah Unit ${res.unit} sebesar Rp ${meiRec.totalBill.toLocaleString('id-ID')} secara TUNAI?`)) {
+                                          onVerifyPayment(meiRec.id);
+                                        }
+                                      }}
+                                      className="px-3.5 py-1 bg-cyan-600 hover:bg-cyan-700 text-white rounded-xl text-[9px] font-black uppercase tracking-wider transition cursor-pointer select-none active:scale-[0.97] shadow-sm shadow-cyan-500/10 border-0"
+                                    >
+                                      Verifikasi Bayar ✓
+                                    </button>
+                                  )}
+                                  {!meiRec && <span className="text-[10px] text-slate-300">-</span>}
+                                </div>
+                              </td>
+                            </tr>
+                          );
+                        })}
+                      </tbody>
+                    </table>
+                  </div>
+                </div>
+              )}
+            </div>
+          </div>
+        );
+      })()}
+
+      {/* COORD TAB 3: CETAK NOTA PEMBAYARAN */}
+      {coordTab === 'receipt' && (() => {
+        // Filter residents who have already paid (either 'Terbayar di Koordinator' or 'Lunas')
+        const paidBills = billingRecords.filter(b => 
+          b.month === activeMonth && 
+          b.year === activeYear && 
+          (b.status === 'Terbayar di Koordinator' || b.status === 'Lunas') &&
+          floorResidents.some(r => r.ktp === b.residentKtp)
+        ).map(b => {
+          const res = floorResidents.find(r => r.ktp === b.residentKtp);
+          const isVacant = res?.isVacant || res?.occupancyStatus === 'Kosong' || res?.occupancyStatus === 'kosong' || res?.name === 'Kamar Kosong' || res?.name?.toLowerCase()?.includes('kamar kosong');
+          if (isVacant) {
+            return { ...b, pdamBill: 0, trashBill: 0, totalBill: 0 };
+          }
+          return b;
+        });
+
+        const filteredResForReceipt = floorResidents.filter(res => {
+          const query = searchQuery.toLowerCase();
+          const matchesSearch = res.name.toLowerCase().includes(query) || 
+                                res.unit.toLowerCase().includes(query) ||
+                                res.block.toLowerCase().includes(query);
+          
+          const hasPaidBill = paidBills.some(b => b.residentKtp === res.ktp);
+          return matchesSearch && hasPaidBill;
+        });
+
+        return (
+          <div className="space-y-6 animate-fade-in text-slate-900 w-full">
+            <div className="bg-white p-5 rounded-3xl border border-slate-100 shadow-xl shadow-slate-100/50 space-y-4 w-full">
+              <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 border-b border-slate-100 pb-3.5">
+                <div>
+                  <h2 className="text-sm font-black text-slate-900 uppercase tracking-wide flex items-center gap-1.5">
+                    <Printer size={16} className="text-cyan-600 animate-pulse" />
+                    Cetak Nota Pembayaran Warga (Lantai {targetFloor})
+                  </h2>
+                  <p className="text-[10px] text-slate-400 font-mono font-bold mt-0.5">KHUSUS WARGA YANG SUDAH MELAKUKAN PEMBAYARAN ({activeMonth} {activeYear})</p>
+                </div>
+
+                <div className="flex flex-col sm:flex-row gap-2.5 w-full sm:w-auto items-stretch sm:items-center">
+                  <div className="relative flex-1 sm:w-48">
+                    <input
+                      type="text"
+                      placeholder="Cari Unit / Nama..."
+                      value={searchQuery}
+                      onChange={(e) => setSearchQuery(e.target.value)}
+                      className="w-full pl-8 pr-3 py-1.5 bg-slate-50 border border-slate-200 rounded-xl text-xs font-semibold focus:outline-none focus:bg-white focus:border-cyan-500"
+                    />
+                    <Search size={12} className="absolute left-2.5 top-2.5 text-slate-400" />
+                  </div>
+                </div>
+              </div>
+
+              {filteredResForReceipt.length === 0 ? (
+                <div className="py-16 text-center text-slate-400 space-y-2 w-full bg-slate-50 rounded-2xl border border-slate-150">
+                  <Printer size={36} className="mx-auto opacity-30 text-slate-500" />
+                  <p className="text-xs font-black">Belum ada data warga Lantai {targetFloor} yang membayar untuk periode ini.</p>
+                  <p className="text-[10px]">Lakukan pembayaran/verifikasi iuran di menu "Pembayaran Iuran Warga" terlebih dahulu.</p>
+                </div>
+              ) : (
+                <div className="w-full">
+                  {/* Mobile View Cards */}
+                  <div className="grid grid-cols-1 gap-3.5 md:hidden w-full">
+                    {filteredResForReceipt.map(res => {
+                      const bill = paidBills.find(b => b.residentKtp === res.ktp)!;
+                      return (
+                        <div key={res.id} className="bg-slate-50/50 p-4 border border-slate-150 rounded-2xl flex flex-col gap-3 w-full">
+                          <div className="flex justify-between items-start">
+                            <div>
+                              <span className="text-[9px] uppercase font-mono font-black text-slate-400">Unit Warga</span>
+                              <h4 className="text-sm font-black text-slate-900 -mt-0.5">{res.unit}</h4>
+                              <p className="text-xs font-extrabold text-slate-700 mt-0.5">{res.name}</p>
+                            </div>
+                            <span className="px-2 py-0.5 bg-emerald-50 text-emerald-700 border border-emerald-150 rounded text-[8px] font-black uppercase">
+                              {bill.status === 'Lunas' ? 'Lunas ✓' : 'Terbayar (Koor)'}
+                            </span>
+                          </div>
+                          
+                          <div className="bg-white/60 p-2 border border-slate-100 rounded-xl text-[10px] font-mono text-slate-655 font-bold flex justify-between">
+                            <span>Total Tagihan:</span>
+                            <span className="text-slate-900 font-black">Rp {bill.totalBill.toLocaleString('id-ID')}</span>
+                          </div>
+
+                          <button
+                            type="button"
+                            onClick={() => handlePrintReceipt(res, bill)}
+                            className="w-full py-2.5 bg-cyan-600 hover:bg-cyan-700 text-white rounded-xl text-xs font-black uppercase tracking-wider transition cursor-pointer select-none active:scale-[0.98] shadow-md shadow-cyan-500/10 border-0 flex items-center justify-center gap-1.5"
+                          >
+                            <Printer size={14} />
+                            Cetak Struk Nota (58mm)
+                          </button>
+                        </div>
+                      );
+                    })}
+                  </div>
+
+                  {/* Desktop View Table */}
+                  <div className="hidden md:block overflow-x-auto w-full">
+                    <table className="w-full text-xs text-left divide-y divide-slate-150">
+                      <thead>
+                        <tr className="text-[10px] uppercase font-mono font-extrabold text-slate-450 tracking-wider">
+                          <th className="pb-3 px-2">Unit</th>
+                          <th className="pb-3 px-2">Nama Warga</th>
+                          <th className="pb-3 px-2 text-right">Meter Lalu</th>
+                          <th className="pb-3 px-2 text-right">Meter Baru</th>
+                          <th className="pb-3 px-2 text-right">Volume</th>
+                          <th className="pb-3 px-2 text-right">Total Tagihan</th>
+                          <th className="pb-3 px-2 text-center">Status</th>
+                          <th className="pb-3 px-2 text-center">Tindakan</th>
+                        </tr>
+                      </thead>
+                      <tbody className="divide-y divide-slate-100 font-bold text-slate-700">
+                        {filteredResForReceipt.map(res => {
+                          const bill = paidBills.find(b => b.residentKtp === res.ktp)!;
+                          return (
+                            <tr key={res.id} className="hover:bg-slate-50/50 transition-colors">
+                              <td className="py-3 px-2 font-mono font-black text-slate-900">{res.unit}</td>
+                              <td className="py-3 px-2 text-slate-800 text-[11px] font-semibold">{res.name}</td>
+                              <td className="py-3 px-2 text-right font-mono text-slate-500">{bill.prevMeter} m³</td>
+                              <td className="py-3 px-2 text-right font-mono text-slate-900">{bill.currentMeter} m³</td>
+                              <td className="py-3 px-2 text-right font-mono text-sky-700">+{bill.usage} m³</td>
+                              <td className="py-3 px-2 text-right font-mono text-slate-950 font-black">
+                                Rp {bill.totalBill.toLocaleString('id-ID')}
+                              </td>
+                              <td className="py-3 px-2 text-center">
+                                <span className={`px-2.5 py-1 rounded-full font-bold text-[9px] uppercase border ${
+                                  bill.status === 'Lunas' 
+                                    ? 'bg-emerald-50 text-emerald-700 border-emerald-150' 
+                                    : 'bg-amber-50 text-amber-700 border-amber-150'
+                                }`}>
+                                  {bill.status === 'Lunas' ? 'Lunas ✓' : 'Terbayar (Koor)'}
+                                </span>
+                              </td>
+                              <td className="py-3 px-2 text-center">
+                                <button
+                                  type="button"
+                                  onClick={() => handlePrintReceipt(res, bill)}
+                                  className="px-3.5 py-1.5 bg-cyan-600 hover:bg-cyan-700 text-white rounded-xl text-[10px] font-black uppercase tracking-wider transition cursor-pointer select-none active:scale-[0.97] shadow-sm shadow-cyan-500/10 border-0 flex items-center gap-1 mx-auto"
+                                >
+                                  <Printer size={12} />
+                                  Cetak Nota
+                                </button>
                               </td>
                             </tr>
                           );
@@ -1722,7 +1983,7 @@ export const KoordinatorDashboard: React.FC<KoordinatorDashboardProps> = ({
       {scannedResident && (() => {
         // Query previous April meter record
         const pastRecords = billingRecords.filter(
-          (b) => b.residentKtp === scannedResident.ktp && !(b.month === 'Mei' && b.year === 2026)
+          (b) => b.residentKtp === scannedResident.ktp && !(b.month === activeMonth && b.year === activeYear)
         );
         const prevMeterVal = pastRecords.length > 0 ? pastRecords[0].currentMeter : 100;
         
@@ -1809,7 +2070,7 @@ export const KoordinatorDashboard: React.FC<KoordinatorDashboardProps> = ({
               <div className="p-4 bg-slate-50 border-b border-slate-100 flex flex-col space-y-1">
                 <div className="flex justify-between items-center text-[10px] uppercase font-mono font-black text-cyan-700">
                   <span>Informasi Hunian Rusun</span>
-                  <span className="px-1.5 py-0.5 bg-cyan-100 text-cyan-800 rounded">MEI 2026</span>
+                  <span className="px-1.5 py-0.5 bg-cyan-100 text-cyan-800 rounded">{activeMonth.toUpperCase()} {activeYear}</span>
                 </div>
                 
                 {/* Visual Label (Floor - Block - Room - Name) */}

@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { Resident, BillingRecord, FinancialLog, getFloorFromUnit, AppSettings } from '../types';
+import { Resident, BillingRecord, FinancialLog, getFloorFromUnit, AppSettings, getMonthYearFromDateString } from '../types';
 import { 
   Calendar, 
   Droplet, 
@@ -237,9 +237,11 @@ export const WargaDashboard: React.FC<WargaDashboardProps> = ({
     setIsForceEditVerification(false);
   };
 
+  const { month: activeMonth, year: activeYear } = getMonthYearFromDateString(simulatedDate);
+
   // Filter bills for this resident
   const userBills = billingRecords.filter((b) => b.residentKtp === user.ktp);
-  const currentMonthBill = userBills.find((b) => b.month === 'Mei' && b.year === 2026);
+  const currentMonthBill = userBills.find((b) => b.month === activeMonth && b.year === activeYear);
 
   // Dynamic filter: Sort all user bills by year and month descending, then take the top 2.
   const monthMap: Record<string, number> = {
@@ -378,7 +380,7 @@ export const WargaDashboard: React.FC<WargaDashboardProps> = ({
             <CreditCard size={22} />
           </div>
           <div className="space-y-0.5">
-            <span className="block text-[10px] text-slate-400 uppercase tracking-wider font-bold">Iuran Mei 2026</span>
+            <span className="block text-[10px] text-slate-400 uppercase tracking-wider font-bold">Iuran {activeMonth} {activeYear}</span>
             <p className="text-md font-bold text-slate-900 font-mono">
               {currentMonthBill ? formatRupiah(currentMonthBill.totalBill) : 'Rp 0'}
             </p>
@@ -509,7 +511,7 @@ export const WargaDashboard: React.FC<WargaDashboardProps> = ({
               <div>
                 <span className="text-[10px] text-indigo-600 font-extrabold uppercase tracking-widest font-mono">Lembar Tagihan Bulanan</span>
                 <h2 className="text-lg font-extrabold text-slate-900 mt-0.5">Tagihan Iuran Air &amp; Sampah</h2>
-                <p className="text-xs text-slate-400 font-mono mt-0.5">PERIODE: MEI 2026 • RUSUN GUNUNGSARI SURABAYA</p>
+                <p className="text-xs text-slate-400 font-mono mt-0.5">PERIODE: {activeMonth.toUpperCase()} {activeYear} • RUSUN GUNUNGSARI SURABAYA</p>
               </div>
               <div className="self-start sm:self-auto">
                 {currentMonthBill ? (
@@ -649,7 +651,7 @@ export const WargaDashboard: React.FC<WargaDashboardProps> = ({
                 </div>
                 <p className="text-slate-600 text-sm font-semibold">Pencatatan meteran air Anda belum tersedia</p>
                 <p className="text-slate-400 text-xs mt-1 max-w-sm mx-auto">
-                  Pengurus wilayah atau koordinator belum melakukan proses pencatatan input air untuk bulan Mei. Silakan hubungi koordinator blok Anda (biasanya diinput tgl 1-5).
+                  Pengurus wilayah atau koordinator belum melakukan proses pencatatan input air untuk bulan {activeMonth}. Silakan hubungi koordinator blok Anda (biasanya diinput tgl 1-5).
                 </p>
               </div>
             )}

@@ -105,3 +105,30 @@ export const DEFAULT_APP_SETTINGS: AppSettings = {
   isMaintenanceMode: false
 };
 
+export const getMonthYearFromDateString = (dateStr: string) => {
+  if (!dateStr) return { month: 'Mei', year: 2026 };
+  const parts = dateStr.split('-');
+  const year = parseInt(parts[0], 10) || 2026;
+  const monthIdx = parseInt(parts[1], 10) - 1;
+  const months = [
+    'Januari', 'Februari', 'Maret', 'April', 'Mei', 'Juni',
+    'Juli', 'Agustus', 'September', 'Oktober', 'November', 'Desember'
+  ];
+  const month = months[monthIdx] || 'Mei';
+  return { month, year };
+};
+
+export const getPrevMonthYear = (month: string, year: number) => {
+  const months = [
+    'Januari', 'Februari', 'Maret', 'April', 'Mei', 'Juni',
+    'Juli', 'Agustus', 'September', 'Oktober', 'November', 'Desember'
+  ];
+  const idx = months.indexOf(month);
+  if (idx === -1) return { month: 'April', year: 2026 };
+  if (idx === 0) {
+    return { month: 'Desember', year: year - 1 };
+  }
+  return { month: months[idx - 1], year };
+};
+
+

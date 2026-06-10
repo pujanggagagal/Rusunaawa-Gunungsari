@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { UserRole, Resident, Coordinator, BillingRecord, FinancialLog, getFloorFromUnit, AppSettings, DEFAULT_APP_SETTINGS } from './types';
+import { UserRole, Resident, Coordinator, BillingRecord, FinancialLog, getFloorFromUnit, AppSettings, DEFAULT_APP_SETTINGS, getMonthYearFromDateString, getPrevMonthYear } from './types';
 import { getStoredData, saveStoredData, calculatePdamBill } from './data';
 import { Login } from './components/Login';
 import { WargaDashboard } from './components/WargaDashboard';
@@ -427,18 +427,20 @@ export default function App() {
     const trashBill = isVacant ? 0 : appSettings.trashBillCost;
     const totalBill = pdamBill + trashBill;
 
+    const { month: activeMonth, year: activeYear } = getMonthYearFromDateString(data.simulatedDate);
+
     setData((prev) => {
-      // Find if Mei record already exists for this citizen
-      const existingMeiIdx = prev.billing.findIndex(
-        (b) => b.residentKtp === residentKtp && b.month === 'Mei' && b.year === 2026
+      // Find if active record already exists for this citizen
+      const existingIdx = prev.billing.findIndex(
+        (b) => b.residentKtp === residentKtp && b.month === activeMonth && b.year === activeYear
       );
 
       let updatedBilling = [...prev.billing];
 
-      if (existingMeiIdx > -1) {
+      if (existingIdx > -1) {
         // Update
-        updatedBilling[existingMeiIdx] = {
-          ...updatedBilling[existingMeiIdx],
+        updatedBilling[existingIdx] = {
+          ...updatedBilling[existingIdx],
           prevMeter,
           currentMeter: isVacant ? prevMeter : currentMeter,
           usage,
@@ -449,10 +451,10 @@ export default function App() {
       } else {
         // Insert new
         const newRecord: BillingRecord = {
-          id: `bill-${residentKtp}-mei`,
+          id: `bill-${residentKtp}-${activeMonth.toLowerCase()}-${activeYear}`,
           residentKtp,
-          month: 'Mei',
-          year: 2026,
+          month: activeMonth,
+          year: activeYear,
           prevMeter,
           currentMeter: isVacant ? prevMeter : currentMeter,
           usage,
@@ -474,29 +476,32 @@ export default function App() {
     });
   };
 
-  // Admin correction for previous month (April) meter readings
+  // Admin correction for previous month meter readings
   const handleUpdateAprilMeter = (residentKtp: string, newAprilMeter: number) => {
     const resident = data.residents.find(r => r.ktp === residentKtp);
     const isVacant = resident?.isVacant || resident?.occupancyStatus === 'Kosong' || resident?.occupancyStatus === 'kosong' || resident?.name === 'Kamar Kosong' || resident?.name?.toLowerCase()?.includes('kamar kosong');
 
+    const { month: activeMonth, year: activeYear } = getMonthYearFromDateString(data.simulatedDate);
+    const { month: prevMonth, year: prevYear } = getPrevMonthYear(activeMonth, activeYear);
+
     setData((prev) => {
-      // 1. Check if April billing record exists for this resident
-      const aprilBillIdx = prev.billing.findIndex(
-        (b) => b.residentKtp === residentKtp && b.month === 'April' && b.year === 2026
+      // 1. Check if previous month billing record exists for this resident
+      const prevBillIdx = prev.billing.findIndex(
+        (b) => b.residentKtp === residentKtp && b.month === prevMonth && b.year === prevYear
       );
 
       let updatedBilling = [...prev.billing];
-      if (aprilBillIdx > -1) {
-        // April record exists -> update currentMeter
-        const aprBill = updatedBilling[aprilBillIdx];
-        const prevMeter = aprBill.prevMeter;
+      if (prevBillIdx > -1) {
+        // Previous month record exists -> update currentMeter
+        const prevBill = updatedBilling[prevBillIdx];
+        const prevMeter = prevBill.prevMeter;
         const usage = isVacant ? 0 : Math.max(0, newAprilMeter - prevMeter);
-        const pdamBill = isVacant ? 0 : calculatePdamBill(usage);
-        const trashBill = isVacant ? 0 : aprBill.trashBill;
+        const pdamBill = isVacant ? 0 : calculatePdamBill(usage, appSettings);
+        const trashBill = isVacant ? 0 : prevBill.trashBill;
         const totalBill = pdamBill + trashBill;
         
-        updatedBilling[aprilBillIdx] = {
-          ...aprBill,
+        updatedBilling[prevBillIdx] = {
+          ...prevBill,
           currentMeter: isVacant ? prevMeter : newAprilMeter,
           usage,
           pdamBill,
@@ -504,45 +509,45 @@ export default function App() {
           totalBill,
         };
       } else {
-        // April record does not exist -> Create one
+        // Previous month record does not exist -> Create one
         const prevMeter = resident?.initialMeter !== undefined && resident?.initialMeter !== null
           ? Number(resident.initialMeter)
           : 100;
         const usage = isVacant ? 0 : Math.max(0, newAprilMeter - prevMeter);
-        const pdamBill = isVacant ? 0 : calculatePdamBill(usage);
+        const pdamBill = isVacant ? 0 : calculatePdamBill(usage, appSettings);
         const trashBill = isVacant ? 0 : appSettings.trashBillCost;
         const totalBill = pdamBill + trashBill;
 
-        const newAprilBill: BillingRecord = {
-          id: `bill-${residentKtp}-april`,
+        const newPrevBill: BillingRecord = {
+          id: `bill-${residentKtp}-${prevMonth.toLowerCase()}-${prevYear}`,
           residentKtp,
-          month: 'April',
-          year: 2026,
+          month: prevMonth,
+          year: prevYear,
           prevMeter,
           currentMeter: isVacant ? prevMeter : newAprilMeter,
           usage,
           pdamBill,
           trashBill,
           totalBill,
-          status: 'Lunas' // April is historic, default to Paid
+          status: 'Lunas' // Previous is historic, default to Paid
         };
-        updatedBilling = [newAprilBill, ...updatedBilling];
+        updatedBilling = [newPrevBill, ...updatedBilling];
       }
 
-      // 2. Propagate this updated April currentMeter as prevMeter for May record (if it exists)
-      const meiBillIdx = updatedBilling.findIndex(
-        (b) => b.residentKtp === residentKtp && b.month === 'Mei' && b.year === 2026
+      // 2. Propagate this updated previous currentMeter as prevMeter for active month record (if it exists)
+      const activeBillIdx = updatedBilling.findIndex(
+        (b) => b.residentKtp === residentKtp && b.month === activeMonth && b.year === activeYear
       );
-      if (meiBillIdx > -1) {
-        const meiBill = updatedBilling[meiBillIdx];
-        const prevMeter = isVacant ? meiBill.prevMeter : newAprilMeter;
-        const usage = isVacant ? 0 : Math.max(0, meiBill.currentMeter - prevMeter);
-        const pdamBill = isVacant ? 0 : calculatePdamBill(usage);
-        const trashBill = isVacant ? 0 : meiBill.trashBill;
+      if (activeBillIdx > -1) {
+        const activeBill = updatedBilling[activeBillIdx];
+        const prevMeter = isVacant ? activeBill.prevMeter : newAprilMeter;
+        const usage = isVacant ? 0 : Math.max(0, activeBill.currentMeter - prevMeter);
+        const pdamBill = isVacant ? 0 : calculatePdamBill(usage, appSettings);
+        const trashBill = isVacant ? 0 : activeBill.trashBill;
         const totalBill = pdamBill + trashBill;
 
-        updatedBilling[meiBillIdx] = {
-          ...meiBill,
+        updatedBilling[activeBillIdx] = {
+          ...activeBill,
           prevMeter,
           usage,
           pdamBill,
@@ -816,11 +821,24 @@ export default function App() {
 
   // admin deletes/checks out residents
   const handleDeleteResident = (id: string) => {
-    supabaseService.deleteResident(id).catch(err => console.error(err));
     setData((prev) => {
-      const updatedResidents = prev.residents.filter((r) => r.id !== id);
+      const updatedResidents = prev.residents.map((r) => {
+        if (r.id === id) {
+          return {
+            ...r,
+            name: "Kamar Kosong",
+            ktp: `TDK_ADA_KTP_${id}`,
+            phone: "-",
+            occupancyStatus: "Kosong",
+            isVacant: true,
+            electricityStatus: 'Diputus' as const,
+            lastStatusChange: new Date().toISOString()
+          };
+        }
+        return r;
+      });
 
-      // AutoSync asynchronously to Google Sheets
+      // AutoSync asynchronously to Google Sheets / Supabase
       syncTable('Residents', updatedResidents);
 
       return {
@@ -971,6 +989,7 @@ export default function App() {
                 coordinator={currentUser}
                 residents={data.residents}
                 billingRecords={data.billing}
+                simulatedDate={data.simulatedDate}
                 onLogout={handleLogout}
                 onSaveMeter={handleSaveMeter}
                 appSettings={appSettings}
@@ -998,6 +1017,7 @@ export default function App() {
                 coordinators={data.coordinators}
                 financeLogs={data.finance}
                 billingRecords={data.billing}
+                simulatedDate={data.simulatedDate}
                 onLogout={handleLogout}
                 onAddResident={handleAddResident}
                 onDeleteResident={handleDeleteResident}
