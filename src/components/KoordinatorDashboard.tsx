@@ -74,7 +74,69 @@ export const KoordinatorDashboard: React.FC<KoordinatorDashboardProps> = ({
   const handlePrintReceipt = (res: Resident, bill: BillingRecord) => {
     // Generate QR Code containing the digital receipt URL
     const verifyUrl = `${window.location.origin}/?verifyBill=${bill.id}`;
+    const today = new Date().toLocaleDateString('id-ID', {
+      day: 'numeric',
+      month: 'long',
+      year: 'numeric'
+    });
+    const usage = bill.usage;
     
+    const receiptHeader = `
+================================
+       RUSUN GUNUNGSARI
+   PAGUYUBAN WARGA MANDIRI
+================================
+`.trim();
+
+    const receiptBody = `
+Tanggal  : ${today}
+Nota No  : ${bill.id}
+Petugas  : ${coordinator.name}
+Unit     : ${res.unit} (Lantai ${res.floor || getFloorFromUnit(res.unit)})
+Penghuni : ${res.name.toUpperCase()}
+Periode  : ${bill.month} ${bill.year}
+--------------------------------
+Meter Lalu     : ${bill.prevMeter} m³
+Meter Baru     : ${bill.currentMeter} m³
+Pemakaian Air  : ${usage} m³
+--------------------------------
+Biaya PDAM     : Rp ${bill.pdamBill.toLocaleString('id-ID')}
+Biaya Sampah   : Rp ${bill.trashBill.toLocaleString('id-ID')}
+--------------------------------
+TOTAL TAGIHAN  : Rp ${bill.totalBill.toLocaleString('id-ID')}
+STATUS         : ${bill.status.toUpperCase()}
+--------------------------------
+          TERIMA KASIH
+     Sistem Informasi Rusun
+================================
+`.trim();
+
+    const textToShare = `${receiptHeader}\n\nLink Verifikasi Nota Digital:\n${verifyUrl}\n\n${receiptBody}\n\nNota ini adalah bukti pembayaran resmi Rusun Gunungsari.`;
+    
+    try {
+      const shareFile = new File([textToShare], `nota-${res.unit}.txt`, { type: 'text/plain' });
+      
+      // Try sharing directly if supported by browser (mostly on mobile)
+      if (navigator.share && navigator.canShare && navigator.canShare({ files: [shareFile] })) {
+        navigator.share({
+          files: [shareFile],
+          title: `Cetak Nota ${res.unit}`,
+          text: 'Kirim struk ke printer thermal Bluetooth via RawBT'
+        }).catch(err => {
+          // If sharing is cancelled or fails, fallback to window.print popup
+          console.warn("Direct sharing failed or cancelled, falling back to popup print:", err);
+          triggerFallbackPrint(res, bill, verifyUrl);
+        });
+      } else {
+        triggerFallbackPrint(res, bill, verifyUrl);
+      }
+    } catch (e) {
+      console.warn("Web Share API files not supported, falling back to popup print:", e);
+      triggerFallbackPrint(res, bill, verifyUrl);
+    }
+  };
+
+  const triggerFallbackPrint = (res: Resident, bill: BillingRecord, verifyUrl: string) => {
     QRCode.toDataURL(verifyUrl, { margin: 1, width: 100 }, (err, qrDataUrl) => {
       if (err) {
         console.error("Gagal generate QR Code", err);
