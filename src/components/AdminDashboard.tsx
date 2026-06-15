@@ -2314,6 +2314,100 @@ Siti Aminah	357802...	Blok B	B-202	085755..."
               </div>
             </div>
 
+            {/* RIWAYAT LOG PENERIMAAN SETORAN KOORDINATOR (PARSIAL) */}
+            <div className="bg-white rounded-3xl border border-slate-100 shadow-xl shadow-slate-100/50 p-6 mt-6">
+              <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 mb-6">
+                <div>
+                  <h3 className="text-lg font-bold text-slate-900">Riwayat Setoran &amp; Penerimaan Dana Parsial</h3>
+                  <p className="text-xs text-slate-500 font-mono mt-0.5">
+                    Catatan transaksi penerimaan uang dari koordinator ke bendahara secara berkala (parsial) untuk bulan {activeMonth} {activeYear}
+                  </p>
+                </div>
+              </div>
+
+              {/* Log Table */}
+              <div className="overflow-x-auto">
+                <table className="min-w-full text-xs">
+                  <thead>
+                    <tr className="border-b border-slate-150 text-slate-400 font-mono text-xxs tracking-wider uppercase text-left">
+                      <th className="pb-3 text-left">Tanggal Penerimaan</th>
+                      <th className="pb-3">Uraian / Keterangan Setoran</th>
+                      <th className="pb-3 text-center">Wilayah</th>
+                      <th className="pb-3 text-center">Kategori</th>
+                      <th className="pb-3 text-right">Jumlah Uang</th>
+                      <th className="pb-3 text-center">Penerima</th>
+                    </tr>
+                  </thead>
+                  <tbody className="divide-y divide-slate-100">
+                    {(() => {
+                      // Filter setoran logs from active period
+                      const setoranLogs = financeLogs.filter((log) => {
+                        return (
+                          log.type === 'Pemasukan' &&
+                          (log.category === 'Setoran Koordinator' || log.category === 'Iuran Air' || log.category === 'Iuran Sampah') &&
+                          log.description.startsWith('Setoran') &&
+                          log.description.toLowerCase().includes(`${activeMonth.toLowerCase()} ${activeYear}`)
+                        );
+                      }).sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime()); // Latest first
+
+                      if (setoranLogs.length === 0) {
+                        return (
+                          <tr>
+                            <td colSpan={6} className="py-8 text-center text-slate-400 font-medium font-sans">
+                              Belum ada riwayat setoran masuk untuk periode ini.
+                            </td>
+                          </tr>
+                        );
+                      }
+
+                      return setoranLogs.map((log) => {
+                        // Extract floor from description
+                        const floorMatch = log.description.match(/Lantai (\d+)/i);
+                        const floorNum = floorMatch ? floorMatch[1] : '-';
+
+                        return (
+                          <tr key={log.id} className="hover:bg-slate-50 transition-colors">
+                            <td className="py-3 font-semibold text-slate-600 font-mono">
+                              {new Date(log.date).toLocaleDateString('id-ID', {
+                                day: 'numeric',
+                                month: 'short',
+                                year: 'numeric',
+                                hour: '2-digit',
+                                minute: '2-digit'
+                              })}
+                            </td>
+                            <td className="py-3 font-medium text-slate-800 font-sans">
+                              {log.description}
+                            </td>
+                            <td className="py-3 text-center">
+                              <span className="px-2 py-0.5 bg-purple-50 text-purple-600 border border-purple-100 rounded-md font-bold font-mono text-[10px]">
+                                Lantai {floorNum}
+                              </span>
+                            </td>
+                            <td className="py-3 text-center">
+                              <span className={`px-2 py-0.5 rounded font-extrabold text-[9px] uppercase font-mono border ${
+                                log.category === 'Iuran Air' || log.description.toLowerCase().includes('pdam') 
+                                  ? 'bg-blue-50 text-blue-700 border-blue-100' 
+                                  : 'bg-amber-50 text-amber-700 border-amber-100'
+                              }`}>
+                                {log.category === 'Iuran Air' || log.description.toLowerCase().includes('pdam') ? 'Iuran Air' : 'Iuran Sampah'}
+                              </span>
+                            </td>
+                            <td className="py-3 text-right font-mono font-black text-slate-900 text-sm">
+                              Rp {log.amount.toLocaleString('id-ID')}
+                            </td>
+                            <td className="py-3 text-center text-slate-500 font-bold font-mono text-[10px]">
+                              {log.creator || 'Bendahara'}
+                            </td>
+                          </tr>
+                        );
+                      });
+                    })()}
+                  </tbody>
+                </table>
+              </div>
+            </div>
+
           </div>
         )}
 
