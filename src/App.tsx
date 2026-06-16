@@ -107,6 +107,143 @@ export default function App() {
     loadSupabaseData();
   }, []);
 
+  // Supabase Realtime Subscriptions
+  useEffect(() => {
+    const toCamelCase = (obj: any) => {
+      if (!obj) return obj;
+      const newObj: any = {};
+      for (const key in obj) {
+        const camelKey = key.replace(/_([a-z])/g, (g) => g[1].toUpperCase());
+        const mappedKey = 
+          key === 'electricitystatus' ? 'electricityStatus' :
+          key === 'laststatuschange' ? 'lastStatusChange' :
+          key === 'occupancystatus' ? 'occupancyStatus' :
+          key === 'initialmeter' ? 'initialMeter' :
+          key === 'isvacant' ? 'isVacant' :
+          key === 'assignedfloor' ? 'assignedFloor' :
+          key === 'assignedblock' ? 'assignedBlock' :
+          key === 'residentktp' ? 'residentKtp' :
+          key === 'prevmeter' ? 'prevMeter' :
+          key === 'currentmeter' ? 'currentMeter' :
+          key === 'pdambill' ? 'pdamBill' :
+          key === 'trashbill' ? 'trashBill' :
+          key === 'totalbill' ? 'totalBill' :
+          key === 'paymentdate' ? 'paymentDate' :
+          key === 'funduser' ? 'fundUser' : camelKey;
+        newObj[mappedKey] = obj[key];
+      }
+      return newObj;
+    };
+
+    // Subscriptions setup
+    const residentsChannel = supabase
+      .channel('residents-realtime')
+      .on('postgres_changes', { event: '*', schema: 'public', table: 'residents' }, (payload) => {
+        setData((prev) => {
+          if (payload.eventType === 'INSERT') {
+            const newRes = toCamelCase(payload.new);
+            if (prev.residents.some(r => r.id === newRes.id)) return prev;
+            return { ...prev, residents: [...prev.residents, newRes] };
+          } else if (payload.eventType === 'UPDATE') {
+            const updatedRes = toCamelCase(payload.new);
+            return {
+              ...prev,
+              residents: prev.residents.map(r => r.id === updatedRes.id ? updatedRes : r)
+            };
+          } else if (payload.eventType === 'DELETE') {
+            return {
+              ...prev,
+              residents: prev.residents.filter(r => r.id !== payload.old.id)
+            };
+          }
+          return prev;
+        });
+      })
+      .subscribe();
+
+    const coordinatorsChannel = supabase
+      .channel('coordinators-realtime')
+      .on('postgres_changes', { event: '*', schema: 'public', table: 'coordinators' }, (payload) => {
+        setData((prev) => {
+          if (payload.eventType === 'INSERT') {
+            const newCoord = toCamelCase(payload.new);
+            if (prev.coordinators.some(c => c.id === newCoord.id)) return prev;
+            return { ...prev, coordinators: [...prev.coordinators, newCoord] };
+          } else if (payload.eventType === 'UPDATE') {
+            const updatedCoord = toCamelCase(payload.new);
+            return {
+              ...prev,
+              coordinators: prev.coordinators.map(c => c.id === updatedCoord.id ? updatedCoord : c)
+            };
+          } else if (payload.eventType === 'DELETE') {
+            return {
+              ...prev,
+              coordinators: prev.coordinators.filter(c => c.id !== payload.old.id)
+            };
+          }
+          return prev;
+        });
+      })
+      .subscribe();
+
+    const billingChannel = supabase
+      .channel('billing-realtime')
+      .on('postgres_changes', { event: '*', schema: 'public', table: 'billing' }, (payload) => {
+        setData((prev) => {
+          if (payload.eventType === 'INSERT') {
+            const newBill = toCamelCase(payload.new);
+            if (prev.billing.some(b => b.id === newBill.id)) return prev;
+            return { ...prev, billing: [newBill, ...prev.billing] };
+          } else if (payload.eventType === 'UPDATE') {
+            const updatedBill = toCamelCase(payload.new);
+            return {
+              ...prev,
+              billing: prev.billing.map(b => b.id === updatedBill.id ? updatedBill : b)
+            };
+          } else if (payload.eventType === 'DELETE') {
+            return {
+              ...prev,
+              billing: prev.billing.filter(b => b.id !== payload.old.id)
+            };
+          }
+          return prev;
+        });
+      })
+      .subscribe();
+
+    const financeChannel = supabase
+      .channel('finance-realtime')
+      .on('postgres_changes', { event: '*', schema: 'public', table: 'finance_logs' }, (payload) => {
+        setData((prev) => {
+          if (payload.eventType === 'INSERT') {
+            const newLog = toCamelCase(payload.new);
+            if (prev.finance.some(f => f.id === newLog.id)) return prev;
+            return { ...prev, finance: [newLog, ...prev.finance] };
+          } else if (payload.eventType === 'UPDATE') {
+            const updatedLog = toCamelCase(payload.new);
+            return {
+              ...prev,
+              finance: prev.finance.map(f => f.id === updatedLog.id ? updatedLog : f)
+            };
+          } else if (payload.eventType === 'DELETE') {
+            return {
+              ...prev,
+              finance: prev.finance.filter(f => f.id !== payload.old.id)
+            };
+          }
+          return prev;
+        });
+      })
+      .subscribe();
+
+    return () => {
+      residentsChannel.unsubscribe();
+      coordinatorsChannel.unsubscribe();
+      billingChannel.unsubscribe();
+      financeChannel.unsubscribe();
+    };
+  }, []);
+
 
   // Google Sheets Integration States
   const [sheetsUser, setSheetsUser] = useState<FirebaseUser | null>(null);
