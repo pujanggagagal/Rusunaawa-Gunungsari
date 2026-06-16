@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { Resident, BillingRecord, getFloorFromUnit, AppSettings, getMonthYearFromDateString } from '../types';
 import { LogOut, ShieldCheck, Zap, ZapOff, CheckCircle2, AlertTriangle, Calendar, Info, RefreshCw, Badge } from 'lucide-react';
+import { sortResidents } from '../utils/sorting';
 
 interface SecurityDashboardProps {
   residents: Resident[];
@@ -46,7 +47,7 @@ export const SecurityDashboard: React.FC<SecurityDashboardProps> = ({
   });
 
   // Filter based on selected block, status, and floor
-  const filteredCompliance = complianceData.filter((r) => {
+  const filteredCompliance = sortResidents(complianceData.filter((r) => {
     if (filterBlock !== 'Semua' && r.block !== filterBlock) return false;
     
     if (filterStatus === 'Lunas') {
@@ -63,7 +64,7 @@ export const SecurityDashboard: React.FC<SecurityDashboardProps> = ({
     }
     
     return true;
-  });
+  }));
 
   // Highlight rules
   const unpaidResidents = complianceData.filter(r => r.paymentStatus === 'Belum Lunas');

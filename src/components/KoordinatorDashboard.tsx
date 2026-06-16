@@ -1,6 +1,7 @@
 import React, { useState, useEffect, useRef } from 'react';
 import QRCode from 'qrcode';
 import { Resident, BillingRecord, Coordinator, getFloorFromUnit, getBarcodeContent, AppSettings, getMonthYearFromDateString, getPrevMonthYear } from '../types';
+import { sortResidents } from '../utils/sorting';
 import { 
   LogOut, 
   UserCheck, 
@@ -61,10 +62,10 @@ export const KoordinatorDashboard: React.FC<KoordinatorDashboardProps> = ({
   const targetFloor = coordinator.assignedFloor || (coordinator.id === 'coord-1' ? 1 : coordinator.id === 'coord-2' ? 2 : coordinator.id === 'coord-3' ? 3 : coordinator.id === 'coord-4' ? 4 : coordinator.id === 'coord-5' ? 5 : 1);
 
   // 1. Filter residents belonging to this coordinator's assigned floor (e.g., Floor 1)
-  const floorResidents = residents.filter((r) => {
+  const floorResidents = sortResidents(residents.filter((r) => {
     const fl = r.floor || getFloorFromUnit(r.unit);
     return fl === targetFloor;
-  });
+  }));
 
   // Helper: Extract floor number from unit string for general purposes if any
   const getResidentFloor = (res: Resident): number => {

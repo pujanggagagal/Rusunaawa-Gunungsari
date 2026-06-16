@@ -4,6 +4,7 @@ import { LogOut, LayoutGrid, Users, Coins, Plus, Trash2, Edit2, UserPlus, Sparkl
 import { calculatePdamBill } from '../data';
 import { BarcodeRenderer } from './BarcodeRenderer';
 import { QRCodeRenderer } from './QRCodeRenderer';
+import { sortResidents, compareUnits } from '../utils/sorting';
 
 interface AdminDashboardProps {
   residents: Resident[];
@@ -166,6 +167,7 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({
   // States for Reconciliation
   const [reconcileFloor, setReconcileFloor] = useState<number | null>(null);
   const [reconcileSuccess, setReconcileSuccess] = useState('');
+  const [isReconciling, setIsReconciling] = useState(false);
 
   // States for PDAM Backup & Payments Tab
   const [selectedResidentKtp, setSelectedResidentKtp] = useState('');
@@ -240,19 +242,7 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({
     const matchesBlock = barcodeBlockFilter === 'all' ? true : res.block === barcodeBlockFilter;
     
     return matchesSearch && matchesFloor && matchesBlock;
-  }).sort((a, b) => {
-    const aFloor = a.floor || getFloorFromUnit(a.unit);
-    const bFloor = b.floor || getFloorFromUnit(b.unit);
-    if (aFloor !== bFloor) {
-      return aFloor - bFloor;
-    }
-    const aBlock = a.block || '';
-    const bBlock = b.block || '';
-    if (aBlock !== bBlock) {
-      return aBlock.localeCompare(bBlock);
-    }
-    return a.unit.localeCompare(b.unit, undefined, { numeric: true, sensitivity: 'base' });
-  });
+  }).sort(compareUnits);
 
   // Filters & sorting for Admin Resident Directory (Sorted by floor then room unit number)
   const sortedAndFilteredResidents = [...residents]
@@ -269,14 +259,7 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({
       
       return matchesSearch && matchesFloor && matchesBlock && matchesStatus;
     })
-    .sort((a, b) => {
-      const aFloor = a.floor || getFloorFromUnit(a.unit);
-      const bFloor = b.floor || getFloorFromUnit(b.unit);
-      if (aFloor !== bFloor) {
-        return aFloor - bFloor;
-      }
-      return a.unit.localeCompare(b.unit, undefined, { numeric: true, sensitivity: 'base' });
-    });
+    .sort(compareUnits);
 
   const handleCreateResident = (e: React.FormEvent) => {
     e.preventDefault();
@@ -1264,12 +1247,27 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({
                             <button
                               type="button"
                               onClick={() => {
-                                setEditingFinanceLog(log);
-                                setEditFinAmount(log.amount);
-                                setEditFinDesc(log.description);
-                                setEditFinCat(log.category);
-                                setEditFinFundUser(log.fundUser || '');
-                                setEditFinType(log.type);
+                                const isSetoran = log.description.toLowerCase().startsWith('setoran');
+                                if (isSetoran) {
+                                  const confirmVal = window.prompt(`PERINGATAN: Transaksi ini adalah setoran resmi koordinator! Mengubah ini akan mempengaruhi data rekonsiliasi.\n\nKetik "EDIT SETORAN" untuk membuka form edit:`);
+                                  if (confirmVal === 'EDIT SETORAN') {
+                                    setEditingFinanceLog(log);
+                                    setEditFinAmount(log.amount);
+                                    setEditFinDesc(log.description);
+                                    setEditFinCat(log.category);
+                                    setEditFinFundUser(log.fundUser || '');
+                                    setEditFinType(log.type);
+                                  } else {
+                                    alert('Tindakan dibatalkan. Konfirmasi tidak cocok.');
+                                  }
+                                } else {
+                                  setEditingFinanceLog(log);
+                                  setEditFinAmount(log.amount);
+                                  setEditFinDesc(log.description);
+                                  setEditFinCat(log.category);
+                                  setEditFinFundUser(log.fundUser || '');
+                                  setEditFinType(log.type);
+                                }
                               }}
                               className="p-1 text-blue-600 hover:text-blue-800 hover:bg-slate-100 rounded transition cursor-pointer"
                               title="Edit Transaksi"
@@ -1279,8 +1277,18 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({
                             <button
                               type="button"
                               onClick={() => {
-                                if (window.confirm(`Apakah Anda yakin ingin menghapus catatan transaksi "${log.description}"?`)) {
-                                  if (onDeleteFinanceLog) onDeleteFinanceLog(log.id);
+                                const isSetoran = log.description.toLowerCase().startsWith('setoran');
+                                if (isSetoran) {
+                                  const confirmVal = window.prompt(`PERINGATAN: Transaksi ini adalah setoran resmi koordinator! Menghapus ini akan mengubah nominal kas bendahara secara signifikan.\n\nKetik "HAPUS SETORAN" untuk mengonfirmasi tindakan ini:`);
+                                  if (confirmVal === 'HAPUS SETORAN') {
+                                    if (onDeleteFinanceLog) onDeleteFinanceLog(log.id);
+                                  } else {
+                                    alert('Tindakan dibatalkan. Konfirmasi tidak cocok.');
+                                  }
+                                } else {
+                                  if (window.confirm(`Apakah Anda yakin ingin menghapus catatan transaksi "${log.description}"?`)) {
+                                    if (onDeleteFinanceLog) onDeleteFinanceLog(log.id);
+                                  }
                                 }
                               }}
                               className="p-1 text-rose-600 hover:text-rose-800 hover:bg-slate-100 rounded transition cursor-pointer"
@@ -2295,6 +2303,7 @@ Siti Aminah	357802...	Blok B	B-202	085755..."
                                 onClick={() => {
                                   setReconcileFloor(floorNum);
                                   setReconcileSuccess('');
+                                  setIsReconciling(false);
                                 }}
                                 className="px-3.5 py-1.5 bg-gradient-to-r from-purple-600 to-indigo-600 hover:from-purple-700 hover:to-indigo-700 text-white rounded-xl font-extrabold text-[10px] uppercase shadow-md shadow-purple-500/10 cursor-pointer transition-colors active:scale-95"
                               >
@@ -2708,14 +2717,8 @@ Siti Aminah	357802...	Blok B	B-202	085755..."
                    r.ktp.includes(query);
           });
 
-          // Sort naturally by Block -> Floor -> Unit
-          const sortedResList = [...filteredResList].sort((a, b) => {
-            if (a.block !== b.block) return a.block.localeCompare(b.block);
-            const floorA = a.floor || getFloorFromUnit(a.unit);
-            const floorB = b.floor || getFloorFromUnit(b.unit);
-            if (floorA !== floorB) return floorA - floorB;
-            return a.unit.localeCompare(b.unit, undefined, { numeric: true, sensitivity: 'base' });
-          });
+          // Sort naturally by Block -> Unit
+          const sortedResList = [...filteredResList].sort(compareUnits);
 
           const handleSaveMayMeter = (e: React.FormEvent) => {
             e.preventDefault();
@@ -3223,8 +3226,9 @@ Siti Aminah	357802...	Blok B	B-202	085755..."
                         const monthB = monthsMap[b.month] || 0;
                         if (monthA !== monthB) return monthB - monthA;
                         
-                        const resA = residents.find(r => r.ktp === a.residentKtp);
-                        const resB = residents.find(r => r.ktp === b.residentKtp);
+                        if (resA && resB) {
+                          return compareUnits(resA, resB);
+                        }
                         return (resA?.unit || '').localeCompare(resB?.unit || '', undefined, { numeric: true });
                       });
 
@@ -4318,6 +4322,9 @@ Siti Aminah	357802...	Blok B	B-202	085755..."
         const pdamBillAmount = floorMeiCollectedBills.reduce((s, r) => s + r.pdamBill, 0);
 
         const handleConfirmReconcile = () => {
+          if (isReconciling) return;
+          setIsReconciling(true);
+
           // 1. Catat kas masuk untuk Iuran Air (PDAM) jika ada
           if (pdamBillAmount > 0) {
             onAddExpense(
@@ -4347,6 +4354,7 @@ Siti Aminah	357802...	Blok B	B-202	085755..."
           setReconcileSuccess(`Setoran masuk sebesar Rp ${totalCollectedOnFloor.toLocaleString('id-ID')} berhasil dicatatkan dan diverifikasi!`);
           setTimeout(() => {
             setReconcileFloor(null);
+            setIsReconciling(false);
           }, 1500);
         };
 
@@ -4426,10 +4434,11 @@ Siti Aminah	357802...	Blok B	B-202	085755..."
                     </button>
                     <button
                       type="button"
+                      disabled={isReconciling}
                       onClick={handleConfirmReconcile}
-                      className="py-2.5 bg-purple-600 hover:bg-purple-700 text-white font-black text-[10px] rounded-xl uppercase transition-colors shadow-md shadow-purple-500/10"
+                      className="py-2.5 bg-purple-600 hover:bg-purple-700 text-white font-black text-[10px] rounded-xl uppercase transition-colors shadow-md shadow-purple-500/10 disabled:opacity-50"
                     >
-                      Dana Sudah Diterima oleh Bendahara ✓
+                      {isReconciling ? 'Memproses...' : 'Dana Sudah Diterima oleh Bendahara ✓'}
                     </button>
                   </div>
                 </div>
@@ -4443,12 +4452,7 @@ Siti Aminah	357802...	Blok B	B-202	085755..."
       {isVacantModalOpen && (() => {
         const vacantList = residents.filter(
           (r) => r.isVacant || r.occupancyStatus === 'Kosong' || r.occupancyStatus === 'kosong' || r.name === 'Kamar Kosong' || r.name?.toLowerCase()?.includes('kamar kosong')
-        ).sort((a, b) => {
-          const aFloor = a.floor || getFloorFromUnit(a.unit);
-          const bFloor = b.floor || getFloorFromUnit(b.unit);
-          if (aFloor !== bFloor) return aFloor - bFloor;
-          return a.unit.localeCompare(b.unit, undefined, { numeric: true, sensitivity: 'base' });
-        });
+        ).sort(compareUnits);
 
         return (
           <div className="fixed inset-0 bg-slate-950/80 backdrop-blur-sm flex items-center justify-center p-4 z-50 animate-fade-in text-slate-800">
