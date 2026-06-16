@@ -83,37 +83,49 @@ export const KoordinatorDashboard: React.FC<KoordinatorDashboardProps> = ({
       year: 'numeric'
     });
 
+    // Urutan detail unit: Lantai > Blok > No Hunian
+    const floorLabel = res.floor || getFloorFromUnit(res.unit);
+    // Extracking Blok dan No Hunian dari res.unit (misal: "A-102" menjadi Blok A, No. 102)
+    const blockLabel = res.block ? res.block.replace("Blok ", "") : "";
+    const cleanUnitNo = res.unit.includes("-") ? res.unit.split("-")[1] : res.unit;
+
+    // No Nota berformat: [no bill > blok > no Hunian]
+    const customBillNo = `${bill.id} > ${blockLabel} > ${cleanUnitNo}`;
+
     const receiptHeader = `
-================================
-       RUSUN GUNUNGSARI
-   PAGUYUBAN WARGA MANDIRI
-================================
+--------------------------------
+      RUSUNAWA GUNUNGSARI
+         KOTA SURABAYA
+--------------------------------
+       PENCATATAN PDAM &
+         IURAN SAMPAH
+--------------------------------
 `.trim();
 
     const receiptBody = `
-Tanggal  : ${today}
-Nota No  : ${bill.id}
+No. Nota : ${customBillNo}
 Petugas  : ${coordinator.name}
-Unit     : ${res.unit} (Lantai ${res.floor || getFloorFromUnit(res.unit)})
+Unit     : Lantai ${floorLabel} > Blok ${blockLabel} > No. ${cleanUnitNo}
 Penghuni : ${res.name.toUpperCase()}
 Periode  : ${bill.month} ${bill.year}
---------------------------------
+Tanggal  : ${today}
+---------------------------------
 Meter Lalu     : ${bill.prevMeter} m³
 Meter Baru     : ${bill.currentMeter} m³
 Pemakaian Air  : ${bill.usage} m³
---------------------------------
+---------------------------------
 Biaya PDAM     : Rp ${bill.pdamBill.toLocaleString('id-ID')}
 Biaya Sampah   : Rp ${bill.trashBill.toLocaleString('id-ID')}
---------------------------------
+---------------------------------
 TOTAL TAGIHAN  : Rp ${bill.totalBill.toLocaleString('id-ID')}
 STATUS         : ${bill.status.toUpperCase()}
---------------------------------
-          TERIMA KASIH
-     Sistem Informasi Rusun
-================================
+---------------------------------
+    Nota ini sebagai bukti sah
+   Pembayaran PDAM & Iuran Sampah
+---------------------------------
 \n\n\n`.trim();
 
-    const textToShare = `${receiptHeader}\n\n${receiptBody}\n\nNota ini adalah bukti pembayaran resmi Rusun Gunungsari.`;
+    const textToShare = `${receiptHeader}\n\n${receiptBody}`;
 
     // Cek apakah aplikasi dibuka di dalam APK Android dengan Interface Printer Native
     // @ts-ignore
@@ -209,9 +221,6 @@ STATUS         : ${bill.status.toUpperCase()}
         <body>
           <pre>${receiptHeader}</pre>
           <pre>${receiptBody}</pre>
-          <div class="official-footer">
-            Nota ini adalah bukti pembayaran resmi Rusun Gunungsari.
-          </div>
           
           <div class="no-print" style="text-align: center; margin-top: 15px; border-top: 1px solid #ccc; padding-top: 10px;">
             <button class="no-print-btn btn-green" id="shareBtn">Bagikan Struk</button>
