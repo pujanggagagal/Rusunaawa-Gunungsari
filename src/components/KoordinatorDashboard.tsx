@@ -77,13 +77,6 @@ export const KoordinatorDashboard: React.FC<KoordinatorDashboardProps> = ({
   };
 
   const runPrint = (res: Resident, bill: BillingRecord) => {
-    const printWindow = window.open('', '_blank', 'width=350,height=650');
-    if (!printWindow) {
-      alert('Gagal membuka jendela cetak. Pastikan pop-up blocker dimatikan.');
-      return;
-    }
-
-    const usage = bill.usage;
     const today = new Date().toLocaleDateString('id-ID', {
       day: 'numeric',
       month: 'long',
@@ -107,7 +100,7 @@ Periode  : ${bill.month} ${bill.year}
 --------------------------------
 Meter Lalu     : ${bill.prevMeter} m³
 Meter Baru     : ${bill.currentMeter} m³
-Pemakaian Air  : ${usage} m³
+Pemakaian Air  : ${bill.usage} m³
 --------------------------------
 Biaya PDAM     : Rp ${bill.pdamBill.toLocaleString('id-ID')}
 Biaya Sampah   : Rp ${bill.trashBill.toLocaleString('id-ID')}
@@ -118,9 +111,28 @@ STATUS         : ${bill.status.toUpperCase()}
           TERIMA KASIH
      Sistem Informasi Rusun
 ================================
-`.trim();
+\n\n\n`.trim();
 
     const textToShare = `${receiptHeader}\n\n${receiptBody}\n\nNota ini adalah bukti pembayaran resmi Rusun Gunungsari.`;
+
+    // Cek apakah aplikasi dibuka di dalam APK Android dengan Interface Printer Native
+    // @ts-ignore
+    if (window.AndroidInterface && typeof window.AndroidInterface.printReceipt === 'function') {
+      try {
+        // Kirim teks struk langsung ke fungsi native Java/Kotlin di Android Studio
+        // @ts-ignore
+        window.AndroidInterface.printReceipt(`${receiptHeader}\n${receiptBody}`);
+        return; // Hentikan eksekusi browser window.open karena sudah dicetak lewat native
+      } catch (err) {
+        console.error("Gagal mencetak menggunakan Android Native Interface, dialihkan ke browser print:", err);
+      }
+    }
+
+    const printWindow = window.open('', '_blank', 'width=350,height=650');
+    if (!printWindow) {
+      alert('Gagal membuka jendela cetak. Pastikan pop-up blocker dimatikan.');
+      return;
+    }
 
     printWindow.document.write(`
       <html>
