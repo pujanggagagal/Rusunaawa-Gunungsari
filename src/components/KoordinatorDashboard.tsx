@@ -271,6 +271,7 @@ STATUS         : ${bill.status.toUpperCase()}
   const [filterBlock, setFilterBlock] = useState<string>('all');
   const [searchQuery, setSearchQuery] = useState('');
   const [autoAdvance, setAutoAdvance] = useState(true);
+  const [selectedPeriod, setSelectedPeriod] = useState<'current' | 'prev'>('current');
   
   const [selectedResidentKtp, setSelectedResidentKtp] = useState('');
   const [currentMeterInput, setCurrentMeterInput] = useState<number | ''>('');
@@ -1840,10 +1841,10 @@ STATUS         : ${bill.status.toUpperCase()}
 
       {/* COORD TAB 3: CETAK NOTA PEMBAYARAN */}
       {coordTab === 'receipt' && (() => {
-        // Filter residents who have already paid (either 'Terbayar di Koordinator' or 'Lunas')
+        // Filter untuk memilih periode cetak (Bulan Ini vs Bulan Lalu)
         const paidBills = billingRecords.filter(b => 
-          b.month === activeMonth && 
-          b.year === activeYear && 
+          ((selectedPeriod === 'current' && b.month === activeMonth && b.year === activeYear) ||
+           (selectedPeriod === 'prev' && b.month === prevMonth && b.year === prevYear)) &&
           (b.status === 'Terbayar di Koordinator' || b.status === 'Lunas') &&
           floorResidents.some(r => r.ktp === b.residentKtp)
         ).map(b => {
@@ -1874,6 +1875,8 @@ STATUS         : ${bill.status.toUpperCase()}
           return matchesSearch && hasPaidBill;
         });
 
+        const periodLabel = selectedPeriod === 'current' ? `${activeMonth} ${activeYear}` : `${prevMonth} ${prevYear}`;
+
         return (
           <div className="space-y-6 animate-fade-in text-slate-900 w-full">
             <div className="bg-white p-5 rounded-3xl border border-slate-100 shadow-xl shadow-slate-100/50 space-y-4 w-full">
@@ -1883,10 +1886,20 @@ STATUS         : ${bill.status.toUpperCase()}
                     <Printer size={16} className="text-cyan-600 animate-pulse" />
                     Cetak Nota Pembayaran Warga (Lantai {targetFloor})
                   </h2>
-                  <p className="text-[10px] text-slate-400 font-mono font-bold mt-0.5">KHUSUS WARGA YANG SUDAH MELAKUKAN PEMBAYARAN ({activeMonth} {activeYear})</p>
+                  <p className="text-[10px] text-slate-400 font-mono font-bold mt-0.5">KHUSUS WARGA YANG SUDAH MELAKUKAN PEMBAYARAN ({periodLabel})</p>
                 </div>
 
-                <div className="flex flex-col sm:flex-row gap-2.5 w-full sm:w-auto items-stretch sm:items-center">
+                <div className="flex flex-wrap gap-2.5 w-full sm:w-auto items-center">
+                  {/* Select Periode */}
+                  <select
+                    value={selectedPeriod}
+                    onChange={(e) => setSelectedPeriod(e.target.value as 'current' | 'prev')}
+                    className="px-3 py-1.5 bg-cyan-50 border border-cyan-200 rounded-xl text-xs font-bold text-cyan-800 focus:outline-none focus:border-cyan-500"
+                  >
+                    <option value="current">Bulan Ini ({activeMonth})</option>
+                    <option value="prev">Bulan Lalu ({prevMonth})</option>
+                  </select>
+
                   {/* Select Block */}
                   <select
                     value={filterBlock}
@@ -1901,10 +1914,10 @@ STATUS         : ${bill.status.toUpperCase()}
                     <option value="Blok E">Blok E</option>
                   </select>
 
-                  <div className="relative flex-1 sm:w-48">
+                  <div className="relative w-full sm:w-40">
                     <input
                       type="text"
-                      placeholder="Cari Unit / Nama..."
+                      placeholder="Cari..."
                       value={searchQuery}
                       onChange={(e) => setSearchQuery(e.target.value)}
                       className="w-full pl-8 pr-3 py-1.5 bg-slate-50 border border-slate-200 rounded-xl text-xs font-semibold focus:outline-none focus:bg-white focus:border-cyan-500"
