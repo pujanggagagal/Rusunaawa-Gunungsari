@@ -3226,6 +3226,8 @@ Siti Aminah	357802...	Blok B	B-202	085755..."
                         const monthB = monthsMap[b.month] || 0;
                         if (monthA !== monthB) return monthB - monthA;
                         
+                        const resA = residents.find(r => r.ktp === a.residentKtp);
+                        const resB = residents.find(r => r.ktp === b.residentKtp);
                         if (resA && resB) {
                           return compareUnits(resA, resB);
                         }
