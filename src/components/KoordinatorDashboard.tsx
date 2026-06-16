@@ -83,14 +83,13 @@ export const KoordinatorDashboard: React.FC<KoordinatorDashboardProps> = ({
       year: 'numeric'
     });
 
-    // Urutan detail unit: Lantai > Blok > No Hunian
-    const floorLabel = res.floor || getFloorFromUnit(res.unit);
-    // Extracking Blok dan No Hunian dari res.unit (misal: "A-102" menjadi Blok A, No. 102)
-    const blockLabel = res.block ? res.block.replace("Blok ", "") : "";
-    const cleanUnitNo = res.unit.includes("-") ? res.unit.split("-")[1] : res.unit;
+    // Ambil 6 karakter terakhir dari bill.id agar nomor nota tidak terlalu panjang di printer thermal
+    const shortBillId = bill.id.length > 8 ? bill.id.substring(bill.id.length - 6).toUpperCase() : bill.id;
+    // Format nomor nota ringkas: [6 digit akhir ID]-[BLOK][NO_HUNIAN]
+    const customBillNo = `${shortBillId}-${blockLabel}${cleanUnitNo}`;
 
-    // No Nota berformat: [no bill > blok > no Hunian]
-    const customBillNo = `${bill.id} > ${blockLabel} > ${cleanUnitNo}`;
+    // Format Unit ringkas: "Lantai Blok-No" (Contoh: "5 A-501")
+    const formattedUnit = `${floorLabel} ${blockLabel}-${cleanUnitNo}`;
 
     const receiptHeader = `
 --------------------------------
@@ -105,7 +104,7 @@ export const KoordinatorDashboard: React.FC<KoordinatorDashboardProps> = ({
     const receiptBody = `
 No. Nota : ${customBillNo}
 Petugas  : ${coordinator.name}
-Unit     : Lantai ${floorLabel} > Blok ${blockLabel} > No. ${cleanUnitNo}
+Unit     : ${formattedUnit}
 Penghuni : ${res.name.toUpperCase()}
 Periode  : ${bill.month} ${bill.year}
 Tanggal  : ${today}
@@ -120,8 +119,9 @@ Biaya Sampah   : Rp ${bill.trashBill.toLocaleString('id-ID')}
 TOTAL TAGIHAN  : Rp ${bill.totalBill.toLocaleString('id-ID')}
 STATUS         : ${bill.status.toUpperCase()}
 ---------------------------------
-    Nota ini sebagai bukti sah
-   Pembayaran PDAM & Iuran Sampah
+         BUKTI BAYAR SAH
+           Pembayaran
+       PDAM & IURAN SAMPAH
 ---------------------------------
 \n\n\n`.trim();
 
