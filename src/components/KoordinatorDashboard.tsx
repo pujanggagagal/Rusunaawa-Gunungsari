@@ -83,6 +83,11 @@ export const KoordinatorDashboard: React.FC<KoordinatorDashboardProps> = ({
       year: 'numeric'
     });
 
+    // Definisi variabel label unit untuk menghindari error undefined
+    const floorLabel = res.floor || getFloorFromUnit(res.unit);
+    const blockLabel = res.block ? res.block.replace("Blok ", "") : "";
+    const cleanUnitNo = res.unit.includes("-") ? res.unit.split("-")[1] : res.unit;
+
     // Ambil 6 karakter terakhir dari bill.id agar nomor nota tidak terlalu panjang di printer thermal
     const shortBillId = bill.id.length > 8 ? bill.id.substring(bill.id.length - 6).toUpperCase() : bill.id;
     // Format nomor nota ringkas: [6 digit akhir ID]-[BLOK][NO_HUNIAN]
