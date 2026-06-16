@@ -34,6 +34,7 @@ interface AdminDashboardProps {
   onEditFinanceLog?: (id: string, updatedFields: Partial<FinancialLog>) => void;
   onDeleteFinanceLog?: (id: string) => void;
   onReconcileFloorBills?: (billIds: string[]) => void;
+  adminName?: string;
 }
 
 export const AdminDashboard: React.FC<AdminDashboardProps> = ({
@@ -63,7 +64,8 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({
   onDeleteBillingRecord,
   onEditFinanceLog,
   onDeleteFinanceLog,
-  onReconcileFloorBills
+  onReconcileFloorBills,
+  adminName
 }) => {
   const [activeTab, setActiveTab] = useState<'finance' | 'residents' | 'coordinators' | 'reconciliation' | 'billing' | 'pdam-all' | 'barcodes' | 'settings'>('finance');
 
@@ -1227,7 +1229,26 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({
                         }`}>
                           {log.type}
                         </span>
-                        <span className="font-bold text-slate-900">{log.description}</span>
+                        {(() => {
+                          const editRegex = /\[Edit: ([^\]]+)\]/g;
+                          const cleanDesc = log.description.replace(/\[Edit: [^\]]+\]/g, '').trim();
+                          const matches = [...log.description.matchAll(editRegex)];
+                          const historyList = matches.map(m => m[1]);
+                          return (
+                            <>
+                              <span className="font-bold text-slate-900">{cleanDesc}</span>
+                              {historyList.length > 0 && (
+                                <div className="mt-1.5 space-y-1">
+                                  {historyList.map((hist, idx) => (
+                                    <div key={idx} className="text-[10px] text-amber-700 bg-amber-50/50 border border-amber-100 rounded-lg px-2 py-0.5 font-mono inline-flex items-center gap-1 font-semibold">
+                                      <span className="animate-pulse">✍️</span> Riwayat Edit: {hist}
+                                    </div>
+                                  ))}
+                                </div>
+                              )}
+                            </>
+                          );
+                        })()}
                         {log.fundUser && (
                           <span className="ml-2 bg-purple-50 text-purple-700 text-[10px] px-2 py-0.5 rounded-full font-bold">
                             Penerima: {log.fundUser}
@@ -2386,7 +2407,26 @@ Siti Aminah	357802...	Blok B	B-202	085755..."
                               })}
                             </td>
                             <td className="py-3 font-medium text-slate-800 font-sans">
-                              {log.description}
+                              {(() => {
+                                const editRegex = /\[Edit: ([^\]]+)\]/g;
+                                const cleanDesc = log.description.replace(/\[Edit: [^\]]+\]/g, '').trim();
+                                const matches = [...log.description.matchAll(editRegex)];
+                                const historyList = matches.map(m => m[1]);
+                                return (
+                                  <div>
+                                    <span>{cleanDesc}</span>
+                                    {historyList.length > 0 && (
+                                      <div className="mt-1 flex flex-col gap-0.5">
+                                        {historyList.map((hist, idx) => (
+                                          <span key={idx} className="text-[9px] text-amber-700 bg-amber-50/50 border border-amber-100 rounded-md px-1.5 py-0.5 font-mono inline-flex items-center gap-1 font-semibold w-fit">
+                                            ✍️ Edit: {hist}
+                                          </span>
+                                        ))}
+                                      </div>
+                                    )}
+                                  </div>
+                                );
+                              })()}
                             </td>
                             <td className="py-3 text-center">
                               <span className="px-2 py-0.5 bg-purple-50 text-purple-600 border border-purple-100 rounded-md font-bold font-mono text-[10px]">
@@ -4680,9 +4720,32 @@ Siti Aminah	357802...	Blok B	B-202	085755..."
                     return;
                   }
                   if (onEditFinanceLog) {
+                    const timestamp = new Date().toLocaleDateString('id-ID', {
+                      day: 'numeric',
+                      month: 'short',
+                      year: 'numeric',
+                      hour: '2-digit',
+                      minute: '2-digit'
+                    });
+                    
+                    const isAmountChanged = editingFinanceLog.amount !== Number(editFinAmount);
+                    const cleanOldDesc = editingFinanceLog.description.replace(/\[Edit: [^\]]+\]/g, '').trim();
+                    const isDescChanged = cleanOldDesc !== editFinDesc.trim();
+                    
+                    let finalDesc = editFinDesc.trim();
+                    if (isAmountChanged || isDescChanged) {
+                      const changeMsg = isAmountChanged 
+                        ? `Rp ${editingFinanceLog.amount.toLocaleString('id-ID')} -> Rp ${Number(editFinAmount).toLocaleString('id-ID')}` 
+                        : 'ubah deskripsi';
+                      const editTrace = `[Edit: oleh ${adminName || 'Admin'} tgl ${timestamp}, ${changeMsg}]`;
+                      
+                      const existingTraces = editingFinanceLog.description.match(/\[Edit: [^\]]+\]/g) || [];
+                      finalDesc = `${editFinDesc.trim()} ${existingTraces.join(' ')} ${editTrace}`.trim().replace(/\s+/g, ' ');
+                    }
+
                     onEditFinanceLog(editingFinanceLog.id, {
                       amount: Number(editFinAmount),
-                      description: editFinDesc.trim(),
+                      description: finalDesc,
                       category: editFinCat,
                       fundUser: editFinFundUser.trim() || undefined,
                       type: editFinType

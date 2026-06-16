@@ -1139,6 +1139,7 @@ export default function App() {
                 onEditFinanceLog={handleEditFinanceLog}
                 onDeleteFinanceLog={handleDeleteFinanceLog}
                 onReconcileFloorBills={handleReconcileFloorBills}
+                adminName={currentUser?.name || 'Admin'}
               />
             )}
           </>
