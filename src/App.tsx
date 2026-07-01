@@ -27,6 +27,7 @@ import { supabaseService } from './supabaseService';
 
 export default function App() {
   const [data, setData] = useState(() => getStoredData());
+  const [dbSyncState, setDbSyncState] = useState<'idle' | 'syncing' | 'success' | 'error'>('idle');
   const [isLoading, setIsLoading] = useState(true);
   const [currentRole, setCurrentRole] = useState<UserRole | null>(null);
   const [currentUser, setCurrentUser] = useState<any>(null);
@@ -344,13 +345,25 @@ export default function App() {
 
 // Push updates to Google Sheets client
   const syncTable = async (table: 'Residents' | 'Coordinators' | 'Billing' | 'Finance', updatedList: any[]) => {
+    setDbSyncState('syncing');
     try {
-      if (table === 'Residents') await supabaseService.bulkInsertResidents(updatedList);
-      if (table === 'Coordinators') await supabaseService.bulkInsertCoordinators(updatedList);
-      if (table === 'Billing') await supabaseService.bulkInsertBillingRecords(updatedList);
-      if (table === 'Finance') await supabaseService.bulkInsertFinancialLogs(updatedList);
+      let ok = false;
+      if (table === 'Residents') ok = await supabaseService.bulkInsertResidents(updatedList);
+      if (table === 'Coordinators') ok = await supabaseService.bulkInsertCoordinators(updatedList);
+      if (table === 'Billing') ok = await supabaseService.bulkInsertBillingRecords(updatedList);
+      if (table === 'Finance') ok = await supabaseService.bulkInsertFinancialLogs(updatedList);
+      
+      if (ok) {
+        setDbSyncState('success');
+        setTimeout(() => setDbSyncState('idle'), 2500);
+      } else {
+        setDbSyncState('error');
+        setTimeout(() => setDbSyncState('idle'), 4000);
+      }
     } catch (err: any) {
       console.error(`Gagal melakukan autosync tabel "${table}" ke Supabase:`, err);
+      setDbSyncState('error');
+      setTimeout(() => setDbSyncState('idle'), 4000);
     }
   };
 
@@ -1106,8 +1119,31 @@ export default function App() {
   };
 
   return (
-    <div className="min-h-screen bg-slate-50 flex flex-col justify-between">
-      
+    <div className="min-h-screen bg-slate-50 flex flex-col justify-between relative">
+      {/* Realtime Database Sync Status Notification Overlay */}
+      {dbSyncState !== 'idle' && (
+        <div className="fixed top-5 right-5 z-[9999] animate-fade-in pointer-events-none">
+          {dbSyncState === 'syncing' && (
+            <div className="flex items-center gap-2.5 px-4 py-3 bg-slate-900 text-white rounded-2xl shadow-xl shadow-slate-950/20 text-xs font-bold border border-slate-800">
+              <Loader size={14} className="animate-spin text-cyan-400" />
+              <span>Menyimpan ke Database Supabase...</span>
+            </div>
+          )}
+          {dbSyncState === 'success' && (
+            <div className="flex items-center gap-2.5 px-4 py-3 bg-emerald-950 text-emerald-100 rounded-2xl shadow-xl shadow-emerald-950/20 text-xs font-bold border border-emerald-800/40">
+              <span className="h-5 w-5 rounded-full bg-emerald-500/20 text-emerald-400 flex items-center justify-center font-black">✓</span>
+              <span>Berhasil Disimpan &amp; Sinkron Database!</span>
+            </div>
+          )}
+          {dbSyncState === 'error' && (
+            <div className="flex items-center gap-2.5 px-4 py-3 bg-rose-950 text-rose-100 rounded-2xl shadow-xl shadow-rose-950/20 text-xs font-bold border border-rose-800/40">
+              <span className="h-5 w-5 rounded-full bg-rose-500/20 text-rose-400 flex items-center justify-center font-black">⚠️</span>
+              <span>Gagal Menyimpan. Periksa internet Anda!</span>
+            </div>
+          )}
+        </div>
+      )}
+
       {/* Main Container Workspace Area */}
       <main className="flex-grow">
         {verifyBillId ? (
