@@ -758,7 +758,11 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({
         )}
 
         {/* 2. PRINT MODE: REGISTER MANUAL SHEETS TABLE (OFFLINE BACKUP) */}
-        {printMode === 'worksheet' && (
+        {printMode === 'worksheet' && (() => {
+          const { month: activeMonth, year: activeYear } = getMonthYearFromDateString(simulatedDate);
+          const { month: prevMonth, year: prevYear } = getPrevMonthYear(activeMonth, activeYear);
+          const { month: twoMonthsAgoMonth, year: twoMonthsAgoYear } = getPrevMonthYear(prevMonth, prevYear);
+          return (
           <div className="max-w-5xl mx-auto space-y-3 bg-white text-black p-4 print:p-0 print:space-y-2">
             <div className="border-b-2 border-slate-900 pb-1.5 text-center">
               <span className="text-[9px] font-mono font-black uppercase tracking-widest text-slate-505">
@@ -767,11 +771,17 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({
               <h2 className="text-lg font-black text-slate-900 uppercase tracking-tight mt-1">
                 BUKU LOG LAPANGAN CATATAN METER AIR RUSUN
               </h2>
-              <div className="flex justify-center gap-10 mt-1.5 text-xxs font-mono font-bold text-slate-600 uppercase">
-                <span>BULAN CATATAN: MEI 2026</span>
-                <span>WAKTU BACKUP: {new Date().toLocaleString('id-ID')}</span>
-                <span>UNIT LAPORAN: SEMUA UNIT AKTIF</span>
-              </div>
+              {(() => {
+                const { month: activeMonth, year: activeYear } = getMonthYearFromDateString(simulatedDate);
+                const { month: prevMonth, year: prevYear } = getPrevMonthYear(activeMonth, activeYear);
+                return (
+                  <div className="flex justify-center gap-10 mt-1.5 text-xxs font-mono font-bold text-slate-600 uppercase">
+                    <span>BULAN CATATAN: {prevMonth.toUpperCase()} {prevYear}</span>
+                    <span>WAKTU BACKUP: {new Date().toLocaleString('id-ID')}</span>
+                    <span>UNIT LAPORAN: SEMUA UNIT AKTIF</span>
+                  </div>
+                );
+              })()}
             </div>
 
             <div className="overflow-x-auto print:overflow-visible">
@@ -809,8 +819,8 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({
                     <th className="p-1.5 text-center w-14 border border-slate-900">Blok</th>
                     <th className="p-1.5 text-center w-16 border border-slate-900">No Hunian</th>
                     <th className="p-1.5 text-left border border-slate-900">Nama Penghuni</th>
-                    <th className="p-1.5 text-right w-20 border border-slate-900">Meter Lalu</th>
-                    <th className="p-1.5 text-right w-20 border border-slate-900">Meter Baru</th>
+                    <th className="p-1.5 text-right w-20 border border-slate-900">{twoMonthsAgoMonth}</th>
+                    <th className="p-1.5 text-right w-20 border border-slate-900">{prevMonth}</th>
                     <th className="p-1.5 text-right w-28 border border-slate-900">Nominal Tagihan</th>
                   </tr>
                 </thead>
@@ -846,7 +856,7 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({
               </table>
             </div>
           </div>
-        )}
+        )})()}
       </div>
     );
   }
