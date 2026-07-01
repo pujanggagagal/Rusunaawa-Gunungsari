@@ -2754,8 +2754,8 @@ Siti Aminah	357802...	Blok B	B-202	085755..."
           const activeRes = residents.find(r => r.ktp === selectedResidentKtp);
           
           // Get April record and May record for selected resident
-          const aprRecord = activeRes ? billingRecords.find(b => b.residentKtp === activeRes.ktp && b.month === prevMonth && b.year === prevYear) : null;
-          const meiRecord = activeRes ? billingRecords.find(b => b.residentKtp === activeRes.ktp && b.month === activeMonth && b.year === activeYear) : null;
+          const aprRecord = activeRes ? billingRecords.find(b => b.residentKtp === activeRes.ktp && b.month === twoMonthsAgoMonth && b.year === twoMonthsAgoYear) : null;
+          const meiRecord = activeRes ? billingRecords.find(b => b.residentKtp === activeRes.ktp && b.month === prevMonth && b.year === prevYear) : null;
 
           // Previous meter fallback: April record's currentMeter, or initialMeter, or 100
           const prevMeterVal = activeRes
