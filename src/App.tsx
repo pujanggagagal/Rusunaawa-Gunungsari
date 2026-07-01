@@ -102,6 +102,8 @@ export default function App() {
         }
       } catch (err) {
         console.error('Error loading Supabase data:', err);
+      } finally {
+        setIsLoading(false);
       }
     };
     loadSupabaseData();
