@@ -668,9 +668,18 @@ STATUS         : ${bill.status.toUpperCase()}
       (b) => b.residentKtp === activeResident.ktp && !(b.month === prevMonth && b.year === prevYear)
     );
 
-    // Sort past records descending, prioritizing our imported CSV revision IDs (start with 'bill-')
+    const monthsOrder = [
+      'Januari', 'Februari', 'Maret', 'April', 'Mei', 'Juni',
+      'Juli', 'Agustus', 'September', 'Oktober', 'November', 'Desember'
+    ];
+
+    // Sort past records descending chronologically by Year then Month index
     const sortedPast = [...pastRecords].sort((a, b) => {
       if (a.year !== b.year) return b.year - a.year;
+      const aMonthIdx = monthsOrder.indexOf(a.month);
+      const bMonthIdx = monthsOrder.indexOf(b.month);
+      if (aMonthIdx !== bMonthIdx) return bMonthIdx - aMonthIdx;
+      // Prioritize generated/imported bills if duplicate months exist
       const aIsRev = a.id.startsWith('bill-') ? 1 : 0;
       const bIsRev = b.id.startsWith('bill-') ? 1 : 0;
       if (aIsRev !== bIsRev) return bIsRev - aIsRev;
