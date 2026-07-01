@@ -61,10 +61,28 @@ export default function App() {
   useEffect(() => {
     const loadSupabaseData = async () => {
       try {
-        const { data: residentsData } = await supabase.from('residents').select('*').limit(10000);
-        const { data: coordinatorsData } = await supabase.from('coordinators').select('*').limit(10000);
-        const { data: billingData } = await supabase.from('billing').select('*').limit(10000);
-        const { data: financeData } = await supabase.from('finance_logs').select('*').limit(10000);
+        const fetchAll = async (table: string) => {
+          let allData: any[] = [];
+          let from = 0;
+          const size = 1000;
+          while (true) {
+            const { data, error } = await supabase.from(table).select('*').range(from, from + size - 1);
+            if (error) break;
+            if (data && data.length > 0) {
+              allData = [...allData, ...data];
+              if (data.length < size) break;
+              from += size;
+            } else {
+              break;
+            }
+          }
+          return allData;
+        };
+
+        const residentsData = await fetchAll('residents');
+        const coordinatorsData = await fetchAll('coordinators');
+        const billingData = await fetchAll('billing');
+        const financeData = await fetchAll('finance_logs');
 
         if (residentsData && coordinatorsData && billingData && financeData) {
           const toCamelCase = (obj: any) => {

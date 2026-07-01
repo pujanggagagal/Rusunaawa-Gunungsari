@@ -50,15 +50,29 @@ const mapFinanceToDb = (f: any) => ({
   funduser: f.fundUser
 });
 
+
+async function fetchAll(table: string): Promise<any[]> {
+  let allData: any[] = [];
+  let from = 0;
+  const size = 1000;
+  while (true) {
+    const { data, error } = await supabase.from(table).select('*').range(from, from + size - 1);
+    if (error) break;
+    if (data && data.length > 0) {
+      allData = [...allData, ...data];
+      if (data.length < size) break;
+      from += size;
+    } else {
+      break;
+    }
+  }
+  return allData;
+}
+
 export const supabaseService = {
   // Residents
   async fetchResidents(): Promise<Resident[]> {
-    const { data, error } = await supabase.from('residents').select('*').limit(10000);
-    if (error) {
-      console.error('Error fetching residents:', error);
-      return [];
-    }
-    return data as any[];
+    return await fetchAll('residents');
   },
   async upsertResident(resident: Resident): Promise<boolean> {
     const { error } = await supabase.from('residents').upsert([mapResidentToDb(resident)]);
@@ -79,12 +93,7 @@ export const supabaseService = {
 
   // Coordinators
   async fetchCoordinators(): Promise<Coordinator[]> {
-    const { data, error } = await supabase.from('coordinators').select('*').limit(10000);
-    if (error) {
-      console.error('Error fetching coordinators:', error);
-      return [];
-    }
-    return data as any[];
+    return await fetchAll('coordinators');
   },
   async upsertCoordinator(coordinator: Coordinator): Promise<boolean> {
     const { error } = await supabase.from('coordinators').upsert([mapCoordinatorToDb(coordinator)]);
@@ -105,12 +114,7 @@ export const supabaseService = {
 
   // Billing Records
   async fetchBillingRecords(): Promise<BillingRecord[]> {
-    const { data, error } = await supabase.from('billing').select('*').limit(10000);
-    if (error) {
-      console.error('Error fetching billing records:', error);
-      return [];
-    }
-    return data as any[];
+    return await fetchAll('billing');
   },
   async upsertBillingRecord(record: BillingRecord): Promise<boolean> {
     const { error } = await supabase.from('billing').upsert([mapBillingToDb(record)]);
@@ -131,12 +135,7 @@ export const supabaseService = {
 
   // Financial Logs
   async fetchFinancialLogs(): Promise<FinancialLog[]> {
-    const { data, error } = await supabase.from('finance_logs').select('*').limit(10000);
-    if (error) {
-      console.error('Error fetching financial logs:', error);
-      return [];
-    }
-    return data as any[];
+    return await fetchAll('finance_logs');
   },
   async insertFinancialLog(log: FinancialLog): Promise<boolean> {
     const { error } = await supabase.from('finance_logs').upsert([mapFinanceToDb(log)]);
