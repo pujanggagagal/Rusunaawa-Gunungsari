@@ -303,13 +303,14 @@ export default function App() {
       const finalBilling = hasNoBilling ? data.billing : billing;
       const finalFinance = hasNoFinance ? data.finance : finance;
 
-      setData({
-        residents: finalResidents,
-        coordinators: finalCoordinators,
-        billing: finalBilling,
-        finance: finalFinance,
-        simulatedDate: data.simulatedDate
-      });
+      // setData disabled to prevent Google Sheets from resetting Supabase Real-time Database
+      // setData({
+      //   residents: finalResidents,
+      //   coordinators: finalCoordinators,
+      //   billing: finalBilling,
+      //   finance: finalFinance,
+      //   simulatedDate: data.simulatedDate
+      // });
 
       setSyncStatus('connected');
       setSheetsErrorMsg('');
