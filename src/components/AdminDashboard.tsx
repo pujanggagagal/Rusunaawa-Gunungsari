@@ -809,15 +809,23 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({
                     <th className="p-1.5 text-center w-14 border border-slate-900">Blok</th>
                     <th className="p-1.5 text-center w-16 border border-slate-900">No Hunian</th>
                     <th className="p-1.5 text-left border border-slate-900">Nama Penghuni</th>
-                    <th className="p-1.5 text-right w-24 border border-slate-900">Meter Lalu</th>
-                    <th className="p-1.5 text-right w-32 border border-slate-900">Meter Baru</th>
+                    <th className="p-1.5 text-right w-20 border border-slate-900">Meter Lalu</th>
+                    <th className="p-1.5 text-right w-20 border border-slate-900">Meter Baru</th>
+                    <th className="p-1.5 text-right w-28 border border-slate-900">Nominal Tagihan</th>
                   </tr>
                 </thead>
                 <tbody className="divide-y divide-slate-900 text-slate-900 font-bold">
                   {filteredResidentsForBarcodes.map((res, idx) => {
-                    // Find previous (April) meter record
-                    const pBills = billingRecords.filter(b => b.residentKtp === res.ktp && !(b.month === 'Mei' && b.year === 2026));
+                    // Find previous (April/Mei) meter record based on simulatedDate month
+                    const { month: activeMonth, year: activeYear } = getMonthYearFromDateString(simulatedDate);
+                    const { month: prevMonth, year: prevYear } = getPrevMonthYear(activeMonth, activeYear);
+                    const { month: twoMonthsAgoMonth, year: twoMonthsAgoYear } = getPrevMonthYear(prevMonth, prevYear);
+                    
+                    const pBills = billingRecords.filter(b => b.residentKtp === res.ktp && !(b.month === prevMonth && b.year === prevYear));
                     const aprVal = pBills.length > 0 ? pBills[0].currentMeter : 100;
+                    
+                    // Check if current (prevMonth) billing record exists
+                    const curBill = billingRecords.find(b => b.residentKtp === res.ktp && b.month === prevMonth && b.year === prevYear);
 
                     return (
                       <tr key={res.id} className="divide-x divide-slate-900 hover:bg-slate-50/40 border border-slate-900">
@@ -826,8 +834,11 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({
                         <td className="p-1.5 text-center">{res.block}</td>
                         <td className="p-1.5 text-center font-mono font-black">{res.unit}</td>
                         <td className="p-1.5 uppercase">{res.name}</td>
-                        <td className="p-1.5 text-right font-mono">{aprVal}</td>
-                        <td className="p-1.5 border border-slate-900 h-6 print-compact-h"></td>
+                        <td className="p-1.5 text-right font-mono">{curBill ? curBill.prevMeter : aprVal}</td>
+                        <td className="p-1.5 text-right font-mono">{curBill ? curBill.currentMeter : ''}</td>
+                        <td className="p-1.5 text-right font-mono">
+                          {curBill ? `Rp ${curBill.totalBill.toLocaleString('id-ID')}` : ''}
+                        </td>
                       </tr>
                     );
                   })}
