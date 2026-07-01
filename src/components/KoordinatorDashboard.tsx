@@ -1060,7 +1060,7 @@ STATUS         : ${bill.status.toUpperCase()}
                     {prevMeterValue} <span className="text-xs">m³</span>
                   </span>
                   <span className="text-[9px] font-mono text-slate-400 block bg-slate-100 px-1.5 py-0.5 rounded-md mt-1 border border-slate-250">
-                    {prevMonth} {prevYear}
+                    {twoMonthsAgoMonth} {twoMonthsAgoYear}
                   </span>
                 </div>
               </div>
@@ -1068,7 +1068,7 @@ STATUS         : ${bill.status.toUpperCase()}
               {/* GIANT METER INPUT SECTION */}
               <div className="space-y-2">
                 <label htmlFor="current_meter" className="block text-xs font-bold text-slate-800 uppercase tracking-wide">
-                  Angka Meteran Baru ({activeMonth} {activeYear})
+                  Angka Meteran Baru ({prevMonth} {prevYear})
                 </label>
                 
                 <div className="flex gap-2">
