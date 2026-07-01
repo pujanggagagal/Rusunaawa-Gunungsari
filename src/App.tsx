@@ -61,10 +61,10 @@ export default function App() {
   useEffect(() => {
     const loadSupabaseData = async () => {
       try {
-        const { data: residentsData } = await supabase.from('residents').select('*');
-        const { data: coordinatorsData } = await supabase.from('coordinators').select('*');
-        const { data: billingData } = await supabase.from('billing').select('*');
-        const { data: financeData } = await supabase.from('finance_logs').select('*');
+        const { data: residentsData } = await supabase.from('residents').select('*').limit(10000);
+        const { data: coordinatorsData } = await supabase.from('coordinators').select('*').limit(10000);
+        const { data: billingData } = await supabase.from('billing').select('*').limit(10000);
+        const { data: financeData } = await supabase.from('finance_logs').select('*').limit(10000);
 
         if (residentsData && coordinatorsData && billingData && financeData) {
           const toCamelCase = (obj: any) => {

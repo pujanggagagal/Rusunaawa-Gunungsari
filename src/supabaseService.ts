@@ -53,7 +53,7 @@ const mapFinanceToDb = (f: any) => ({
 export const supabaseService = {
   // Residents
   async fetchResidents(): Promise<Resident[]> {
-    const { data, error } = await supabase.from('residents').select('*');
+    const { data, error } = await supabase.from('residents').select('*').limit(10000);
     if (error) {
       console.error('Error fetching residents:', error);
       return [];
@@ -79,7 +79,7 @@ export const supabaseService = {
 
   // Coordinators
   async fetchCoordinators(): Promise<Coordinator[]> {
-    const { data, error } = await supabase.from('coordinators').select('*');
+    const { data, error } = await supabase.from('coordinators').select('*').limit(10000);
     if (error) {
       console.error('Error fetching coordinators:', error);
       return [];
@@ -105,7 +105,7 @@ export const supabaseService = {
 
   // Billing Records
   async fetchBillingRecords(): Promise<BillingRecord[]> {
-    const { data, error } = await supabase.from('billing').select('*');
+    const { data, error } = await supabase.from('billing').select('*').limit(10000);
     if (error) {
       console.error('Error fetching billing records:', error);
       return [];
@@ -131,7 +131,7 @@ export const supabaseService = {
 
   // Financial Logs
   async fetchFinancialLogs(): Promise<FinancialLog[]> {
-    const { data, error } = await supabase.from('finance_logs').select('*');
+    const { data, error } = await supabase.from('finance_logs').select('*').limit(10000);
     if (error) {
       console.error('Error fetching financial logs:', error);
       return [];
