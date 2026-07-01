@@ -681,7 +681,7 @@ export default function App() {
 
       // 2. Propagate this updated previous currentMeter as prevMeter for active month record (if it exists)
       const activeBillIdx = updatedBilling.findIndex(
-        (b) => b.residentKtp === residentKtp && b.month === activeMonth && b.year === activeYear
+        (b) => b.residentKtp === residentKtp && b.month === prevMonth && b.year === prevYear
       );
       if (activeBillIdx > -1) {
         const activeBill = updatedBilling[activeBillIdx];
