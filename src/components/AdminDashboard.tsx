@@ -934,8 +934,7 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({
         );
       })()}
 
-      {/* Primary Tab Navigation */}
-      <div className="flex border-b border-slate-200 mb-6 gap-2 overflow-x-auto scrollbar-none w-full">
+      <div className="flex flex-wrap border-b border-slate-200 mb-6 gap-y-3 gap-x-2 w-full">
         <button
           onClick={() => setActiveTab('finance')}
           className={`flex-shrink-0 pb-3 text-xs font-bold font-mono uppercase tracking-wider border-b-2 px-4 transition-all cursor-pointer ${
