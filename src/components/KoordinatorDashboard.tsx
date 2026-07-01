@@ -1325,7 +1325,7 @@ STATUS         : ${bill.status.toUpperCase()}
                     );
                     const meiRecord = rawJuniRecord ? (isVacant ? { ...rawJuniRecord, pdamBill: 0, trashBill: 0, totalBill: 0 } : rawJuniRecord) : null;
                     const rawAprRecord = billingRecords.find(
-                      (b) => b.residentKtp === res.ktp && b.month === prevMonth && b.year === prevYear
+                      (b) => b.residentKtp === res.ktp && b.month === twoMonthsAgoMonth && b.year === twoMonthsAgoYear
                     );
                     const aprRecord = rawAprRecord ? (isVacant ? { ...rawAprRecord, pdamBill: 0, trashBill: 0, totalBill: 0 } : rawAprRecord) : null;
                     const isSelected = selectedResidentKtp === res.ktp;
@@ -1444,7 +1444,7 @@ STATUS         : ${bill.status.toUpperCase()}
                         );
                         const meiRecord = rawJuniRecord ? (isVacant ? { ...rawJuniRecord, pdamBill: 0, trashBill: 0, totalBill: 0 } : rawJuniRecord) : null;
                         const rawAprRecord = billingRecords.find(
-                          (b) => b.residentKtp === res.ktp && b.month === prevMonth && b.year === prevYear
+                          (b) => b.residentKtp === res.ktp && b.month === twoMonthsAgoMonth && b.year === twoMonthsAgoYear
                         );
                         const aprRecord = rawAprRecord ? (isVacant ? { ...rawAprRecord, pdamBill: 0, trashBill: 0, totalBill: 0 } : rawAprRecord) : null;
                         const isSelected = selectedResidentKtp === res.ktp;
