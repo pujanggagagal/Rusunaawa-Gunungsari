@@ -572,11 +572,12 @@ export default function App() {
     const totalBill = pdamBill + trashBill;
 
     const { month: activeMonth, year: activeYear } = getMonthYearFromDateString(data.simulatedDate);
+    const { month: prevMonth, year: prevYear } = getPrevMonthYear(activeMonth, activeYear);
 
     setData((prev) => {
-      // Find if active record already exists for this citizen
+      // Find if active record already exists for this citizen (pemakaian bulan lalu)
       const existingIdx = prev.billing.findIndex(
-        (b) => b.residentKtp === residentKtp && b.month === activeMonth && b.year === activeYear
+        (b) => b.residentKtp === residentKtp && b.month === prevMonth && b.year === prevYear
       );
 
       let updatedBilling = [...prev.billing];
@@ -595,10 +596,10 @@ export default function App() {
       } else {
         // Insert new
         const newRecord: BillingRecord = {
-          id: `bill-${residentKtp}-${activeMonth.toLowerCase()}-${activeYear}`,
+          id: `bill-${residentKtp}-${prevMonth.toLowerCase()}-${prevYear}`,
           residentKtp,
-          month: activeMonth,
-          year: activeYear,
+          month: prevMonth,
+          year: prevYear,
           prevMeter,
           currentMeter: isVacant ? prevMeter : currentMeter,
           usage,

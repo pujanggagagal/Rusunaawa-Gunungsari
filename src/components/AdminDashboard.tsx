@@ -2797,7 +2797,7 @@ Siti Aminah	357802...	Blok B	B-202	085755..."
           // May usage & live pricing calculations
           const isActiveResVacant = activeRes?.isVacant || activeRes?.occupancyStatus === 'Kosong' || activeRes?.occupancyStatus === 'kosong' || activeRes?.name === 'Kamar Kosong' || activeRes?.name?.toLowerCase()?.includes('kamar kosong');
           const usage = isActiveResVacant ? 0 : (inputMayMeter !== '' ? Math.max(0, Number(inputMayMeter) - prevMeterVal) : 0);
-          const pdamBill = isActiveResVacant ? 0 : calculatePdamBill(usage);
+          const pdamBill = isActiveResVacant ? 0 : calculatePdamBill(usage, appSettings);
           const trashBill = isActiveResVacant ? 0 : appSettings.trashBillCost;
           const totalBill = pdamBill + trashBill;
 

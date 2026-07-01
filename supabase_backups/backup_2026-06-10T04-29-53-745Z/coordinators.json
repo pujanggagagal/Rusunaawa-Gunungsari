@@ -1,0 +1,44 @@
+[
+  {
+    "id": "coord-1",
+    "name": "Desi",
+    "ktp": "111111",
+    "assignedfloor": 1,
+    "assignedblock": "Lantai 1"
+  },
+  {
+    "id": "coord-2",
+    "name": "Syahib",
+    "ktp": "222222",
+    "assignedfloor": 2,
+    "assignedblock": "Lantai 2"
+  },
+  {
+    "id": "coord-3",
+    "name": "Mashur",
+    "ktp": "333333",
+    "assignedfloor": 3,
+    "assignedblock": "Lantai 3"
+  },
+  {
+    "id": "coord-4",
+    "name": "Maksum",
+    "ktp": "444444",
+    "assignedfloor": 4,
+    "assignedblock": "Lantai 4"
+  },
+  {
+    "id": "coord-5",
+    "name": "Hanafi",
+    "ktp": "555555",
+    "assignedfloor": 5,
+    "assignedblock": "Lantai 5"
+  },
+  {
+    "id": "coord-1780311155225",
+    "name": "Security",
+    "ktp": "12345678",
+    "assignedfloor": 0,
+    "assignedblock": "Pos Keamanan"
+  }
+]

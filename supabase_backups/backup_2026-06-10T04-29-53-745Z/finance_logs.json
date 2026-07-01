@@ -1,0 +1,596 @@
+[
+  {
+    "id": "exp-1781014355643",
+    "type": "Pemasukan",
+    "amount": 2435000,
+    "description": "Setoran Iuran Air PDAM Lantai 4 (Maksum) - Mei 2026",
+    "date": "2026-06-09T14:12:35.643Z",
+    "category": "Iuran Air",
+    "funduser": "Maksum"
+  },
+  {
+    "id": "hpuo7kaov",
+    "type": "Pemasukan",
+    "amount": 2285000,
+    "description": "Lantai 3 April",
+    "date": "2026-05-20 00:00:00+00",
+    "category": "Iuran Air",
+    "funduser": null
+  },
+  {
+    "id": "0p3pdzqql",
+    "type": "Pengeluaran",
+    "amount": 32000,
+    "description": "1 pcs senter kepala",
+    "date": "2026-05-04 00:00:00+00",
+    "category": "Lain-lain",
+    "funduser": null
+  },
+  {
+    "id": "19oin07h2",
+    "type": "Pemasukan",
+    "amount": 692500,
+    "description": "Lantai 1 Februari",
+    "date": "2026-05-20 00:00:00+00",
+    "category": "Iuran Air",
+    "funduser": null
+  },
+  {
+    "id": "2qhb09vh1",
+    "type": "Pengeluaran",
+    "amount": 512000,
+    "description": "BCB Lampu 20 biji  sama lampu PJU tanggal 22 februari 2026",
+    "date": "2026-04-28 00:00:00+00",
+    "category": "Lain-lain",
+    "funduser": null
+  },
+  {
+    "id": "2vabef3nr",
+    "type": "Pemasukan",
+    "amount": 560000,
+    "description": "Lantai 2 April",
+    "date": "2026-05-20 00:00:00+00",
+    "category": "Iuran Sampah",
+    "funduser": null
+  },
+  {
+    "id": "4ma9xpe6t",
+    "type": "Pemasukan",
+    "amount": 1530000,
+    "description": "Lantai 5 februari",
+    "date": "2026-04-28 00:00:00+00",
+    "category": "Iuran Air",
+    "funduser": null
+  },
+  {
+    "id": "cmpq8wk21",
+    "type": "Pengeluaran",
+    "amount": 500000,
+    "description": "Uang kematian lantai 1 no.11",
+    "date": "2026-05-20 00:00:00+00",
+    "category": "Lain-lain",
+    "funduser": null
+  },
+  {
+    "id": "dac9s6iby",
+    "type": "Pengeluaran",
+    "amount": 16000,
+    "description": "1 pcs taspen",
+    "date": "2026-05-04 00:00:00+00",
+    "category": "Lain-lain",
+    "funduser": null
+  },
+  {
+    "id": "hwlmmqn5t",
+    "type": "Pemasukan",
+    "amount": 490000,
+    "description": "Lantai 5 Januari",
+    "date": "2026-04-28 00:00:00+00",
+    "category": "Iuran Sampah",
+    "funduser": null
+  },
+  {
+    "id": "e3jxfx2gx",
+    "type": "Pengeluaran",
+    "amount": 500000,
+    "description": "Jasa koordinator lantai 1-5 bulan januari",
+    "date": "2026-02-15 00:00:00+00",
+    "category": "Lain-lain",
+    "funduser": null
+  },
+  {
+    "id": "grrtyblvq",
+    "type": "Pemasukan",
+    "amount": 580000,
+    "description": "Lantai 3 April",
+    "date": "2026-05-20 00:00:00+00",
+    "category": "Iuran Sampah",
+    "funduser": null
+  },
+  {
+    "id": "jh041fwtu",
+    "type": "Pemasukan",
+    "amount": 560000,
+    "description": "Lantai 4 April",
+    "date": "2026-05-20 00:00:00+00",
+    "category": "Iuran Sampah",
+    "funduser": null
+  },
+  {
+    "id": "jl0a5i2z4",
+    "type": "Pengeluaran",
+    "amount": 460000,
+    "description": "40 pcs pcb lampu",
+    "date": "2026-05-04 00:00:00+00",
+    "category": "Lain-lain",
+    "funduser": null
+  },
+  {
+    "id": "0boltcwo9",
+    "type": "Pemasukan",
+    "amount": 570000,
+    "description": "Lantai 3 maret",
+    "date": "2026-04-28 00:00:00+00",
+    "category": "Iuran Sampah",
+    "funduser": null
+  },
+  {
+    "id": "gwfad0bvv",
+    "type": "Pemasukan",
+    "amount": 710000,
+    "description": "Lantai 1 Januari",
+    "date": "2026-05-20 00:00:00+00",
+    "category": "Iuran Air",
+    "funduser": null
+  },
+  {
+    "id": "qkt4sbl98",
+    "type": "Pemasukan",
+    "amount": 1777500,
+    "description": "Lantai 5 maret",
+    "date": "2026-04-28 00:00:00+00",
+    "category": "Iuran Air",
+    "funduser": null
+  },
+  {
+    "id": "rmkho6t70",
+    "type": "Pemasukan",
+    "amount": 2382500,
+    "description": "Lantai 4 Maret",
+    "date": "2026-04-28 00:00:00+00",
+    "category": "Iuran Air",
+    "funduser": null
+  },
+  {
+    "id": "s4k1d1tjr",
+    "type": "Pemasukan",
+    "amount": 2590000,
+    "description": "Lantai 4 April",
+    "date": "2026-05-20 00:00:00+00",
+    "category": "Iuran Air",
+    "funduser": null
+  },
+  {
+    "id": "sydz715ua",
+    "type": "Pemasukan",
+    "amount": 550000,
+    "description": "Lantai 4 Maret",
+    "date": "2026-04-28 00:00:00+00",
+    "category": "Iuran Sampah",
+    "funduser": null
+  },
+  {
+    "id": "tq542q7pe",
+    "type": "Pemasukan",
+    "amount": 540000,
+    "description": "Lantai 4 februari",
+    "date": "2026-04-28 00:00:00+00",
+    "category": "Iuran Sampah",
+    "funduser": null
+  },
+  {
+    "id": "uhgbo4xbg",
+    "type": "Pemasukan",
+    "amount": 2152500,
+    "description": "Lantai 3 februari",
+    "date": "2026-04-28 00:00:00+00",
+    "category": "Iuran Air",
+    "funduser": null
+  },
+  {
+    "id": "ujmrvwkse",
+    "type": "Pengeluaran",
+    "amount": 1150000,
+    "description": "pembelian scaffolding tanggal 3 maret 2026",
+    "date": "2026-04-28 00:00:00+00",
+    "category": "Lain-lain",
+    "funduser": null
+  },
+  {
+    "id": "uqnq6jqme",
+    "type": "Pemasukan",
+    "amount": 230000,
+    "description": "Lantai 1 Februari",
+    "date": "2026-05-20 00:00:00+00",
+    "category": "Iuran Sampah",
+    "funduser": null
+  },
+  {
+    "id": "uuxlz22jh",
+    "type": "Pemasukan",
+    "amount": 1917500,
+    "description": "Lantai 2 Januari",
+    "date": "2026-04-28 00:00:00+00",
+    "category": "Iuran Air",
+    "funduser": null
+  },
+  {
+    "id": "znv7wlcwb",
+    "type": "Pemasukan",
+    "amount": 230000,
+    "description": "Lantai 1 Maret",
+    "date": "2026-05-20 00:00:00+00",
+    "category": "Iuran Sampah",
+    "funduser": null
+  },
+  {
+    "id": "fwcv23uhf",
+    "type": "Pemasukan",
+    "amount": 2565000,
+    "description": "Lantai 4 bulan Januari",
+    "date": "2026-04-28 00:00:00+00",
+    "category": "Iuran Air",
+    "funduser": null
+  },
+  {
+    "id": "jqm0q0tp9",
+    "type": "Pemasukan",
+    "amount": 2145000,
+    "description": "Lantai 4 februari",
+    "date": "2026-04-28 00:00:00+00",
+    "category": "Iuran Air",
+    "funduser": null
+  },
+  {
+    "id": "jzo0rgfdy",
+    "type": "Pemasukan",
+    "amount": 1790000,
+    "description": "Lantai 5 April",
+    "date": "2026-05-20 00:00:00+00",
+    "category": "Iuran Air",
+    "funduser": null
+  },
+  {
+    "id": "kp9i02vfj",
+    "type": "Pemasukan",
+    "amount": 580000,
+    "description": "Lantai 3 februari",
+    "date": "2026-04-28 00:00:00+00",
+    "category": "Iuran Sampah",
+    "funduser": null
+  },
+  {
+    "id": "v7tz9rkc1",
+    "type": "Pemasukan",
+    "amount": 1905000,
+    "description": "Lantai 2 maret",
+    "date": "2026-04-28 00:00:00+00",
+    "category": "Iuran Air",
+    "funduser": null
+  },
+  {
+    "id": "vu2j0m8zu",
+    "type": "Pemasukan",
+    "amount": 2032500,
+    "description": "Lantai 2 April",
+    "date": "2026-05-20 00:00:00+00",
+    "category": "Iuran Air",
+    "funduser": null
+  },
+  {
+    "id": "vuv9b5a9v",
+    "type": "Pemasukan",
+    "amount": 2167500,
+    "description": "Lantai 3 maret",
+    "date": "2026-04-28 00:00:00+00",
+    "category": "Iuran Air",
+    "funduser": null
+  },
+  {
+    "id": "w0lladeoy",
+    "type": "Pemasukan",
+    "amount": 550000,
+    "description": "Lantai 2 Maret",
+    "date": "2026-04-28 00:00:00+00",
+    "category": "Iuran Sampah",
+    "funduser": null
+  },
+  {
+    "id": "xhgd6lxok",
+    "type": "Pengeluaran",
+    "amount": 500000,
+    "description": "uang kematian lantai 2 bulan april B218",
+    "date": "2026-04-28 00:00:00+00",
+    "category": "Lain-lain",
+    "funduser": null
+  },
+  {
+    "id": "yqoiykdfc",
+    "type": "Pemasukan",
+    "amount": 500000,
+    "description": "Lantai 5 februari",
+    "date": "2026-04-28 00:00:00+00",
+    "category": "Iuran Sampah",
+    "funduser": null
+  },
+  {
+    "id": "exp-1781014355644",
+    "type": "Pemasukan",
+    "amount": 530000,
+    "description": "Setoran Iuran Sampah Lantai 4 (Maksum) - Mei 2026",
+    "date": "2026-06-09T14:12:35.644Z",
+    "category": "Iuran Sampah",
+    "funduser": "Maksum"
+  },
+  {
+    "id": "o7pwwl789",
+    "type": "Pengeluaran",
+    "amount": 245000,
+    "description": "pembelian cartridge hitam untuk printer",
+    "date": "2026-05-15 00:00:00+00",
+    "category": "Lain-lain",
+    "funduser": null
+  },
+  {
+    "id": "o9b6cdg8o",
+    "type": "Pemasukan",
+    "amount": 240000,
+    "description": "Lantai 1 Januari",
+    "date": "2026-05-20 00:00:00+00",
+    "category": "Iuran Sampah",
+    "funduser": null
+  },
+  {
+    "id": "rjn22rxm4",
+    "type": "Pengeluaran",
+    "amount": 131000,
+    "description": "Beli Geraji mesin mini tanggal 17 05 2026",
+    "date": "2026-05-20 00:00:00+00",
+    "category": "Lain-lain",
+    "funduser": null
+  },
+  {
+    "id": "ow38nweg4",
+    "type": "Pemasukan",
+    "amount": 520000,
+    "description": "Lantai 5 maret",
+    "date": "2026-04-28 00:00:00+00",
+    "category": "Iuran Sampah",
+    "funduser": null
+  },
+  {
+    "id": "pcw67aqyf",
+    "type": "Pengeluaran",
+    "amount": 130000,
+    "description": "20 pcs fitting lampu",
+    "date": "2026-05-04 00:00:00+00",
+    "category": "Lain-lain",
+    "funduser": null
+  },
+  {
+    "id": "pylrmgfc2",
+    "type": "Pengeluaran",
+    "amount": 152000,
+    "description": "20 pcs casing lampu",
+    "date": "2026-05-04 00:00:00+00",
+    "category": "Lain-lain",
+    "funduser": null
+  },
+  {
+    "id": "q5jgy4qke",
+    "type": "Pengeluaran",
+    "amount": 20000,
+    "description": "20 pcs drat fitting lampu",
+    "date": "2026-05-04 00:00:00+00",
+    "category": "Lain-lain",
+    "funduser": null
+  },
+  {
+    "id": "qay65336w",
+    "type": "Pengeluaran",
+    "amount": 1000000,
+    "description": "Pencairan dana/Deposit",
+    "date": "2026-05-20 00:00:00+00",
+    "category": "Lain-lain",
+    "funduser": null
+  },
+  {
+    "id": "mje66mkem",
+    "type": "Pengeluaran",
+    "amount": 400000,
+    "description": "Jasa koordinator lantai 2-5 bulan april",
+    "date": "2026-05-20 00:00:00+00",
+    "category": "Lain-lain",
+    "funduser": null
+  },
+  {
+    "id": "5n0alejpa",
+    "type": "Pengeluaran",
+    "amount": 13500,
+    "description": "Tambahan untukkonsumsi",
+    "date": "2026-05-17 00:00:00+00",
+    "category": "Lain-lain",
+    "funduser": null
+  },
+  {
+    "id": "5ujfdsrkq",
+    "type": "Pemasukan",
+    "amount": 580000,
+    "description": "Lantai 3 Januari",
+    "date": "2026-04-28 00:00:00+00",
+    "category": "Iuran Sampah",
+    "funduser": null
+  },
+  {
+    "id": "687jbzr4a",
+    "type": "Pemasukan",
+    "amount": 2412500,
+    "description": "Lantai 3 Januari",
+    "date": "2026-04-28 00:00:00+00",
+    "category": "Iuran Air",
+    "funduser": null
+  },
+  {
+    "id": "7a38uysu4",
+    "type": "Pemasukan",
+    "amount": 530000,
+    "description": "Lantai 2 Januari",
+    "date": "2026-04-28 00:00:00+00",
+    "category": "Iuran Sampah",
+    "funduser": null
+  },
+  {
+    "id": "5grzahbe3",
+    "type": "Pengeluaran",
+    "amount": 500000,
+    "description": "Jasa koordinator lantai 1-5 bulan Februari",
+    "date": "2026-03-15 00:00:00+00",
+    "category": "Lain-lain",
+    "funduser": null
+  },
+  {
+    "id": "8o9s1xysw",
+    "type": "Pengeluaran",
+    "amount": 1300000,
+    "description": "Pembayaran sampah bulan April tanggal 14",
+    "date": "2026-04-28 00:00:00+00",
+    "category": "Iuran Sampah",
+    "funduser": null
+  },
+  {
+    "id": "a4o187k20",
+    "type": "Pemasukan",
+    "amount": 1587000,
+    "description": "Lantai 5 Januari",
+    "date": "2026-04-28 00:00:00+00",
+    "category": "Iuran Air",
+    "funduser": null
+  },
+  {
+    "id": "a8jozmseu",
+    "type": "Pemasukan",
+    "amount": 707500,
+    "description": "Lantai 1 Maret",
+    "date": "2026-05-20 00:00:00+00",
+    "category": "Iuran Air",
+    "funduser": null
+  },
+  {
+    "id": "bojzdqdxi",
+    "type": "Pengeluaran",
+    "amount": 500000,
+    "description": "uang kematian lantai 1 bulan april A120",
+    "date": "2026-04-28 00:00:00+00",
+    "category": "Lain-lain",
+    "funduser": null
+  },
+  {
+    "id": "bre6kfw6o",
+    "type": "Pemasukan",
+    "amount": 1875000,
+    "description": "Lantai 2 februari",
+    "date": "2026-04-28 00:00:00+00",
+    "category": "Iuran Air",
+    "funduser": null
+  },
+  {
+    "id": "cer3cgrw6",
+    "type": "Pengeluaran",
+    "amount": 100000,
+    "description": "10 pcs fitting gantung",
+    "date": "2026-05-04 00:00:00+00",
+    "category": "Lain-lain",
+    "funduser": null
+  },
+  {
+    "id": "l69hyxtjs",
+    "type": "Pengeluaran",
+    "amount": 1300000,
+    "description": "Pembayaran sampah bulan Mei tanggal 5",
+    "date": "2026-05-17 00:00:00+00",
+    "category": "Iuran Sampah",
+    "funduser": null
+  },
+  {
+    "id": "lajhwl96e",
+    "type": "Pemasukan",
+    "amount": 500000,
+    "description": "Lantai 2 februari",
+    "date": "2026-04-28 00:00:00+00",
+    "category": "Iuran Sampah",
+    "funduser": null
+  },
+  {
+    "id": "lvjy841ju",
+    "type": "Pengeluaran",
+    "amount": 40000,
+    "description": "Kertas HVS 1 rim",
+    "date": "2026-05-20 00:00:00+00",
+    "category": "Lain-lain",
+    "funduser": null
+  },
+  {
+    "id": "neiitpsht",
+    "type": "Pemasukan",
+    "amount": 540000,
+    "description": "Lantai 4 Januari",
+    "date": "2026-04-28 00:00:00+00",
+    "category": "Iuran Sampah",
+    "funduser": null
+  },
+  {
+    "id": "o6zu4wwt5",
+    "type": "Pemasukan",
+    "amount": 540000,
+    "description": "Lantai 5 April",
+    "date": "2026-05-20 00:00:00+00",
+    "category": "Iuran Sampah",
+    "funduser": null
+  },
+  {
+    "id": "qzf7hnxix",
+    "type": "Pengeluaran",
+    "amount": 488000,
+    "description": "Beli pasir 1 tosa + Cat 3kg + kuas 6pcs",
+    "date": "2026-05-20 00:00:00+00",
+    "category": "Lain-lain",
+    "funduser": null
+  },
+  {
+    "id": "m8s4begad",
+    "type": "Pengeluaran",
+    "amount": 5830000,
+    "description": "Pembayaran PDAM april - mei 2026",
+    "date": "2026-05-20 00:00:00+00",
+    "category": "Iuran Air",
+    "funduser": null
+  },
+  {
+    "id": "bhkw75vw0",
+    "type": "Pengeluaran",
+    "amount": 500000,
+    "description": "Jasa koordinator lantai 1-5 bulan Maret",
+    "date": "2026-04-15 00:00:00+00",
+    "category": "Lain-lain",
+    "funduser": null
+  },
+  {
+    "id": "bm88o4mvj",
+    "type": "Pengeluaran",
+    "amount": 140000,
+    "description": "20 pcs blb 12 vol",
+    "date": "2026-05-04 00:00:00+00",
+    "category": "Lain-lain",
+    "funduser": null
+  }
+]

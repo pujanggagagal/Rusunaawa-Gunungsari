@@ -359,12 +359,12 @@ STATUS         : ${bill.status.toUpperCase()}
       }
     }
 
-    // Recording status filter (Mei 2026)
-    const hasMei = (billingRecords || []).some(
-      (b) => b.residentKtp?.trim() === res.ktp?.trim() && b.month === activeMonth && b.year === activeYear
+    // Recording status filter (Juni 2026)
+    const hasJuni = (billingRecords || []).some(
+      (b) => b.residentKtp?.trim() === res.ktp?.trim() && b.month === prevMonth && b.year === prevYear
     );
-    if (recordFilter === 'pending' && hasMei) return false;
-    if (recordFilter === 'completed' && !hasMei) return false;
+    if (recordFilter === 'pending' && hasJuni) return false;
+    if (recordFilter === 'completed' && !hasJuni) return false;
 
     // Search query filter
     if (searchQuery.trim() !== '') {
@@ -389,11 +389,11 @@ STATUS         : ${bill.status.toUpperCase()}
       setError('');
       setSuccess('');
       
-      const matchMei = billingRecords.find(
-        (b) => b.residentKtp === activeResident.ktp && b.month === activeMonth && b.year === activeYear
+      const matchJuni = billingRecords.find(
+        (b) => b.residentKtp === activeResident.ktp && b.month === prevMonth && b.year === prevYear
       );
-      if (matchMei) {
-        setCurrentMeterInput(matchMei.currentMeter);
+      if (matchJuni) {
+        setCurrentMeterInput(matchJuni.currentMeter);
       } else {
         setCurrentMeterInput('');
       }
@@ -571,10 +571,10 @@ STATUS         : ${bill.status.toUpperCase()}
       playScanBeep();
       setScannedResident(found);
       
-      const matchMei = billingRecords.find(
-        (b) => b.residentKtp === found.ktp && b.month === activeMonth && b.year === activeYear
+      const matchJuni = billingRecords.find(
+        (b) => b.residentKtp === found.ktp && b.month === prevMonth && b.year === prevYear
       );
-      setScannedMeterInput(matchMei ? String(matchMei.currentMeter) : '');
+      setScannedMeterInput(matchJuni ? String(matchJuni.currentMeter) : '');
       setScannedError('');
       
       setIsScannerOpen(false);
@@ -651,21 +651,21 @@ STATUS         : ${bill.status.toUpperCase()}
   }, [isScannerOpen, useRealCamera]);
 
   // Determine previous meter and active month status
-  const getPrevMeterAndCurrentMei = () => {
-    if (!activeResident) return { prev: 0, currentMeiRecord: null };
+  const getPrevMeterAndCurrentJuni = () => {
+    if (!activeResident) return { prev: 0, currentJuniRecord: null };
     
     // Check if active month already recorded
-    const currentMeiRecord = billingRecords.find(
-      (b) => b.residentKtp === activeResident.ktp && b.month === activeMonth && b.year === activeYear
+    const currentJuniRecord = billingRecords.find(
+      (b) => b.residentKtp === activeResident.ktp && b.month === prevMonth && b.year === prevYear
     );
 
-    if (currentMeiRecord) {
-      return { prev: currentMeiRecord.prevMeter, currentMeiRecord };
+    if (currentJuniRecord) {
+      return { prev: currentJuniRecord.prevMeter, currentJuniRecord };
     }
 
     // Get latest meter reading before active month
     const pastRecords = billingRecords.filter(
-      (b) => b.residentKtp === activeResident.ktp && !(b.month === activeMonth && b.year === activeYear)
+      (b) => b.residentKtp === activeResident.ktp && !(b.month === prevMonth && b.year === prevYear)
     );
 
     // Sort past records descending, prioritizing our imported CSV revision IDs (start with 'bill-')
@@ -683,10 +683,10 @@ STATUS         : ${bill.status.toUpperCase()}
           ? Number(activeResident.initialMeter)
           : 100);
 
-    return { prev, currentMeiRecord };
+    return { prev, currentJuniRecord };
   };
 
-  const { prev: prevMeterValue, currentMeiRecord } = getPrevMeterAndCurrentMei();
+  const { prev: prevMeterValue, currentJuniRecord } = getPrevMeterAndCurrentJuni();
 
   // Handle manual selection
   const handleSelectResident = (ktp: string) => {
@@ -758,10 +758,10 @@ STATUS         : ${bill.status.toUpperCase()}
       let nextRes = null;
       for (let i = activeIdx + 1; i < filteredResidents.length; i++) {
         const r = filteredResidents[i];
-        const matchMei = billingRecords.some(
-          (b) => b.residentKtp === r.ktp && b.month === activeMonth && b.year === activeYear
+        const matchJuni = billingRecords.some(
+          (b) => b.residentKtp === r.ktp && b.month === prevMonth && b.year === prevYear
         );
-        if (!matchMei) {
+        if (!matchJuni) {
           nextRes = r;
           break;
         }
@@ -771,10 +771,10 @@ STATUS         : ${bill.status.toUpperCase()}
       if (!nextRes) {
         for (let i = 0; i < activeIdx; i++) {
           const r = filteredResidents[i];
-          const matchMei = billingRecords.some(
-            (b) => b.residentKtp === r.ktp && b.month === activeMonth && b.year === activeYear
+          const matchJuni = billingRecords.some(
+            (b) => b.residentKtp === r.ktp && b.month === prevMonth && b.year === prevYear
           );
-          if (!matchMei) {
+          if (!matchJuni) {
             nextRes = r;
             break;
           }
@@ -824,16 +824,16 @@ STATUS         : ${bill.status.toUpperCase()}
   // Calculations for dynamic preview
   const isActiveResVacant = activeResident?.isVacant || activeResident?.occupancyStatus === 'Kosong' || activeResident?.occupancyStatus === 'kosong' || activeResident?.name === 'Kamar Kosong' || activeResident?.name?.toLowerCase()?.includes('kamar kosong');
   const usageFloat = isActiveResVacant ? 0 : (currentMeterInput !== '' ? Number(currentMeterInput) - prevMeterValue : 0);
-  const pdamBillCalc = isActiveResVacant ? 0 : (usageFloat > 0 ? calculatePdamBill(usageFloat) : 0);
-  const iuranSampah = isActiveResVacant ? 0 : 10000;
+  const pdamBillCalc = isActiveResVacant ? 0 : (usageFloat > 0 ? calculatePdamBill(usageFloat, appSettings) : 0);
+  const iuranSampah = isActiveResVacant ? 0 : appSettings.trashBillCost;
   const totalInvoiceCalc = pdamBillCalc > 0 ? pdamBillCalc + iuranSampah : 0;
 
   // Progress percentages
-  const totalMeiRecorded = floorResidents.filter((r) =>
-    billingRecords.some((b) => b.residentKtp === r.ktp && b.month === activeMonth && b.year === activeYear)
+  const totalJuniRecorded = floorResidents.filter((r) =>
+    billingRecords.some((b) => b.residentKtp === r.ktp && b.month === prevMonth && b.year === prevYear)
   ).length;
   const progressPercent = floorResidents.length > 0 
-    ? Math.round((totalMeiRecorded / floorResidents.length) * 100) 
+    ? Math.round((totalJuniRecorded / floorResidents.length) * 100) 
     : 0;
 
   return (
@@ -932,7 +932,7 @@ STATUS         : ${bill.status.toUpperCase()}
             <p className="text-xxs text-slate-400 font-mono font-bold">Seluruh Unit di Lantai {targetFloor}</p>
           </div>
           <div className="bg-emerald-50 text-emerald-800 border border-emerald-100 px-3 py-1 rounded-full text-xs font-bold font-mono">
-            {totalMeiRecorded} / {floorResidents.length} Kamar Terdata ({progressPercent}%)
+            {totalJuniRecorded} / {floorResidents.length} Kamar Terdata ({progressPercent}%)
           </div>
         </div>
         
@@ -1283,7 +1283,7 @@ STATUS         : ${bill.status.toUpperCase()}
                 {/* SELECT STATUS REKOD FILTER */}
                 <div>
                   <label className="block text-[10px] uppercase font-bold text-slate-450 mb-1.5 font-mono">
-                    Saring Status Input Record (Mei)
+                    Saring Status Input Record (Juni)
                   </label>
                   <select
                     value={recordFilter}
@@ -1310,10 +1310,10 @@ STATUS         : ${bill.status.toUpperCase()}
                 <div className="block md:hidden space-y-3 mt-4" id="coord_resident_list_mobile">
                   {filteredResidents.map((res) => {
                     const isVacant = res.isVacant || res.occupancyStatus === 'Kosong' || res.occupancyStatus === 'kosong' || res.name === 'Kamar Kosong' || res.name.toLowerCase().includes('kamar kosong');
-                    const rawMeiRecord = billingRecords.find(
-                      (b) => b.residentKtp === res.ktp && b.month === activeMonth && b.year === activeYear
+                    const rawJuniRecord = billingRecords.find(
+                      (b) => b.residentKtp === res.ktp && b.month === prevMonth && b.year === prevYear
                     );
-                    const meiRecord = rawMeiRecord ? (isVacant ? { ...rawMeiRecord, pdamBill: 0, trashBill: 0, totalBill: 0 } : rawMeiRecord) : null;
+                    const meiRecord = rawJuniRecord ? (isVacant ? { ...rawJuniRecord, pdamBill: 0, trashBill: 0, totalBill: 0 } : rawJuniRecord) : null;
                     const rawAprRecord = billingRecords.find(
                       (b) => b.residentKtp === res.ktp && b.month === prevMonth && b.year === prevYear
                     );
@@ -1429,10 +1429,10 @@ STATUS         : ${bill.status.toUpperCase()}
                     <tbody className="divide-y divide-slate-100">
                       {filteredResidents.map((res) => {
                         const isVacant = res.isVacant || res.occupancyStatus === 'Kosong' || res.occupancyStatus === 'kosong' || res.name === 'Kamar Kosong' || res.name.toLowerCase().includes('kamar kosong');
-                        const rawMeiRecord = billingRecords.find(
-                          (b) => b.residentKtp === res.ktp && b.month === activeMonth && b.year === activeYear
+                        const rawJuniRecord = billingRecords.find(
+                          (b) => b.residentKtp === res.ktp && b.month === prevMonth && b.year === prevYear
                         );
-                        const meiRecord = rawMeiRecord ? (isVacant ? { ...rawMeiRecord, pdamBill: 0, trashBill: 0, totalBill: 0 } : rawMeiRecord) : null;
+                        const meiRecord = rawJuniRecord ? (isVacant ? { ...rawJuniRecord, pdamBill: 0, trashBill: 0, totalBill: 0 } : rawJuniRecord) : null;
                         const rawAprRecord = billingRecords.find(
                           (b) => b.residentKtp === res.ktp && b.month === prevMonth && b.year === prevYear
                         );
@@ -1590,7 +1590,7 @@ STATUS         : ${bill.status.toUpperCase()}
                                 res.block.toLowerCase().includes(query);
           
           const meiRecord = billingRecords.find(
-            (b) => b.residentKtp === res.ktp && b.month === activeMonth && b.year === activeYear
+            (b) => b.residentKtp === res.ktp && b.month === prevMonth && b.year === prevYear
           );
 
           if (paymentFilter === 'unpaid') {
@@ -1689,8 +1689,8 @@ STATUS         : ${bill.status.toUpperCase()}
                   <div className="grid grid-cols-1 gap-3.5 md:hidden w-full">
                     {filteredResForPayment.map(res => {
                       const isVacant = res.isVacant || res.occupancyStatus === 'Kosong' || res.occupancyStatus === 'kosong' || res.name === 'Kamar Kosong' || res.name.toLowerCase().includes('kamar kosong');
-                      const rawMeiRec = billingRecords.find(b => b.residentKtp === res.ktp && b.month === activeMonth && b.year === activeYear);
-                      const meiRec = rawMeiRec ? (isVacant ? { ...rawMeiRec, pdamBill: 0, trashBill: 0, totalBill: 0 } : rawMeiRec) : null;
+                      const rawJuniRec = billingRecords.find(b => b.residentKtp === res.ktp && b.month === prevMonth && b.year === prevYear);
+                      const meiRec = rawJuniRec ? (isVacant ? { ...rawJuniRec, pdamBill: 0, trashBill: 0, totalBill: 0 } : rawJuniRec) : null;
                       const rawAprRec = billingRecords.find(b => b.residentKtp === res.ktp && b.month === prevMonth && b.year === prevYear);
                       const aprRec = rawAprRec ? (isVacant ? { ...rawAprRec, pdamBill: 0, trashBill: 0, totalBill: 0 } : rawAprRec) : null;
                       
@@ -1781,8 +1781,8 @@ STATUS         : ${bill.status.toUpperCase()}
                       <tbody className="divide-y divide-slate-100 font-bold text-slate-700">
                         {filteredResForPayment.map(res => {
                           const isVacant = res.isVacant || res.occupancyStatus === 'Kosong' || res.occupancyStatus === 'kosong' || res.name === 'Kamar Kosong' || res.name.toLowerCase().includes('kamar kosong');
-                          const rawMeiRec = billingRecords.find(b => b.residentKtp === res.ktp && b.month === activeMonth && b.year === activeYear);
-                          const meiRec = rawMeiRec ? (isVacant ? { ...rawMeiRec, pdamBill: 0, trashBill: 0, totalBill: 0 } : rawMeiRec) : null;
+                          const rawJuniRec = billingRecords.find(b => b.residentKtp === res.ktp && b.month === prevMonth && b.year === prevYear);
+                          const meiRec = rawJuniRec ? (isVacant ? { ...rawJuniRec, pdamBill: 0, trashBill: 0, totalBill: 0 } : rawJuniRec) : null;
                           const rawAprRec = billingRecords.find(b => b.residentKtp === res.ktp && b.month === prevMonth && b.year === prevYear);
                           const aprRec = rawAprRec ? (isVacant ? { ...rawAprRec, pdamBill: 0, trashBill: 0, totalBill: 0 } : rawAprRec) : null;
                           
@@ -1857,7 +1857,7 @@ STATUS         : ${bill.status.toUpperCase()}
       {coordTab === 'receipt' && (() => {
         // Filter untuk memilih periode cetak (Bulan Ini vs Bulan Lalu)
         const paidBills = billingRecords.filter(b => 
-          ((selectedPeriod === 'current' && b.month === activeMonth && b.year === activeYear) ||
+          ((selectedPeriod === 'current' && b.month === prevMonth && b.year === prevYear) ||
            (selectedPeriod === 'prev' && b.month === prevMonth && b.year === prevYear)) &&
           (b.status === 'Terbayar di Koordinator' || b.status === 'Lunas') &&
           floorResidents.some(r => r.ktp === b.residentKtp)
@@ -2141,15 +2141,15 @@ STATUS         : ${bill.status.toUpperCase()}
       {scannedResident && (() => {
         // Query previous April meter record
         const pastRecords = billingRecords.filter(
-          (b) => b.residentKtp === scannedResident.ktp && !(b.month === activeMonth && b.year === activeYear)
+          (b) => b.residentKtp === scannedResident.ktp && !(b.month === prevMonth && b.year === prevYear)
         );
         const prevMeterVal = pastRecords.length > 0 ? pastRecords[0].currentMeter : 100;
         
         // Calculate usage & live costs
         const numericInputVal = scannedMeterInput === '' ? 0 : Number(scannedMeterInput);
         const usageAmount = Math.max(0, numericInputVal - prevMeterVal);
-        const livePdamBill = calculatePdamBill(usageAmount);
-        const liveTotalBill = livePdamBill + 10000; // Water + trash fee
+        const livePdamBill = calculatePdamBill(usageAmount, appSettings);
+        const liveTotalBill = livePdamBill + appSettings.trashBillCost; // Water + trash fee
         
         // Handle physical virtual key clicks
         const handleKeyPress = (char: string) => {
