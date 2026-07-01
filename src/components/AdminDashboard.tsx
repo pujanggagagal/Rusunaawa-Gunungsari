@@ -71,6 +71,7 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({
 
   const { month: activeMonth, year: activeYear } = getMonthYearFromDateString(simulatedDate);
   const { month: prevMonth, year: prevYear } = getPrevMonthYear(activeMonth, activeYear);
+  const { month: twoMonthsAgoMonth, year: twoMonthsAgoYear } = getPrevMonthYear(prevMonth, prevYear);
 
   // States for PDAM All Billing Management (Menu Baru)
   const [editingBill, setEditingBill] = useState<BillingRecord | null>(null);
