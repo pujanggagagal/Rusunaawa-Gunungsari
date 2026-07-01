@@ -58,6 +58,7 @@ export const KoordinatorDashboard: React.FC<KoordinatorDashboardProps> = ({
 }) => {
   const { month: activeMonth, year: activeYear } = getMonthYearFromDateString(simulatedDate);
   const { month: prevMonth, year: prevYear } = getPrevMonthYear(activeMonth, activeYear);
+  const { month: twoMonthsAgoMonth, year: twoMonthsAgoYear } = getPrevMonthYear(prevMonth, prevYear);
   // Extract assignedFloor. If not defined to avoid type issues, fetch from ID or default to 1.
   const targetFloor = coordinator.assignedFloor || (coordinator.id === 'coord-1' ? 1 : coordinator.id === 'coord-2' ? 2 : coordinator.id === 'coord-3' ? 3 : coordinator.id === 'coord-4' ? 4 : coordinator.id === 'coord-5' ? 5 : 1);
 
@@ -1700,7 +1701,7 @@ STATUS         : ${bill.status.toUpperCase()}
                       const isVacant = res.isVacant || res.occupancyStatus === 'Kosong' || res.occupancyStatus === 'kosong' || res.name === 'Kamar Kosong' || res.name.toLowerCase().includes('kamar kosong');
                       const rawJuniRec = billingRecords.find(b => b.residentKtp === res.ktp && b.month === prevMonth && b.year === prevYear);
                       const meiRec = rawJuniRec ? (isVacant ? { ...rawJuniRec, pdamBill: 0, trashBill: 0, totalBill: 0 } : rawJuniRec) : null;
-                      const rawAprRec = billingRecords.find(b => b.residentKtp === res.ktp && b.month === prevMonth && b.year === prevYear);
+                      const rawAprRec = billingRecords.find(b => b.residentKtp === res.ktp && b.month === twoMonthsAgoMonth && b.year === twoMonthsAgoYear);
                       const aprRec = rawAprRec ? (isVacant ? { ...rawAprRec, pdamBill: 0, trashBill: 0, totalBill: 0 } : rawAprRec) : null;
                       
                       const lastMeter = meiRec 
@@ -1792,7 +1793,7 @@ STATUS         : ${bill.status.toUpperCase()}
                           const isVacant = res.isVacant || res.occupancyStatus === 'Kosong' || res.occupancyStatus === 'kosong' || res.name === 'Kamar Kosong' || res.name.toLowerCase().includes('kamar kosong');
                           const rawJuniRec = billingRecords.find(b => b.residentKtp === res.ktp && b.month === prevMonth && b.year === prevYear);
                           const meiRec = rawJuniRec ? (isVacant ? { ...rawJuniRec, pdamBill: 0, trashBill: 0, totalBill: 0 } : rawJuniRec) : null;
-                          const rawAprRec = billingRecords.find(b => b.residentKtp === res.ktp && b.month === prevMonth && b.year === prevYear);
+                          const rawAprRec = billingRecords.find(b => b.residentKtp === res.ktp && b.month === twoMonthsAgoMonth && b.year === twoMonthsAgoYear);
                           const aprRec = rawAprRec ? (isVacant ? { ...rawAprRec, pdamBill: 0, trashBill: 0, totalBill: 0 } : rawAprRec) : null;
                           
                           const lastMeter = meiRec 
